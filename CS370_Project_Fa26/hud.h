@@ -6,11 +6,10 @@ struct Button;
 struct TextField;
 struct Label;
 
-
 //list of widgets
 extern vector<Widget*> widgets;
 
-//HUD function defs
+//HUD util function defs
 void draw_string(const string& text, float x, float y, float size);
 float text_width(const string& text, float size);
 
@@ -40,11 +39,9 @@ struct Widget {
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
-};
+}; //end Widget
 
-
-
-
+//Button widget for interactivity
 struct Button : Widget {
     string label;
     float textSize = HUD_FONT;
@@ -84,7 +81,7 @@ struct Button : Widget {
 
 };//end Button
 
-
+//Text field for user input
 struct TextField : Widget {
     string label;
     string text;
@@ -92,11 +89,41 @@ struct TextField : Widget {
     float textSize = HUD_FONT;
     float labelW;
     bool focused;
-
+    bool isNum;
+    float* value;
     //constructor
-    TextField(float x, float y, float w, float h, const string& label, int maxLen = 16)
-        : Widget(x, y, w, h), label(label), maxLen(maxLen), focused(false) {
+    TextField(float x, float y, float w, float h, const string& label, int maxLen = 16, bool isNum = false, float* value = NULL)
+        :Widget(x, y, w, h), label(label), maxLen(maxLen), isNum(isNum), value(value), focused(false) {
         resize();
+    }
+
+    void commit() {
+        if (!value) return;
+        char* end = NULL;
+        float n = strtof(text.c_str(), &end);
+        if (end == text.c_str()) return; // blank or just "-"
+        *value = n;
+    }
+
+    bool valid_number(const string& s) const {
+        if (s.empty()) return true;
+        size_t i = 0;
+        if (s[0] == '-') {
+            if (s.size() == 1) return true;
+            i = 1;
+        }
+        bool dot = false;
+        bool digit = false;
+        for (; i < s.size(); i++) {
+            if (s[i] == '.') {
+                if (dot) return false;
+                dot = true;
+                continue;
+            }
+            if (s[i] < '0' || s[i] > '9') return false;
+            digit = true;
+        }
+        return digit || dot; // ".", "-", "-." while still typing
     }
 
 
@@ -112,6 +139,9 @@ struct TextField : Widget {
     }
 
     void setText(string n_text) {
+        //prevent non numbers if needed
+        if (isNum && !valid_number(n_text)) return;
+        //prevent input from exceeding maxLen
         if (n_text.length() > maxLen){
             n_text.resize(maxLen);
         }
@@ -145,11 +175,18 @@ struct TextField : Widget {
         focused = true;
     }
 
-    void on_char(unsigned int codepoint) override {
-        if (!focused) return;
-        if ((int)text.size() >= maxLen) return;
-        if (codepoint < 32 || codepoint > 126) return;
-        text.push_back((char)codepoint);
+    void on_char(unsigned int charCode) override {
+        if (!focused) return; //do nothing if not focused
+        if ((int)text.size() >= maxLen) return; //do nothing if size is at max len
+        if (charCode < 32 || charCode > 126) return; //prevent invalid characters
+        char c = (char)charCode;
+
+        if (isNum) {
+            string next = text;
+            next.push_back(c);
+            if (!valid_number(next)) return;
+        }
+        text.push_back(c);
         resize();
     }
 
@@ -163,9 +200,9 @@ struct TextField : Widget {
 
     }
 
-};//end
+};//end Text Field
 
-
+//Label for labeling UI sections
 struct Label : Widget {
     string label;
     float textSize = HUD_FONT;
@@ -194,7 +231,6 @@ struct Label : Widget {
     }
 
 };//end Label
-
 
 
 //util function for drawing text
@@ -248,7 +284,7 @@ void draw_string(const string& text, float x, float y, float size) {
     }
 }
 
-//calculate text width
+//util function for calculating text width
 float text_width(const string& text, float size) {
     float scale = size / 32.0f;
     float width = 0.0f;

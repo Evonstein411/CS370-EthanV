@@ -22,6 +22,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
             for (size_t i = 0; i < widgets.size(); i++) {
                 TextField* field = dynamic_cast<TextField*>(widgets[i]);
+                if (field && field->focused) field->commit();
                 if (field) field->focused = false;
             }
             return;
@@ -98,6 +99,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
     for (size_t i = 0; i < widgets.size(); i++) {
         TextField* field = dynamic_cast<TextField*>(widgets[i]);
+        if (field && field->focused && (int)i != hitIndex) field->commit();
         if (field) field->focused = ((int)i == hitIndex);
     }
     if (hitIndex >= 0) widgets[hitIndex]->on_click();
