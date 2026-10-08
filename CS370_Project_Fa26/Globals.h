@@ -28,7 +28,7 @@ vec3 up = {0.0f, 1.0f, 0.0f};
 // Global spherical camera variables
 GLfloat azimuth = 0.0f;
 GLfloat daz = 2.0f;
-GLfloat elevation = 90.0f;
+GLfloat elevation = 60.0f;
 GLfloat del = 2.0f;
 GLfloat radius = 2.0f;
 GLfloat dr = 0.1f;
@@ -43,5 +43,5 @@ GLboolean animate = true;
 GLboolean dirty = false;
 
 // Global screen dimensions
-GLint ww = 1080;
-GLint hh = 960;
+GLint ww = 2040;
+GLint hh = 1080;

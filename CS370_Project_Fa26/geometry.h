@@ -1,15 +1,16 @@
 // Model vertex arrays and buffer objects
-enum VAO_IDs {Cube, HUDQuad, HUDTextQuad, NumVAOs};
+enum VAO_IDs {Cube, Sphere, HUDQuad, HUDTextQuad, NumVAOs};
 GLuint VAOs[NumVAOs];
 GLuint ObjBuffers[NumVAOs][NumObjBuffers];
 GLint numVertices[NumVAOs];
 
 // Color buffers
-enum Color_Buffer_IDs {CubeRed, HUDGray, HUDHighlighted, HUDTextField, NumColorBuffers};
+enum Color_Buffer_IDs {CubeRed, FloorGray, HUDGray, HUDHighlighted, HUDTextField, NumColorBuffers};
 GLuint ColorBuffers[NumColorBuffers];
 
 // Model files
 const char * cubeFile = "../../common/models/unitcube.obj";
+const char * sphereFile = "../../common/models/sphere.obj";
 
 void load_model(const char * filename, GLuint obj);
 void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer);
@@ -27,12 +28,15 @@ void build_geometry( )
 
     // Load models
     load_model(cubeFile, Cube);
-    
+    load_model(sphereFile, Sphere);
+
     // Generate color buffers
     glGenBuffers(NumColorBuffers, ColorBuffers);
 
     // Build color buffers
     build_solid_color_buffer(numVertices[Cube], vec4(1.0f, 0.0f, 0.0f, 1.0f), CubeRed);
+    build_solid_color_buffer(numVertices[Cube], vec4(0.6f, 0.6f, 0.6f, 1.0f), FloorGray);
+
     build_solid_color_buffer(numVertices[HUDQuad], vec4(0.4f, 0.4f, 0.4f, 0.6f), HUDGray);
     build_solid_color_buffer(numVertices[HUDQuad], vec4(0.8f, 0.8f, 0.8f, 0.6f), HUDHighlighted);
     build_solid_color_buffer(numVertices[HUDQuad], vec4(0.95f, 0.95f, 0.95f, 0.6f), HUDTextField);

@@ -143,8 +143,15 @@ void render_scene( ) {
     scale_matrix = scale(2.0f, 2.0f, 2.0f);
 	model_matrix = trans_matrix*rot_matrix*scale_matrix;
     normal_matrix = model_matrix.inverse().transpose();
-    // Draw cube
-    draw_mat_object(Cube, Brass);
+    // Draw material obj
+    draw_mat_object(Sphere, Brass);
+
+    //floor
+    trans_matrix = translate(0.0f, -3.0f, 0.0f);
+    rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
+    scale_matrix = scale(20.0f, 2.0f, 20.0f);
+    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    draw_mat_object(Cube, FloorGray);
 
 }
 
@@ -192,17 +199,19 @@ void toggle_lights() {
 
 
 void init_hud() {
-    widgets.push_back(new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS"));
-
-    widgets.push_back(new Label(20.0f, 70.0f, 130.0f, 48.0f, "Material"));
-    widgets.push_back(new Label(20.0f, 118.0f, 130.0f, 48.0f, "ambient"));
-    widgets.push_back(new TextField(180.0f, 118.0f, 65.0f, 48.0f, "R:"));
-    widgets.push_back(new TextField(180.0f, 118.0f, 65.0f, 48.0f, "G:"));
-    widgets.push_back(new TextField(180.0f, 118.0f, 65.0f, 48.0f, "B:"));
-    widgets.push_back(new TextField(180.0f, 118.0f, 65.0f, 48.0f, "A:"));
-
-    widgets.push_back(new Label(20.0f, 166.0f, 130.0f, 48.0f, "diffuse"));
-    widgets.push_back(new Label(20.0f, 214.0f, 130.0f, 48.0f, "specular"));
+    Button* light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    Label* material_label= new Label(20.0f, 70.0f, 130.0f, 48.0f, "Material");
+    Label* ambient_label = new Label(20.0f, 140.0f, 130.0f, 48.0f, "ambient");
+    TextField* ambient_r_field = new TextField(180.0f, 140.0f, 65.0f, 48.0f, "R:", 4.0f);
+    ambient_r_field->setText(to_string(Materials[Brass].ambient[0]));
+    TextField* ambient_g_field = new TextField(320.0f, 140.0f, 65.0f, 48.0f, "G:", 4.0f);
+    ambient_g_field->setText(to_string(Materials[Brass].ambient[1]));
+    TextField* ambient_b_field = new TextField(460.0f, 140.0f, 65.0f, 48.0f, "B:", 4.0f);
+    ambient_b_field->setText(to_string(Materials[Brass].ambient[2]));
+    TextField* ambient_a_field =new TextField(600.0f, 140.0f, 65.0f, 48.0f, "A:", 4.0f);
+    ambient_a_field->setText(to_string(Materials[Brass].ambient[3]));
+    Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
+    Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
 
 
 

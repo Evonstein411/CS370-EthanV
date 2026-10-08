@@ -1,6 +1,23 @@
 #include <string>
 
+//structs
+struct Widget;
+struct Button;
+struct TextField;
+struct Label;
+
+
+//list of widgets
+extern vector<Widget*> widgets;
+
+//HUD function defs
 void draw_string(const string& text, float x, float y, float size);
+float text_width(const string& text, float size);
+
+//HUD globals
+const float HUD_FONT = 32.0f;
+const float HUD_PAD_X = 8.0f;
+const float HUD_PAD_Y = 8.0f;
 
 //parent HUD element struct
 struct Widget {
@@ -8,7 +25,9 @@ struct Widget {
     bool hovered = false;
 
     Widget(float x, float y, float w, float h)
-        : x(x), y(y), w(w), h(h) {}
+        : x(x), y(y), w(w), h(h) {
+        widgets.push_back(this);
+    }
 
     virtual ~Widget() {}
     virtual void draw() = 0; // each child supplies its own draw
@@ -23,28 +42,31 @@ struct Widget {
     }
 };
 
-//list of widgets
-extern vector<Widget*> widgets;
+
 
 
 struct Button : Widget {
     string label;
-    float textSize = 32;
+    float textSize = HUD_FONT;
     void (*onPress)();
 
     //constructor (no label specified)
-    Button(float x, float y, float w, float h, void (*onPress)() )
-    : Widget(x, y, w, h), onPress(onPress){}
+    Button(float x, float y, float w, float h, void (*onPress)(), const string& label = "" )
+    : Widget(x, y, w, h), onPress(onPress), label(label) {
+        fit();
+    }
 
-    //constuctor with label
-    Button(float x, float y, float w, float h, void  (*onPress)(), const string& label)
-    : Widget(x, y, w, h), onPress(onPress), label(label) {}
+
+
+    void fit() {
+        w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
+        if (w < 48.0f) w = 48.0f;
+        h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+    }
 
     void draw() override {
         model_matrix = mat4().identity();
-        mat4 scale_matrix = mat4().identity();
-        mat4 trans_matrix = mat4().identity();
-        mat4 trans2_matrix = mat4().identity();
+        mat4 scale_matrix, trans_matrix = mat4().identity();
 
         GLuint color = hovered ? HUDHighlighted : HUDGray;
 
@@ -53,7 +75,7 @@ struct Button : Widget {
         model_matrix = trans_matrix * scale_matrix;
         draw_color_object(HUDQuad, color);
 
-        draw_string(label, x + 8.0f, y + 6.0f, textSize);
+        draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
     }
 
     void on_click() override {
@@ -66,45 +88,57 @@ struct Button : Widget {
 struct TextField : Widget {
     string label;
     string text;
-    int maxLen, textSize;
+    int maxLen;
+    float textSize = HUD_FONT;
+    float labelW;
     bool focused;
 
     //constructor
     TextField(float x, float y, float w, float h, const string& label, int maxLen = 16)
-        : Widget(x, y, w, h), label(label), maxLen(maxLen), focused(false) {}
-
-    float text_width(const std::string& s, float size) {
-        float scale = size / 32.0f;
-        float width = 0.0f;
-        for (size_t i = 0; i < s.size(); i++) {
-            if (s[i] < 32 || s[i] > 126) continue;
-            width += glyphs[s[i] - 32].xadvance * scale;
-        }
-        return width;
+        : Widget(x, y, w, h), label(label), maxLen(maxLen), focused(false) {
+        resize();
     }
 
 
     void resize() {
-        float labelW = 90.0f;
+        labelW = text_width(label, textSize) + HUD_PAD_X * 2.0f;
+        if (labelW < 36.0f) labelW = 36.0f;
+
         float inner = text_width(text, textSize) + 12.0f;
-        if (inner < 24.0f) inner = 24.0f;
-        w = labelW + inner + 16.0f;   // label column + input + right padding
+        float minInner = text_width(" ", textSize) + 12.0f;
+        if (inner < minInner) inner = minInner;
+        w = labelW + inner + HUD_PAD_X;
+        h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+    }
+
+    void setText(string n_text) {
+        if (n_text.length() > maxLen){
+            n_text.resize(maxLen);
+        }
+        text = n_text;
+        resize();
     }
 
     void draw() override {
+        model_matrix = mat4().identity();
+        mat4 scale_matrix, trans_matrix = mat4().identity();
         GLuint outer = focused ? HUDHighlighted : HUDGray;
         model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
         draw_color_object(HUDQuad, outer);
         draw_string(label, x + 8.0f, y + 8.0f, 32);
 
-        float boxX = x + 90.0f;
+        float boxX = x + labelW;
         float boxY = y + 6.0f;
         float boxH = h - 12.0f;
-        float boxW = w - 90.0f - 8.0f;
+        float boxW = w - labelW - HUD_PAD_X;
+        if (boxW < HUD_PAD_X) boxW = HUD_PAD_X;
+        if (boxH < HUD_PAD_Y) boxH = HUD_PAD_Y;
 
-        model_matrix = translate(boxX, (float)hh - boxH - boxY, 0.0f) * scale(boxW, boxH, 1.0f);
+        trans_matrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
+        scale_matrix = scale(boxW, boxH, 1.0f);
+        model_matrix =  trans_matrix * scale_matrix;
         draw_color_object(HUDQuad, HUDTextField);
-        draw_string(text, boxX + 6.0f, boxY + 2.0f , 32);
+        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize);
     }
 
     void on_click() override {
@@ -134,34 +168,32 @@ struct TextField : Widget {
 
 struct Label : Widget {
     string label;
+    float textSize = HUD_FONT;
 
     Label(float x, float y, float w, float h, const string& label)
-    : Widget(x, y, w, h), label(label) {}
+    : Widget(x, y, w, h), label(label) {
+        fit();
+    }
 
+    void fit() {
+        w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
+        if (w < 48.0f) w = 48.0f;
+        h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+    }
 
     void draw() override {
         model_matrix = mat4().identity();
-        mat4 scale_matrix = mat4().identity();
-        mat4 trans_matrix = mat4().identity();
-        mat4 trans2_matrix = mat4().identity();
+        mat4 scale_matrix, trans_matrix = mat4().identity();
 
         scale_matrix = scale(w, h, 1.0f);
         trans_matrix = translate(x, (float)hh - h - y, 0.0f);
         model_matrix = trans_matrix * scale_matrix;
         draw_color_object(HUDQuad, HUDGray);
 
-        draw_string(label, x + 8.0f, y + 6.0f, 32);
+        draw_string(label, x + 8.0f, y + 6.0f, textSize);
     }
 
 };//end Label
-
-
-
-
-
-
-
-
 
 
 
@@ -214,4 +246,15 @@ void draw_string(const string& text, float x, float y, float size) {
         model_matrix = mat4().identity();
         draw_tex_object(HUDTextQuad, Font);
     }
+}
+
+//calculate text width
+float text_width(const string& text, float size) {
+    float scale = size / 32.0f;
+    float width = 0.0f;
+    for (size_t i = 0; i < text.size(); i++) {
+        if (text[i] < 32 || text[i] > 126) continue;
+        width += glyphs[text[i] - 32].xadvance * scale;
+    }
+    return width;
 }
