@@ -204,6 +204,7 @@ void toggle_lights() {
 void init_hud() {
     Button* light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
     Label* material_label= new Label(20.0f, 70.0f, 130.0f, 48.0f, "Material");
+
     Label* ambient_label = new Label(20.0f, 140.0f, 130.0f, 48.0f, "ambient");
     TextField* ambient_r_field = new TextField(180.0f, 140.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
     ambient_r_field->setText(to_string(Materials[Brass].ambient[0]));
@@ -213,9 +214,29 @@ void init_hud() {
     ambient_b_field->setText(to_string(Materials[Brass].ambient[2]));
     TextField* ambient_a_field =new TextField(600.0f, 140.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
     ambient_a_field->setText(to_string(Materials[Brass].ambient[3]));
-    Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
-    Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
 
+    Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
+    TextField* diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
+    diffuse_r_field->setText(to_string(Materials[Brass].diffuse[0]));
+    TextField* diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
+    diffuse_g_field->setText(to_string(Materials[Brass].diffuse[1]));
+    TextField* diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
+    diffuse_b_field->setText(to_string(Materials[Brass].diffuse[2]));
+    TextField* diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
+    diffuse_a_field->setText(to_string(Materials[Brass].diffuse[3]));
+
+    Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
+    TextField* specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
+    specular_r_field->setText(to_string(Materials[Brass].specular[0]));
+    TextField* specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
+    specular_g_field->setText(to_string(Materials[Brass].specular[1]));
+    TextField* specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
+    specular_b_field->setText(to_string(Materials[Brass].specular[2]));
+    TextField* specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
+    specular_a_field->setText(to_string(Materials[Brass].specular[3]));
+
+    TextField* shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, "shininess:", 4.0f, true, &shininess);
+    shininess_field->setText(to_string(Materials[Brass].shininess));
 
 
 }
