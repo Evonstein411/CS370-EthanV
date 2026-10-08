@@ -1,0 +1,29 @@
+# CLion
+.idea/
+
+# CMake / Visual Studio build trees
+cmake-build-*/
+**/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+out/
+
+# Ninja
+*.ninja
+.ninja_deps
+.ninja_log
+
+# Executables and linker files CMake writes into each assignment's bin/
+bin/
+
+# MSVC junk, wherever it lands
+*.ilk
+*.pdb
+*.idb
+*.exp
+
+# OS
+.DS_Store
+Thumbs.db
