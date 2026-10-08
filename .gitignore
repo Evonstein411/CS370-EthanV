@@ -27,3 +27,6 @@ bin/
 # OS
 .DS_Store
 Thumbs.db
+*.pdb
+*.ilk
+/CS370_Project_Fa26/bin
