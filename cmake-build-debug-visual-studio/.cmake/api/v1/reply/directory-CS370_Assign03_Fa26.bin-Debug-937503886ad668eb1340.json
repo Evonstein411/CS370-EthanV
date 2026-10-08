@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "CS370_Assign03_Fa26/bin",
+		"source" : "CS370_Assign03_Fa26"
+	}
+}

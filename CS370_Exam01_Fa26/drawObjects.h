@@ -1,0 +1,84 @@
+#include "shadervars.h"
+
+// ---------------------
+// Fa26 DO NOT MODIFY!!!
+// ---------------------
+
+void draw_color_object(GLuint obj, GLuint color) {
+    // Select shader program
+    glUseProgram(color_program);
+
+    // Pass projection matrix to shader
+    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+
+    // Pass camera matrix to shader
+    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+
+    // Pass model matrix to shader
+    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    // Bind vertex array
+    glBindVertexArray(VAOs[obj]);
+
+    // Bind position object buffer and set attributes
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
+    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vPos);
+
+    // Bind color buffer and set attributes
+    glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[color]);
+    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vCol);
+
+    // Draw geometry
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
+}
+
+void draw_target(GLuint t_obj, GLuint t_buff){
+    // Select default shader program
+    glUseProgram(color_program);
+
+    // Pass projection matrix to default shader
+    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+
+    // Pass camera matrix to default shader
+    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+
+    // Pass model matrix to default shader
+    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    // Bind vertex array
+    glBindVertexArray(VAOs[t_obj]);
+
+    // Bind position object buffer and set attributes for default shader
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[t_obj][PosBuffer]);
+    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vPos);
+
+    // Bind color buffer and set attributes for default shader
+    glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[t_buff]);
+    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vCol);
+
+    // Draw object
+    glDrawArrays(GL_LINES, 0, 4);
+    if (mode > 2) {
+        glDrawArrays(GL_LINE_LOOP, 4, 64);
+    }
+
+}
+
+void draw_table(){
+    mat4 scale_matrix = scale(TABLE_SIZE, 0.02f, TABLE_SIZE);
+    mat4 trans_matrix = translate(0.0f, -0.2f, 0.0f);
+    model_matrix = scale_matrix;
+    draw_color_object(Cube, TableColor);
+
+    if (mode < 4) {
+        model_matrix = mat4().identity();
+    } else {
+        mat4 targ_trans = translate(TARGET_X, TARGET_Y, TARGET_Z);
+        model_matrix = targ_trans;
+    }
+    draw_target(Target, TargetColor);
+}

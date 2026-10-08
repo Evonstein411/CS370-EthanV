@@ -1,0 +1,133 @@
+C:\Users\ethan\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/ethan/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S C:\Users\ethan\OneDrive\Documents\CollegeFa26\CS370\CS370_Fa26 -B C:\Users\ethan\OneDrive\Documents\CollegeFa26\CS370\CS370_Fa26\cmake-build-debug-visual-studio
+-- 
+-- Executable Targets:
+--     DonQuixote
+-- 
+-- Executable Targets:
+--     RollinTrain
+-- 
+-- Executable Targets:
+--     LimeLight
+-- 
+-- Executable Targets:
+--     HouseProject
+-- 
+-- Executable Targets:
+--     exam01_fa26
+-- 
+-- Executable Targets:
+--     helloOpenGL
+-- 
+-- Executable Targets:
+--     helloOpenGLSol
+-- 
+-- Executable Targets:
+--     basicGeometry
+-- 
+-- Executable Targets:
+--     basicGeometrySol
+-- 
+-- Executable Targets:
+--     shadedHexagon
+-- 
+-- Executable Targets:
+--     shadedHexagonSol
+-- 
+-- Executable Targets:
+--     transformHexagon
+-- 
+-- Executable Targets:
+--     transformHexagonSol
+-- 
+-- Executable Targets:
+--     spinningHexagon
+-- 
+-- Executable Targets:
+--     spinningHexagonSol
+-- 
+-- Executable Targets:
+--     orthoCube
+-- 
+-- Executable Targets:
+--     orthoCubeSol
+-- 
+-- Executable Targets:
+--     frustumScene
+-- 
+-- Executable Targets:
+--     frustumSceneSol
+-- 
+-- Executable Targets:
+--     shaderScene
+-- 
+-- Executable Targets:
+--     shaderSceneSol
+-- 
+-- Executable Targets:
+--     fogScene
+-- 
+-- Executable Targets:
+--     fogSceneSol
+-- 
+-- Executable Targets:
+--     gouraudMesh
+-- 
+-- Executable Targets:
+--     gouraudMeshSol
+-- 
+-- Executable Targets:
+--     phongMesh
+-- 
+-- Executable Targets:
+--     phongMeshSol
+-- 
+-- Executable Targets:
+--     blendedMesh
+-- 
+-- Executable Targets:
+--     blendedMeshSol
+-- 
+-- Executable Targets:
+--     blenderMonkey
+-- 
+-- Executable Targets:
+--     blenderMonkeySol
+-- 
+-- Executable Targets:
+--     earthMoon
+-- 
+-- Executable Targets:
+--     earthMoonSol
+-- 
+-- Executable Targets:
+--     robotGraph
+-- 
+-- Executable Targets:
+--     robotGraphSol
+-- 
+-- Executable Targets:
+--     shadowMesh
+-- 
+-- Executable Targets:
+--     shadowMeshSol
+-- 
+-- Executable Targets:
+--     mirrorMesh
+-- 
+-- Executable Targets:
+--     mirrorMeshSol
+-- 
+-- Executable Targets:
+--     multiTexMesh
+-- 
+-- Executable Targets:
+--     multiTexMeshSol
+-- 
+-- Executable Targets:
+--     bumpMesh
+-- 
+-- Executable Targets:
+--     bumpMeshSol
+-- Configuring done (1.0s)
+-- Generating done (1.1s)
+-- Build files have been written to: C:/Users/ethan/OneDrive/Documents/CollegeFa26/CS370/CS370_Fa26/cmake-build-debug-visual-studio
