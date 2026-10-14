@@ -63,9 +63,10 @@ int main(int argc, char**argv)
     build_textures();
     // Create shaders
     build_shaders();
-
     // Create HUD
     init_hud();
+    // Create scene
+    init_scene();
 
     // Enable depth test
     glEnable(GL_CULL_FACE);
@@ -145,7 +146,7 @@ void render_scene( ) {
     normal_matrix = mat4().identity();
 
     for (size_t i = 0; i < objects.size(); i++) {
-        objects[i]->draw(model_matrix, normal_matrix);
+        objects[i]->draw();
     }
 
 

@@ -1,9 +1,7 @@
 enum MaterialNames {Brass, Base, Floor, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
 vector<MaterialProperties> Materials;
-
 vector<MaterialProperties> DynamicMaterials;
-GLuint DynamicMaterialBuffers[1];
 
 float ambient_r = 0.33f;
 float ambient_g = 0.22f;
@@ -30,7 +28,6 @@ MaterialProperties baseMaterial = {
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
-
 MaterialProperties floormat = {
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //ambient
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //diffuse
@@ -39,17 +36,16 @@ MaterialProperties floormat = {
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
+// Create brass material
+MaterialProperties brass = {
+	vec4(0.33f, 0.22f, 0.03f, 1.0f), //ambient
+	vec4(0.78f, 0.57f, 0.11f, 1.0f), //diffuse
+	vec4(0.99f, 0.91f, 0.81f, 1.0f), //specular
+	27.0f, //shininess
+	{0.0f, 0.0f, 0.0f}  //pad
+};
 
 void build_materials() {
-	// Create brass material
-	MaterialProperties brass = {
-		vec4(ambient_r, ambient_g, ambient_b, ambient_a), //ambient
-		vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a), //diffuse
-		vec4(specular_r, specular_g, specular_b, specular_a), //specular
-		shininess, //shininess
-		{0.0f, 0.0f, 0.0f}  //pad
-	};
-
     // Allocate Materials vector
     Materials.resize(NumMaterials);
     // Add materials to Materials vector
@@ -64,10 +60,12 @@ void build_materials() {
 }
 
 void build_dynamic_materials() {
+	vector<MaterialProperties> all = Materials;
+	all.insert(all.end(), DynamicMaterials.begin(), DynamicMaterials.end());
 
-	glGenBuffers(DynamicMaterials.size(), DynamicMaterialBuffers);
-	glBindBuffer(GL_UNIFORM_BUFFER, DynamicMaterialBuffers[MaterialBuffer]);
-	glBufferData(GL_UNIFORM_BUFFER, DynamicMaterials.size()*sizeof(MaterialProperties), DynamicMaterials.data(), GL_STATIC_DRAW);
-
-
+	glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
+	glBufferData(GL_UNIFORM_BUFFER,
+				 all.size() * sizeof(MaterialProperties),
+				 all.data(),
+				 GL_DYNAMIC_DRAW);
 }
