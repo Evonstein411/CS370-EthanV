@@ -44,8 +44,9 @@ void draw_mat_object(GLuint obj, GLuint material){
 
     // Bind materials
     glUniformBlockBinding(lighting_program, lighting_materials_block_idx, 1);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, Materials.size()*sizeof(MaterialProperties));
-
+    size_t total = Materials.size() + DynamicMaterials.size();
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0,
+                      total * sizeof(MaterialProperties));
     // Set camera position
     glUniform3fv(lighting_eye_loc, 1, eye);
 
