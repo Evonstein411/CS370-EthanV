@@ -8,6 +8,7 @@ GLint numVertices[NumVAOs];
 enum Color_Buffer_IDs {CubeRed, FloorGray, HUDGray, HUDPanel, HUDHighlighted, HUDTextField, NumColorBuffers};
 GLuint ColorBuffers[NumColorBuffers];
 
+
 // Model files
 const char * cubeFile = "../../common/models/unitcube.obj";
 const char * sphereFile = "../../common/models/sphere.obj";

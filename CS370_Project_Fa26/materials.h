@@ -1,6 +1,9 @@
-enum MaterialNames {Brass, Floor, NumMaterials};
+enum MaterialNames {Brass, Base, Floor, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
 vector<MaterialProperties> Materials;
+
+vector<MaterialProperties> DynamicMaterials;
+GLuint DynamicMaterialBuffers[1];
 
 float ambient_r = 0.33f;
 float ambient_g = 0.22f;
@@ -19,6 +22,13 @@ float specular_a = 1.0f;
 
 float shininess = 27.8f;
 
+MaterialProperties baseMaterial = {
+	vec4(1.0f, 1.0f, 1.0f, 1.0f), //ambient
+	vec4(0.5f, 0.5f, 0.5f, 1.0f), //diffuse
+	vec4(0.5f, 0.5f, 0.5f, 1.0f), //specular
+	10.0f, //shininess
+	{0.0f, 0.0f, 0.0f}  //pad
+};
 
 
 MaterialProperties floormat = {
@@ -45,9 +55,19 @@ void build_materials() {
     // Add materials to Materials vector
     Materials[Brass] = brass;
 	Materials[Floor] = floormat;
+	Materials[Base] = baseMaterial;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
     glBufferData(GL_UNIFORM_BUFFER, Materials.size()*sizeof(MaterialProperties), Materials.data(), GL_STATIC_DRAW);
+}
+
+void build_dynamic_materials() {
+
+	glGenBuffers(DynamicMaterials.size(), DynamicMaterialBuffers);
+	glBindBuffer(GL_UNIFORM_BUFFER, DynamicMaterialBuffers[MaterialBuffer]);
+	glBufferData(GL_UNIFORM_BUFFER, DynamicMaterials.size()*sizeof(MaterialProperties), DynamicMaterials.data(), GL_STATIC_DRAW);
+
+
 }

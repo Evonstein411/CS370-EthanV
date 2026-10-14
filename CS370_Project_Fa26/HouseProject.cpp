@@ -18,14 +18,17 @@
 #include "shaders.h"
 #include "hud.h"
 #include "callbacks.h"
+#include "sceneobject.h"
 
 vector<Widget*> widgets;
-
+vector<SceneObject*> objects;
 
 void display();
 void render_scene();
+void init_scene();
 void render_hud();
 void init_hud();
+
 
 
 int main(int argc, char**argv)
@@ -81,7 +84,7 @@ int main(int argc, char**argv)
     // Start loop
     while ( !glfwWindowShouldClose( window ) ) {
         //update dynamic materials
-        build_materials();
+        build_dynamic_materials();
     	// Draw graphics
         display();
         // Update other events like input handling
@@ -139,25 +142,18 @@ void display( )
 void render_scene( ) {
     // Declare transformation matrices
     model_matrix = mat4().identity();
-    mat4 scale_matrix = mat4().identity();
-    mat4 rot_matrix = mat4().identity();
-    mat4 trans_matrix = mat4().identity();
+    normal_matrix = mat4().identity();
 
-    // Set cube transformation matrix
-    trans_matrix = translate(0.0f, 0.0f, 0.0f);
-    rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
-    scale_matrix = scale(2.0f, 2.0f, 2.0f);
-	model_matrix = trans_matrix*rot_matrix*scale_matrix;
-    normal_matrix = model_matrix.inverse().transpose();
-    // Draw material obj
-    draw_mat_object(Sphere, Brass);
+    for (size_t i = 0; i < objects.size(); i++) {
+        objects[i]->draw(model_matrix, normal_matrix);
+    }
 
-    //floor
-    trans_matrix = translate(0.0f, -3.0f, 0.0f);
-    rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
-    scale_matrix = scale(20.0f, 2.0f, 20.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
-    draw_mat_object(Cube, FloorGray);
+
+}
+
+void init_scene() {
+    SceneObject* sphereObject = new SceneObject(Sphere, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {20.0f, 2.0f, 20.0f}, {0.0f, 0.0f, 0.0f}, floormat);
 
 }
 
@@ -186,8 +182,6 @@ void render_hud() {
         if(widgets[i]->isChild() == false){widgets[i]->draw();}
     }
 
-
-
     //reset settings to pre hud state, restore camera
     proj_matrix = scene_proj_matrix;
     camera_matrix = scene_camera_matrix;
@@ -195,8 +189,7 @@ void render_hud() {
     glEnable(GL_CULL_FACE);
 
 
-}
-
+}//end render hud
 
 void toggle_lights() {
     lightOn[WhitePointLight] = !lightOn[WhitePointLight];

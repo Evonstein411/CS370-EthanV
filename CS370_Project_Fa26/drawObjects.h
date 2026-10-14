@@ -77,6 +77,10 @@ void draw_mat_object(GLuint obj, GLuint material){
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
+
+
+
+
 void draw_tex_object(GLuint obj, GLuint texture){
     // Select shader program
     glUseProgram(texture_program);

@@ -86,6 +86,7 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/textureutils.cpp
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
+        ../CS370_Project_Fa26/sceneobject.h
 )
 
 #-------------------------------------------------------------
