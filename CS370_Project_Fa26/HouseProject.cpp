@@ -67,6 +67,9 @@ int main(int argc, char**argv)
     // Enable depth test
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    //enable opacity
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Set Initial camera position
     GLfloat x, y, z;
@@ -163,9 +166,8 @@ void render_hud() {
     //don't need to check depth for ui
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    //allow transparency (alpha blending)
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //NOTE: IF YOU WANT TRANSPARENCY OF HUD ELEMENTS MAKE SURE ALPHA BLENDING IS ON
+
 
     //switch to pixel based ortho camera, store camera data pre hud draw
     mat4 scene_proj_matrix = proj_matrix;
@@ -181,7 +183,7 @@ void render_hud() {
 
 
     for (size_t i = 0; i < widgets.size(); i++) {
-        widgets[i]->draw();
+        if(widgets[i]->isChild() == false){widgets[i]->draw();}
     }
 
 
@@ -191,7 +193,7 @@ void render_hud() {
     camera_matrix = scene_camera_matrix;
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
+
 
 }
 
@@ -203,40 +205,81 @@ void toggle_lights() {
 
 void init_hud() {
     Button* light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
-    Label* material_label= new Label(20.0f, 70.0f, 130.0f, 48.0f, "Material");
 
-    Label* ambient_label = new Label(20.0f, 140.0f, 130.0f, 48.0f, "ambient");
-    TextField* ambient_r_field = new TextField(180.0f, 140.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
+    //create panel for holding material widgets
+    Panel* material_panel = new Panel(20.0f, 50.0f);
+    Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material");
+    material_panel->add(material_label, 0, 0, 5, 1);
+
+    //ambient
+    Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
+    material_panel->add(ambient_label, 0, 1);
+
+    TextField* ambient_r_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
     ambient_r_field->setText(to_string(Materials[Brass].ambient[0]));
-    TextField* ambient_g_field = new TextField(320.0f, 140.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
-    ambient_g_field->setText(to_string(Materials[Brass].ambient[1]));
-    TextField* ambient_b_field = new TextField(460.0f, 140.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
-    ambient_b_field->setText(to_string(Materials[Brass].ambient[2]));
-    TextField* ambient_a_field =new TextField(600.0f, 140.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
-    ambient_a_field->setText(to_string(Materials[Brass].ambient[3]));
+    material_panel->add(ambient_r_field, 1, 1);
 
+    TextField* ambient_g_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
+    ambient_g_field->setText(to_string(Materials[Brass].ambient[1]));
+    material_panel->add(ambient_g_field, 2, 1);
+
+    TextField* ambient_b_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
+    ambient_b_field->setText(to_string(Materials[Brass].ambient[2]));
+    material_panel->add(ambient_b_field, 3, 1);
+
+    TextField* ambient_a_field =new TextField(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
+    ambient_a_field->setText(to_string(Materials[Brass].ambient[3]));
+    material_panel->add(ambient_a_field, 4, 1);
+
+    //diffuse
     Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
+    material_panel->add(diffuse_label, 0, 2);
+
     TextField* diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
     diffuse_r_field->setText(to_string(Materials[Brass].diffuse[0]));
+    material_panel->add(diffuse_r_field, 1, 2);
+
     TextField* diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
     diffuse_g_field->setText(to_string(Materials[Brass].diffuse[1]));
+    material_panel->add(diffuse_g_field, 2, 2);
+
     TextField* diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
     diffuse_b_field->setText(to_string(Materials[Brass].diffuse[2]));
+    material_panel->add(diffuse_b_field, 3, 2);
+
     TextField* diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
     diffuse_a_field->setText(to_string(Materials[Brass].diffuse[3]));
+    material_panel->add(diffuse_a_field, 4, 2);
 
+
+    //specular
     Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
+    material_panel->add(specular_label, 0, 3);
+
     TextField* specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
     specular_r_field->setText(to_string(Materials[Brass].specular[0]));
+    material_panel->add(specular_r_field, 1, 3);
+
     TextField* specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
     specular_g_field->setText(to_string(Materials[Brass].specular[1]));
+    material_panel->add(specular_g_field, 2, 3);
+
     TextField* specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
     specular_b_field->setText(to_string(Materials[Brass].specular[2]));
+    material_panel->add(specular_b_field, 3, 3);
+
+
     TextField* specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
     specular_a_field->setText(to_string(Materials[Brass].specular[3]));
+    material_panel->add(specular_a_field, 4, 3);
 
-    TextField* shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, "shininess:", 4.0f, true, &shininess);
+    //shininess
+    Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
+    material_panel->add(shininess_label, 0, 4);
+    TextField* shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     shininess_field->setText(to_string(Materials[Brass].shininess));
+    material_panel->add(shininess_field, 1, 4);
+
 
 
 }

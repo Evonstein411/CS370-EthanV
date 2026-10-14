@@ -5,7 +5,7 @@ struct Widget;
 struct Button;
 struct TextField;
 struct Label;
-
+struct Panel;
 //list of widgets
 extern vector<Widget*> widgets;
 
@@ -18,10 +18,12 @@ const float HUD_FONT = 32.0f;
 const float HUD_PAD_X = 8.0f;
 const float HUD_PAD_Y = 8.0f;
 
+
 //parent HUD element struct
 struct Widget {
     float x, y, w, h;
     bool hovered = false;
+    bool is_child = false;
 
     Widget(float x, float y, float w, float h)
         : x(x), y(y), w(w), h(h) {
@@ -35,11 +37,155 @@ struct Widget {
     virtual void on_click() {}
     virtual void on_drag(float mx, float my) {}
 
+    void setChild(bool isChild) {
+        is_child = isChild;
+    }
+
+    bool isChild() {
+        return is_child;
+    }
+
+
     bool hit(float mx, float my) const {
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
 }; //end Widget
+
+//Panel widget for widget organization
+struct Panel : Widget {
+
+    //cell holds widget and information on placement in panel
+    struct Cell {
+        Widget* widget = NULL;
+        int col = 0;
+        int row = 0;
+        int colSpan = 1;
+        int rowSpan = 1;
+    };
+
+    vector<Cell> cells;
+    float padX = HUD_PAD_X;
+    float padY = HUD_PAD_Y;
+    float gapX = 6.0f;
+    float gapY = 6.0f;
+    bool drawBackground = true;
+
+
+    Panel(float x, float y)
+    : Widget(x, y, 0.0f, 0.0f) {
+
+    }
+
+    //destructor handle deleting cells and removing child status from widgets
+    ~Panel() {
+        for (size_t i = 0; i < cells.size(); i++)
+            cells[i].widget->setChild(false);
+        cells.clear();
+    }
+
+
+    //add widget to layout
+    void add(Widget* w, int col, int row, int colSpan = 1, int rowSpan = 1) {
+        Cell c;
+        c.widget = w;
+        c.col = col;
+        c.row = row;
+        c.colSpan = colSpan;
+        c.rowSpan = rowSpan;
+        cells.push_back(c);
+        w->setChild(true);
+    }
+
+
+    void layout() {
+        if (cells.empty()) {
+            w = padX * 2.0f;
+            h = padY * 2.0f;
+            return;
+        }
+
+        int maxCol = 0, maxRow = 0;
+        for (size_t i = 0; i < cells.size(); i++) {
+            int c = cells[i].col + cells[i].colSpan - 1;
+            int r = cells[i].row + cells[i].rowSpan - 1;
+            if (c > maxCol) maxCol = c;
+            if (r > maxRow) maxRow = r;
+        }
+        int nCols = maxCol + 1;
+        int nRows = maxRow + 1;
+
+        // Column widths and row heights driven by content
+        vector<float> colW(nCols, 0.0f);
+        vector<float> rowH(nRows, 0.0f);
+
+        for (size_t i = 0; i < cells.size(); i++) {
+            Cell& c = cells[i];
+            if (c.colSpan == 1 && c.widget->w > colW[c.col])
+                colW[c.col] = c.widget->w;
+            if (c.rowSpan == 1 && c.widget->h > rowH[c.row])
+                rowH[c.row] = c.widget->h;
+        }
+
+        // Minimum size so empty cells don't collapse
+        for (int i = 0; i < nCols; i++) if (colW[i] < 48.0f) colW[i] = 48.0f;
+        for (int i = 0; i < nRows; i++) if (rowH[i] < 32.0f) rowH[i] = 32.0f;
+
+        // Prefix sums for easy positioning
+        vector<float> colX(nCols + 1, 0.0f);
+        vector<float> rowY(nRows + 1, 0.0f);
+        for (int i = 0; i < nCols; i++)
+            colX[i + 1] = colX[i] + colW[i] + (i < nCols - 1 ? gapX : 0.0f);
+        for (int i = 0; i < nRows; i++)
+            rowY[i + 1] = rowY[i] + rowH[i] + (i < nRows - 1 ? gapY : 0.0f);
+
+        // Position children relative to the panel
+        for (size_t i = 0; i < cells.size(); i++) {
+            Cell& c = cells[i];
+            float cx = colX[c.col];
+            float cy = rowY[c.row];
+            float cw = colX[c.col + c.colSpan] - colX[c.col] - (c.colSpan > 1 ? gapX * (c.colSpan - 1) : 0.0f);
+            float ch = rowY[c.row + c.rowSpan] - rowY[c.row] - (c.rowSpan > 1 ? gapY * (c.rowSpan - 1) : 0.0f);
+
+            // Center the widget inside its cell(s) if you want, or just top-left
+            c.widget->x = padX + cx;
+            c.widget->y = padY + cy;
+            // Optionally force the widget to fill the cell:
+            // c.widget->w = cw;
+            // c.widget->h = ch;
+        }
+
+        w = padX * 2.0f + colX[nCols];
+        h = padY * 2.0f + rowY[nRows];
+    }//end layout
+
+    void draw() override {
+        //update layout before drawing
+        layout();
+        if (drawBackground) {
+            mat4 trans_matrix = translate(x, (float)hh - h - y, 0.0f);
+            mat4 scale_matrix = scale(w, h, 1.0f);
+            model_matrix = trans_matrix * scale_matrix;
+            draw_color_object(HUDQuad, HUDPanel);
+        }
+
+        for (size_t i = 0; i < cells.size(); i++) {
+            Widget* child = cells[i].widget;
+            float sx = child->x, sy = child->y;
+            child->x += x;
+            child->y += y;
+            child->draw();
+            child->x = sx;
+            child->y = sy;
+        }
+    }
+
+
+
+
+};//end Panel
+
+
 
 //Button widget for interactivity
 struct Button : Widget {

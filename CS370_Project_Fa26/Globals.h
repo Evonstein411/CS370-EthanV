@@ -43,5 +43,5 @@ GLboolean animate = true;
 GLboolean dirty = false;
 
 // Global screen dimensions
-GLint ww = 2040;
+GLint ww = 1980;
 GLint hh = 1080;
