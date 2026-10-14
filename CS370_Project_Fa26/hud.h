@@ -68,7 +68,7 @@ struct Panel : Widget {
     float padX = HUD_PAD_X;
     float padY = HUD_PAD_Y;
     float gapX = 6.0f;
-    float gapY = 6.0f;
+    float gapY = 12.0f;
     bool drawBackground = true;
 
 
@@ -144,15 +144,26 @@ struct Panel : Widget {
             Cell& c = cells[i];
             float cx = colX[c.col];
             float cy = rowY[c.row];
-            float cw = colX[c.col + c.colSpan] - colX[c.col] - (c.colSpan > 1 ? gapX * (c.colSpan - 1) : 0.0f);
-            float ch = rowY[c.row + c.rowSpan] - rowY[c.row] - (c.rowSpan > 1 ? gapY * (c.rowSpan - 1) : 0.0f);
+            float cw = colX[c.col + c.colSpan] - colX[c.col]
+                     - (c.colSpan > 1 ? gapX * (c.colSpan - 1) : 0.0f);
+            float ch = rowY[c.row + c.rowSpan] - rowY[c.row]
+                     - (c.rowSpan > 1 ? gapY * (c.rowSpan - 1) : 0.0f);
 
-            // Center the widget inside its cell(s) if you want, or just top-left
-            c.widget->x = padX + cx;
-            c.widget->y = padY + cy;
-            // Optionally force the widget to fill the cell:
-            // c.widget->w = cw;
-            // c.widget->h = ch;
+            float px = x + padX + cx;
+            float py = y + padY + cy;
+
+            // Center only if the widget spans more than one cell
+            if (c.colSpan > 1 || c.rowSpan > 1) {
+                float offsetX = (cw - c.widget->w) * 0.5f;
+                float offsetY = (ch - c.widget->h) * 0.5f;
+                if (offsetX < 0.0f) offsetX = 0.0f;
+                if (offsetY < 0.0f) offsetY = 0.0f;
+                px += offsetX;
+                py += offsetY;
+            }
+
+            c.widget->x = px;
+            c.widget->y = py;
         }
 
         w = padX * 2.0f + colX[nCols];
@@ -170,13 +181,7 @@ struct Panel : Widget {
         }
 
         for (size_t i = 0; i < cells.size(); i++) {
-            Widget* child = cells[i].widget;
-            float sx = child->x, sy = child->y;
-            child->x += x;
-            child->y += y;
-            child->draw();
-            child->x = sx;
-            child->y = sy;
+            cells[i].widget->draw();
         }
     }
 

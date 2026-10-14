@@ -204,11 +204,11 @@ void toggle_lights() {
 
 
 void init_hud() {
-    Button* light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
     //create panel for holding material widgets
-    Panel* material_panel = new Panel(20.0f, 50.0f);
-    Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material");
+    Panel* material_panel = new Panel(20.0f, 90.0f);
+    Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material Details");
     material_panel->add(material_label, 0, 0, 5, 1);
 
     //ambient
