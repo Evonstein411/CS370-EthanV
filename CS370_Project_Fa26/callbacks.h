@@ -93,6 +93,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS) return;
 
+    //update mouse position
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     float mx = (float)xpos;
@@ -103,11 +104,19 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     for (int i = (int)widgets.size() - 1; i >= 0; i--) {
         if (widgets[i]->hit(mx, my)) { hitIndex = i; break; }
     }
+
+    //check text fields
     for (size_t i = 0; i < widgets.size(); i++) {
         TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-        if (field && field->focused && (int)i != hitIndex) field->commit();
-        if (field) field->focused = ((int)i == hitIndex);
+        if(field) {
+            //if focused and not clicked commit
+            if (field->focused && (int)i != hitIndex)
+                field->commit();
+            field->focused = (field->editable && (int)i == hitIndex);
+        }
     }
+
+    //call on click for widget clicked on
     if (hitIndex >= 0) {
         widgets[hitIndex]->on_click();
         return;
@@ -115,10 +124,10 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
 
     //check if clicked on object
     SceneObject* clicked = pick_scene_object(mx, my);
-    if (clicked) {
-        selectedObject = clicked;
-        update_fields();
-    }
+    selectedObject = clicked;
+    update_fields();
+
+
 }
 
 

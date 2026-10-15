@@ -25,11 +25,13 @@
 //globals
 vector<Widget*> widgets;
 vector<SceneObject*> objects;
-SceneObject* selectedObject;
+SceneObject* selectedObject = nullptr;
 string name_string = "";
 
 
 //widgets
+Panel* material_panel = nullptr;
+
 TextField<string>* name_field = nullptr;
 
 TextField<float>* ambient_r_field = nullptr;
@@ -66,7 +68,7 @@ void update_from_fields();
 int main(int argc, char**argv)
 {
 	// Create OpenGL window
-	GLFWwindow* window = CreateWindow("Think OUTSIDE The Box 2026", ww, hh);
+	GLFWwindow* window = CreateWindow("Desert Fox", ww, hh);
     if (!window) {
         fprintf(stderr, "ERROR: could not open window with GLFW3\n");
         glfwTerminate();
@@ -189,7 +191,6 @@ void init_scene() {
     SceneObject* sphereObject = new SceneObject(Sphere, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
     SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {20.0f, 2.0f, 20.0f}, {0.0f, 0.0f, 0.0f}, floormat);
 
-    selectedObject = objects[0];
 
 }
 
@@ -215,7 +216,7 @@ void render_hud() {
 
 
     for (size_t i = 0; i < widgets.size(); i++) {
-        if(widgets[i]->isChild() == false){widgets[i]->draw();}
+        if(widgets[i]->isChild() == false && widgets[i]->hidden == false){widgets[i]->draw();}
     }
 
     //reset settings to pre hud state, restore camera
@@ -241,7 +242,7 @@ void init_hud() {
     name_panel->add(name_field, 0, 0);
 
     //create panel for holding material widgets
-    Panel* material_panel = new Panel(20.0f, 170.0f);
+    material_panel = new Panel(20.0f, 170.0f);
     Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material Details");
     material_panel->add(material_label, 0, 0, 5, 1);
 
@@ -307,8 +308,15 @@ void init_hud() {
 
 
 void update_fields() {
-    if (!selectedObject) return;
-
+    if (!selectedObject) {
+        name_field->setText("NONE");
+        name_field->setEditable(false);
+        if(material_panel) material_panel->hide();
+        return;
+    }else {
+        if(material_panel) material_panel->show();
+        name_field->setEditable(true);
+    }
     // Name
     if (name_field) {
         name_string = selectedObject->name;

@@ -36,6 +36,8 @@ void draw_picking_object(GLuint mesh, GLuint colorBuffer) {
     glDrawArrays(GL_TRIANGLES, 0, numVertices[mesh]);
 }
 
+
+//function returns clicked scene object
 SceneObject* pick_scene_object(float mx, float my) {
     // Make sure we have the same projection/camera the scene used
     // (recompute them here so the callback doesn't depend on leftover state)
@@ -46,8 +48,8 @@ SceneObject* pick_scene_object(float mx, float my) {
     proj_matrix   = ortho(-5.0f*xratio, 5.0f*xratio, -5.0f*yratio, 5.0f*yratio, -5.0f, 5.0f);
     camera_matrix = lookat(eye, center, up);
 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // One reusable color buffer for the whole pick pass
     GLuint pickColorBuf;
     glGenBuffers(1, &pickColorBuf);
@@ -64,7 +66,7 @@ SceneObject* pick_scene_object(float mx, float my) {
         model_matrix = trans * rotX * rotY * rotZ * scaleM;
 
         // Fill the color buffer with the index color
-        vec4 col = index_to_color((int)i);
+        vec4 col = index_to_color((int)i + 1);
         vector<vec4> colors(numVertices[obj->mesh], col);
         glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
         glBufferData(GL_ARRAY_BUFFER,
@@ -82,7 +84,6 @@ SceneObject* pick_scene_object(float mx, float my) {
     glReadPixels((GLint)mx, (GLint)my, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
     int index = color_to_index(pixel[0], pixel[1], pixel[2]);
-
     // IMPORTANT: immediately redraw the real scene so the next swap is correct
     // (this prevents the colored ID pass from appearing on screen)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -90,7 +91,7 @@ SceneObject* pick_scene_object(float mx, float my) {
     render_hud();
     glFlush();
 
-    if (index >= 0 && index < (int)objects.size())
-        return objects[index];
+    if (index > 0 && index <= (int)objects.size())
+        return objects[index - 1];
     return nullptr;
 }

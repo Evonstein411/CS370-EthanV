@@ -28,6 +28,7 @@ struct Widget {
     float x, y, w, h;
     bool hovered = false;
     bool is_child = false;
+    bool hidden = false;
 
     Widget(float x, float y, float w, float h)
         : x(x), y(y), w(w), h(h) {
@@ -40,6 +41,14 @@ struct Widget {
     virtual void on_key(int key, int action) {}
     virtual void on_click() {}
     virtual void on_drag(float mx, float my) {}
+
+    void hide() {
+        hidden = true;
+    }
+
+    void show() {
+        hidden = false;
+    }
 
     void setChild(bool isChild) {
         is_child = isChild;
@@ -240,15 +249,20 @@ struct Button : Widget {
 //base for text field needed for callback logic
 struct TextFieldBase : Widget {
     bool focused = false;
+    bool editable = true;
 
     TextFieldBase(float x, float y, float w, float h)
         : Widget(x, y, w, h) {}
 
+    void setEditable(bool status) { editable = status; }
+
+    void on_click() override {
+        if (editable) focused = true;
+    }
     virtual void commit() = 0;
     virtual const string& getText() const = 0;
     virtual void setText(string n_string) = 0;
 
-    void on_click() override { focused = true; }
 };
 
 //Text field for user input
@@ -269,6 +283,11 @@ struct TextField : TextFieldBase {
     }
 
     void commit() override;
+
+    void setEditable(bool status) {
+        editable = status;
+    }
+
 
     const string& getText() const override {
         return text;
@@ -341,7 +360,7 @@ struct TextField : TextFieldBase {
     }
 
     void on_char(unsigned int charCode) override {
-        if (!focused) return; //do nothing if not focused
+        if (!editable || !focused) return;
         if ((int)text.size() >= maxLen) return; //do nothing if size is at max len
         if (charCode < 32 || charCode > 126) return; //prevent invalid characters
         char c = (char)charCode;
@@ -356,7 +375,7 @@ struct TextField : TextFieldBase {
     }
 
     void on_key(int key, int action) override {
-        if (!focused) return;
+        if (!focused || !editable) return;
         if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
         if (key == GLFW_KEY_BACKSPACE && !text.empty()) {
             text.pop_back();
