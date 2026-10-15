@@ -108,7 +108,10 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
         if (field && field->focused && (int)i != hitIndex) field->commit();
         if (field) field->focused = ((int)i == hitIndex);
     }
-    if (hitIndex >= 0) widgets[hitIndex]->on_click();
+    if (hitIndex >= 0) {
+        widgets[hitIndex]->on_click();
+        return;
+    }
 
     //check if clicked on object
     SceneObject* clicked = pick_scene_object(mx, my);

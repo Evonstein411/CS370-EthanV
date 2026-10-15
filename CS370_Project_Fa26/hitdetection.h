@@ -1,10 +1,13 @@
 
-// Encode object index into a unique color (supports up to ~16M objects)
+//houseproject refs
+void render_scene();
+void render_hud();
+
 vec4 index_to_color(int i) {
     return vec4(
-        ((i & 0xFF)       ) / 255.0f,
-        ((i >> 8) & 0xFF  ) / 255.0f,
-        ((i >> 16) & 0xFF ) / 255.0f,
+        ((i & 0xFF)      ) / 255.0f,
+        ((i >> 8) & 0xFF ) / 255.0f,
+        ((i >> 16) & 0xFF) / 255.0f,
         1.0f
     );
 }
@@ -13,53 +16,79 @@ int color_to_index(unsigned char r, unsigned char g, unsigned char b) {
     return r | (g << 8) | (b << 16);
 }
 
-// Returns pointer to the clicked SceneObject, or nullptr
-SceneObject* pick_scene_object(float mx, float my) {
-    // Save current state (matrices are already set by display, but we re-set them to be safe)
-    mat4 saved_proj   = proj_matrix;
-    mat4 saved_camera = camera_matrix;
-    mat4 saved_model  = model_matrix;
+// Helper that draws one object with a raw color buffer ID (not an index into ColorBuffers)
+void draw_picking_object(GLuint mesh, GLuint colorBuffer) {
+    glUseProgram(color_program);
+    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
 
-    // Use the same projection/camera that the scene uses
-    // (they are already computed in display(); if you call this from the callback you may need to recompute them)
+    glBindVertexArray(VAOs[mesh]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[mesh][PosBuffer]);
+    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vCol);
+
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[mesh]);
+}
+
+SceneObject* pick_scene_object(float mx, float my) {
+    // Make sure we have the same projection/camera the scene used
+    // (recompute them here so the callback doesn't depend on leftover state)
+    GLfloat xratio = 1.0f, yratio = 1.0f;
+    if (ww <= hh) yratio = (GLfloat)hh / (GLfloat)ww;
+    else if (hh <= ww) xratio = (GLfloat)ww / (GLfloat)hh;
+
+    proj_matrix   = ortho(-5.0f*xratio, 5.0f*xratio, -5.0f*yratio, 5.0f*yratio, -5.0f, 5.0f);
+    camera_matrix = lookat(eye, center, up);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // One reusable color buffer for the whole pick pass
+    GLuint pickColorBuf;
+    glGenBuffers(1, &pickColorBuf);
+
     for (size_t i = 0; i < objects.size(); ++i) {
         SceneObject* obj = objects[i];
-        // Build model matrix exactly as SceneObject::draw() does
-        mat4 trans   = translate(obj->position);
-        mat4 rotX    = vmath::rotate(obj->rotation[0], vec3(1,0,0));
-        mat4 rotY    = vmath::rotate(obj->rotation[1], vec3(0,1,0));
-        mat4 rotZ    = vmath::rotate(obj->rotation[2], vec3(0,0,1));
-        mat4 scaleM  = vmath::scale(obj->scale);
+
+        // Build model matrix the same way SceneObject::draw does
+        mat4 trans  = translate(obj->position);
+        mat4 rotX   = vmath::rotate(obj->rotation[0], vec3(1,0,0));
+        mat4 rotY   = vmath::rotate(obj->rotation[1], vec3(0,1,0));
+        mat4 rotZ   = vmath::rotate(obj->rotation[2], vec3(0,0,1));
+        mat4 scaleM = vmath::scale(obj->scale);
         model_matrix = trans * rotX * rotY * rotZ * scaleM;
 
-        // Temporarily force a solid color that encodes the index
-        // Easiest: reuse an existing solid-color path.
-        // If you have a per-object colorBuffer you can overwrite it,
-        // or just create a temporary color buffer once and update it.
-        // Quick version using the color shader + a one-off buffer:
-        // (you can cache one color buffer and glBufferSubData into it)
-        GLuint tempColorBuf;
-        glGenBuffers(1, &tempColorBuf);
+        // Fill the color buffer with the index color
         vec4 col = index_to_color((int)i);
-        // ... build a solid color buffer of the right vertex count with 'col'
-        // then:
-        draw_color_object(obj->mesh, tempColorBuf);   // or your existing color draw
-        glDeleteBuffers(1, &tempColorBuf);
+        vector<vec4> colors(numVertices[obj->mesh], col);
+        glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+        glBufferData(GL_ARRAY_BUFFER,
+                     sizeof(vec4) * numVertices[obj->mesh],
+                     colors.data(),
+                     GL_DYNAMIC_DRAW);
+
+        draw_picking_object(obj->mesh, pickColorBuf);
     }
 
-    // Read the pixel (OpenGL y is bottom-origin; your mouse code already flipped it)
+    glDeleteBuffers(1, &pickColorBuf);
+
+    // Read the pixel (y is already bottom-origin from your mouse code)
     unsigned char pixel[4];
     glReadPixels((GLint)mx, (GLint)my, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
     int index = color_to_index(pixel[0], pixel[1], pixel[2]);
 
-    // Restore matrices (the next display() will clear and redraw normally anyway)
-    proj_matrix   = saved_proj;
-    camera_matrix = saved_camera;
-    model_matrix  = saved_model;
+    // IMPORTANT: immediately redraw the real scene so the next swap is correct
+    // (this prevents the colored ID pass from appearing on screen)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    render_scene();
+    render_hud();
+    glFlush();
 
     if (index >= 0 && index < (int)objects.size())
         return objects[index];
