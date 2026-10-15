@@ -1,14 +1,14 @@
 extern SceneObject* selectedObject;
 
 //exists in houseproject forward dec to avoid error
-void update_material_hud();
+void update_fields();
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     //press escape either end typing or close window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         bool typing = false;
         for (size_t i = 0; i < widgets.size(); i++) {
-            TextField* field = dynamic_cast<TextField*>(widgets[i]);
+            TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
             if (field && field->focused) typing = true;
         }
         if (!typing) {
@@ -19,14 +19,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
     bool typing = false;
     for (size_t i = 0; i < widgets.size(); i++) {
-        TextField* field = dynamic_cast<TextField*>(widgets[i]);
+        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
         if (field && field->focused) typing = true;
     }
 
     if (typing) {
         if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
             for (size_t i = 0; i < widgets.size(); i++) {
-                TextField* field = dynamic_cast<TextField*>(widgets[i]);
+                TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
                 if (field && field->focused) field->commit();
                 if (field) field->focused = false;
             }
@@ -104,7 +104,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
         if (widgets[i]->hit(mx, my)) { hitIndex = i; break; }
     }
     for (size_t i = 0; i < widgets.size(); i++) {
-        TextField* field = dynamic_cast<TextField*>(widgets[i]);
+        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
         if (field && field->focused && (int)i != hitIndex) field->commit();
         if (field) field->focused = ((int)i == hitIndex);
     }
@@ -117,7 +117,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     SceneObject* clicked = pick_scene_object(mx, my);
     if (clicked) {
         selectedObject = clicked;
-        update_material_hud();
+        update_fields();
     }
 }
 

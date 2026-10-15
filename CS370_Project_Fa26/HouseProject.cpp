@@ -26,26 +26,28 @@
 vector<Widget*> widgets;
 vector<SceneObject*> objects;
 SceneObject* selectedObject;
+string name_string = "";
+
 
 //widgets
-TextField* name_field = nullptr;
+TextField<string>* name_field = nullptr;
 
-TextField* ambient_r_field = nullptr;
-TextField* ambient_g_field = nullptr;
-TextField* ambient_b_field = nullptr;
-TextField* ambient_a_field = nullptr;
+TextField<float>* ambient_r_field = nullptr;
+TextField<float>* ambient_g_field = nullptr;
+TextField<float>* ambient_b_field = nullptr;
+TextField<float>* ambient_a_field = nullptr;
 
-TextField* diffuse_r_field = nullptr;
-TextField* diffuse_g_field = nullptr;
-TextField* diffuse_b_field = nullptr;
-TextField* diffuse_a_field = nullptr;
+TextField<float>* diffuse_r_field = nullptr;
+TextField<float>* diffuse_g_field = nullptr;
+TextField<float>* diffuse_b_field = nullptr;
+TextField<float>* diffuse_a_field = nullptr;
 
-TextField* specular_r_field = nullptr;
-TextField* specular_g_field = nullptr;
-TextField* specular_b_field = nullptr;
-TextField* specular_a_field = nullptr;
+TextField<float>* specular_r_field = nullptr;
+TextField<float>* specular_g_field = nullptr;
+TextField<float>* specular_b_field = nullptr;
+TextField<float>* specular_a_field = nullptr;
 
-TextField* shininess_field = nullptr;
+TextField<float>* shininess_field = nullptr;
 
 
 
@@ -55,7 +57,8 @@ void render_scene();
 void init_scene();
 void render_hud();
 void init_hud();
-void update_material_hud();
+void update_fields();
+void update_from_fields();
 
 
 
@@ -112,14 +115,9 @@ int main(int argc, char**argv)
 
     // Start loop
     while ( !glfwWindowShouldClose( window ) ) {
+        //update selected
+        update_from_fields();
         //update dynamic materials
-        if (selectedObject && selectedObject->drawType == MATERIAL) {
-            MaterialProperties& mat = DynamicMaterials[selectedObject->material];
-            mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
-            mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
-            mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
-            mat.shininess = shininess;
-        }
         build_dynamic_materials();
     	// Draw graphics
         display();
@@ -239,7 +237,7 @@ void init_hud() {
 
 
     Panel* name_panel = new Panel(20.0f, 90.0f);
-    name_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f);
+    name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
     name_panel->add(name_field, 0, 0);
 
     //create panel for holding material widgets
@@ -251,32 +249,32 @@ void init_hud() {
     Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
     material_panel->add(ambient_label, 0, 1);
 
-    ambient_r_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
+    ambient_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
     material_panel->add(ambient_r_field, 1, 1);
 
-    ambient_g_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
+    ambient_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
     material_panel->add(ambient_g_field, 2, 1);
 
-    ambient_b_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
+    ambient_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
     material_panel->add(ambient_b_field, 3, 1);
 
-    ambient_a_field =new TextField(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
+    ambient_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
     material_panel->add(ambient_a_field, 4, 1);
 
     //diffuse
     Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
     material_panel->add(diffuse_label, 0, 2);
 
-    diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
+    diffuse_r_field = new TextField<float>(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
     material_panel->add(diffuse_r_field, 1, 2);
 
-    diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
+    diffuse_g_field = new TextField<float>(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
     material_panel->add(diffuse_g_field, 2, 2);
 
-    diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
+    diffuse_b_field = new TextField<float>(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
     material_panel->add(diffuse_b_field, 3, 2);
 
-    diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
+    diffuse_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
     material_panel->add(diffuse_a_field, 4, 2);
 
 
@@ -284,36 +282,38 @@ void init_hud() {
     Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
     material_panel->add(specular_label, 0, 3);
 
-    specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
+    specular_r_field = new TextField<float>(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
     material_panel->add(specular_r_field, 1, 3);
 
-    specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
+    specular_g_field = new TextField<float>(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
     material_panel->add(specular_g_field, 2, 3);
 
-    specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
+    specular_b_field = new TextField<float>(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
     material_panel->add(specular_b_field, 3, 3);
 
 
-    specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
+    specular_a_field =new TextField<float>(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
     material_panel->add(specular_a_field, 4, 3);
 
     //shininess
     Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
     material_panel->add(shininess_label, 0, 4);
-    shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
+    shininess_field = new TextField<float>(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 4);
 
-    update_material_hud();
+    update_fields();
 
 }//end init hud
 
 
-void update_material_hud() {
+void update_fields() {
     if (!selectedObject) return;
 
     // Name
-    if (name_field)
-        name_field->setText(selectedObject->name);
+    if (name_field) {
+        name_string = selectedObject->name;
+        name_field->setText(name_string);
+    }
 
     if (selectedObject->drawType != MATERIAL) return;
 
@@ -354,4 +354,27 @@ void update_material_hud() {
     if (specular_a_field) specular_a_field->setText(to_string(specular_a));
 
     if(shininess_field) shininess_field->setText(to_string(shininess));
-}
+
+}//end update fields
+
+void update_from_fields() {
+    if (selectedObject) {
+        //update material values from fields
+        if (selectedObject->drawType == MATERIAL) {
+            MaterialProperties& mat = DynamicMaterials[selectedObject->material];
+            mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
+            mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
+            mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
+            mat.shininess = shininess;
+        }
+
+        if(name_field) {
+            selectedObject->name = name_string;
+        }
+
+    }//if selected object
+
+
+
+
+}//end update from fields

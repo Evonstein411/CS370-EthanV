@@ -1,9 +1,13 @@
 #include <string>
+#include <functional>
+#include <cstdlib>
+
 
 //structs
 struct Widget;
 struct Button;
-struct TextField;
+struct TextFieldBase;
+template<typename T> struct TextField;
 struct Label;
 struct Panel;
 //list of widgets
@@ -232,28 +236,42 @@ struct Button : Widget {
 
 };//end Button
 
+
+//base for text field needed for callback logic
+struct TextFieldBase : Widget {
+    bool focused = false;
+
+    TextFieldBase(float x, float y, float w, float h)
+        : Widget(x, y, w, h) {}
+
+    virtual void commit() = 0;
+    virtual const string& getText() const = 0;
+    virtual void setText(string n_string) = 0;
+
+    void on_click() override { focused = true; }
+};
+
 //Text field for user input
-struct TextField : Widget {
+template<typename T>
+struct TextField : TextFieldBase {
     string label;
     string text;
     int maxLen;
     float textSize = HUD_FONT;
     float labelW;
-    bool focused;
-    bool isNum;
-    float* value;
+    bool isNum = false;
+    T* value = nullptr;// pointer to the actual value
+
     //constructor
-    TextField(float x, float y, float w, float h, const string& label, int maxLen = 16, bool isNum = false, float* value = NULL)
-        :Widget(x, y, w, h), label(label), maxLen(maxLen), isNum(isNum), value(value), focused(false) {
+    TextField(float x, float y, float w, float h, const string& label, int maxLen = 16, bool isNum = false, T* value = nullptr)
+        :TextFieldBase(x, y, w, h), label(label), maxLen(maxLen), isNum(isNum), value(value) {
         resize();
     }
 
-    void commit() {
-        if (!value) return;
-        char* end = NULL;
-        float n = strtof(text.c_str(), &end);
-        if (end == text.c_str()) return; // blank or just "-"
-        *value = n;
+    void commit() override;
+
+    const string& getText() const override {
+        return text;
     }
 
     bool valid_number(const string& s) const {
@@ -289,7 +307,7 @@ struct TextField : Widget {
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
     }
 
-    void setText(string n_text) {
+    void setText(string n_text) override{
         //prevent non numbers if needed
         if (isNum && !valid_number(n_text)) return;
         //prevent input from exceeding maxLen
@@ -322,10 +340,6 @@ struct TextField : Widget {
         draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize);
     }
 
-    void on_click() override {
-        focused = true;
-    }
-
     void on_char(unsigned int charCode) override {
         if (!focused) return; //do nothing if not focused
         if ((int)text.size() >= maxLen) return; //do nothing if size is at max len
@@ -351,7 +365,38 @@ struct TextField : Widget {
 
     }
 
+
+
 };//end Text Field
+
+//Text Field templates
+template<>
+inline void TextField<float>::commit() {
+    if (!value) return;
+    char* end = nullptr;
+    float n = strtof(text.c_str(), &end);
+    if (end != text.c_str())
+        *value = n;
+}
+
+template<>
+inline void TextField<int>::commit() {
+    if (!value) return;
+    char* end = nullptr;
+    long n = strtol(text.c_str(), &end, 10);
+    if (end != text.c_str())
+        *value = (int)n;
+}
+
+template<>
+inline void TextField<string>::commit() {
+    if (value)
+        *value = text;
+}
+
+//generic fallback
+template<typename T>
+inline void TextField<T>::commit() {}
 
 //Label for labeling UI sections
 struct Label : Widget {
