@@ -22,6 +22,7 @@
 
 vector<Widget*> widgets;
 vector<SceneObject*> objects;
+SceneObject* selectedObject;
 
 void display();
 void render_scene();
@@ -63,11 +64,10 @@ int main(int argc, char**argv)
     build_textures();
     // Create shaders
     build_shaders();
-    // Create HUD
-    init_hud();
     // Create scene
     init_scene();
-
+    // Create HUD
+    init_hud();
     // Enable depth test
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -156,6 +156,8 @@ void init_scene() {
     SceneObject* sphereObject = new SceneObject(Sphere, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
     SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {20.0f, 2.0f, 20.0f}, {0.0f, 0.0f, 0.0f}, floormat);
 
+    selectedObject = objects[0];
+
 }
 
 
@@ -200,8 +202,16 @@ void toggle_lights() {
 void init_hud() {
     Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
+    Panel* name_panel = new Panel(20.0f, 90.0f);
+    TextField* name_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f);
+    name_field->setText(selectedObject->name);
+    name_panel->add(name_field, 0, 0);
+
+
+
+
     //create panel for holding material widgets
-    Panel* material_panel = new Panel(20.0f, 90.0f);
+    Panel* material_panel = new Panel(20.0f, 170.0f);
     Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material Details");
     material_panel->add(material_label, 0, 0, 5, 1);
 
@@ -210,19 +220,19 @@ void init_hud() {
     material_panel->add(ambient_label, 0, 1);
 
     TextField* ambient_r_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
-    ambient_r_field->setText(to_string(Materials[Brass].ambient[0]));
+    ambient_r_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[0]));
     material_panel->add(ambient_r_field, 1, 1);
 
     TextField* ambient_g_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
-    ambient_g_field->setText(to_string(Materials[Brass].ambient[1]));
+    ambient_g_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[1]));
     material_panel->add(ambient_g_field, 2, 1);
 
     TextField* ambient_b_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
-    ambient_b_field->setText(to_string(Materials[Brass].ambient[2]));
+    ambient_b_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[2]));
     material_panel->add(ambient_b_field, 3, 1);
 
     TextField* ambient_a_field =new TextField(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
-    ambient_a_field->setText(to_string(Materials[Brass].ambient[3]));
+    ambient_a_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[3]));
     material_panel->add(ambient_a_field, 4, 1);
 
     //diffuse
@@ -230,19 +240,19 @@ void init_hud() {
     material_panel->add(diffuse_label, 0, 2);
 
     TextField* diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
-    diffuse_r_field->setText(to_string(Materials[Brass].diffuse[0]));
+    diffuse_r_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[0]));
     material_panel->add(diffuse_r_field, 1, 2);
 
     TextField* diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
-    diffuse_g_field->setText(to_string(Materials[Brass].diffuse[1]));
+    diffuse_g_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[1]));
     material_panel->add(diffuse_g_field, 2, 2);
 
     TextField* diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
-    diffuse_b_field->setText(to_string(Materials[Brass].diffuse[2]));
+    diffuse_b_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[2]));
     material_panel->add(diffuse_b_field, 3, 2);
 
     TextField* diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
-    diffuse_a_field->setText(to_string(Materials[Brass].diffuse[3]));
+    diffuse_a_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[3]));
     material_panel->add(diffuse_a_field, 4, 2);
 
 
@@ -251,27 +261,27 @@ void init_hud() {
     material_panel->add(specular_label, 0, 3);
 
     TextField* specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
-    specular_r_field->setText(to_string(Materials[Brass].specular[0]));
+    specular_r_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[0]));
     material_panel->add(specular_r_field, 1, 3);
 
     TextField* specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
-    specular_g_field->setText(to_string(Materials[Brass].specular[1]));
+    specular_g_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[1]));
     material_panel->add(specular_g_field, 2, 3);
 
     TextField* specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
-    specular_b_field->setText(to_string(Materials[Brass].specular[2]));
+    specular_b_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[2]));
     material_panel->add(specular_b_field, 3, 3);
 
 
     TextField* specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
-    specular_a_field->setText(to_string(Materials[Brass].specular[3]));
+    specular_a_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[3]));
     material_panel->add(specular_a_field, 4, 3);
 
     //shininess
     Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
     material_panel->add(shininess_label, 0, 4);
     TextField* shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
-    shininess_field->setText(to_string(Materials[Brass].shininess));
+    shininess_field->setText(to_string(DynamicMaterials[selectedObject->material].shininess));
     material_panel->add(shininess_field, 1, 4);
 
 
