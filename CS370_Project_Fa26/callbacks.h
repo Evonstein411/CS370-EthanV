@@ -1,3 +1,8 @@
+extern SceneObject* selectedObject;
+
+//exists in houseproject forward dec to avoid error
+void update_material_hud();
+
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     //press escape either end typing or close window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -93,6 +98,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     float mx = (float)xpos;
     float my = (float)hh - (float)ypos;
 
+    //check if clicked on widget
     int hitIndex = -1;
     for (int i = (int)widgets.size() - 1; i >= 0; i--) {
         if (widgets[i]->hit(mx, my)) { hitIndex = i; break; }
@@ -103,6 +109,13 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
         if (field) field->focused = ((int)i == hitIndex);
     }
     if (hitIndex >= 0) widgets[hitIndex]->on_click();
+
+    //check if clicked on object
+    SceneObject* clicked = pick_scene_object(mx, my);
+    if (clicked) {
+        selectedObject = clicked;
+        update_material_hud();
+    }
 }
 
 

@@ -87,6 +87,7 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
         hud.h
+        hitdetection.h
 )
 
 #-------------------------------------------------------------

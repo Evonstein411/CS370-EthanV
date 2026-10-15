@@ -6,8 +6,6 @@ enum ObjBuffer_IDs {PosBuffer, NormBuffer, TexBuffer, TangBuffer, BiTangBuffer, 
 enum LightBuffer_IDs {LightBuffer, NumLightBuffers};
 enum MaterialBuffer_IDs {MaterialBuffer, NumMaterialBuffers};
 
-
-
 // Number of component coordinates
 GLint posCoords = 4;
 GLint normCoords = 3;
@@ -45,3 +43,5 @@ GLboolean dirty = false;
 // Global screen dimensions
 GLint ww = 1980;
 GLint hh = 1080;
+
+

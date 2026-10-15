@@ -1,6 +1,7 @@
 // CS370 Final Project
-// Fall 2025
+// Fall 2026 Ethan VonStein
 
+//includes
 #include <stdio.h>
 #include <vector>
 #include "../common/GLFWutils.h"
@@ -17,18 +18,45 @@
 #include "drawObjects.h"
 #include "shaders.h"
 #include "hud.h"
-#include "callbacks.h"
 #include "sceneobject.h"
+#include "hitdetection.h"
+#include "callbacks.h"
 
+//globals
 vector<Widget*> widgets;
 vector<SceneObject*> objects;
 SceneObject* selectedObject;
 
+//widgets
+TextField* name_field = nullptr;
+
+TextField* ambient_r_field = nullptr;
+TextField* ambient_g_field = nullptr;
+TextField* ambient_b_field = nullptr;
+TextField* ambient_a_field = nullptr;
+
+TextField* diffuse_r_field = nullptr;
+TextField* diffuse_g_field = nullptr;
+TextField* diffuse_b_field = nullptr;
+TextField* diffuse_a_field = nullptr;
+
+TextField* specular_r_field = nullptr;
+TextField* specular_g_field = nullptr;
+TextField* specular_b_field = nullptr;
+TextField* specular_a_field = nullptr;
+
+TextField* shininess_field = nullptr;
+
+
+
+//functions
 void display();
 void render_scene();
 void init_scene();
 void render_hud();
 void init_hud();
+void update_material_hud();
+
 
 
 
@@ -85,6 +113,13 @@ int main(int argc, char**argv)
     // Start loop
     while ( !glfwWindowShouldClose( window ) ) {
         //update dynamic materials
+        if (selectedObject && selectedObject->drawType == MATERIAL) {
+            MaterialProperties& mat = DynamicMaterials[selectedObject->material];
+            mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
+            mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
+            mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
+            mat.shininess = shininess;
+        }
         build_dynamic_materials();
     	// Draw graphics
         display();
@@ -202,13 +237,10 @@ void toggle_lights() {
 void init_hud() {
     Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
+
     Panel* name_panel = new Panel(20.0f, 90.0f);
-    TextField* name_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f);
-    name_field->setText(selectedObject->name);
+    name_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f);
     name_panel->add(name_field, 0, 0);
-
-
-
 
     //create panel for holding material widgets
     Panel* material_panel = new Panel(20.0f, 170.0f);
@@ -219,40 +251,32 @@ void init_hud() {
     Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
     material_panel->add(ambient_label, 0, 1);
 
-    TextField* ambient_r_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
-    ambient_r_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[0]));
+    ambient_r_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
     material_panel->add(ambient_r_field, 1, 1);
 
-    TextField* ambient_g_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
-    ambient_g_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[1]));
+    ambient_g_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
     material_panel->add(ambient_g_field, 2, 1);
 
-    TextField* ambient_b_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
-    ambient_b_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[2]));
+    ambient_b_field = new TextField(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
     material_panel->add(ambient_b_field, 3, 1);
 
-    TextField* ambient_a_field =new TextField(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
-    ambient_a_field->setText(to_string(DynamicMaterials[selectedObject->material].ambient[3]));
+    ambient_a_field =new TextField(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
     material_panel->add(ambient_a_field, 4, 1);
 
     //diffuse
     Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
     material_panel->add(diffuse_label, 0, 2);
 
-    TextField* diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
-    diffuse_r_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[0]));
+    diffuse_r_field = new TextField(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
     material_panel->add(diffuse_r_field, 1, 2);
 
-    TextField* diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
-    diffuse_g_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[1]));
+    diffuse_g_field = new TextField(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
     material_panel->add(diffuse_g_field, 2, 2);
 
-    TextField* diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
-    diffuse_b_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[2]));
+    diffuse_b_field = new TextField(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
     material_panel->add(diffuse_b_field, 3, 2);
 
-    TextField* diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
-    diffuse_a_field->setText(to_string(DynamicMaterials[selectedObject->material].diffuse[3]));
+    diffuse_a_field =new TextField(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
     material_panel->add(diffuse_a_field, 4, 2);
 
 
@@ -260,30 +284,74 @@ void init_hud() {
     Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
     material_panel->add(specular_label, 0, 3);
 
-    TextField* specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
-    specular_r_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[0]));
+    specular_r_field = new TextField(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
     material_panel->add(specular_r_field, 1, 3);
 
-    TextField* specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
-    specular_g_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[1]));
+    specular_g_field = new TextField(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
     material_panel->add(specular_g_field, 2, 3);
 
-    TextField* specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
-    specular_b_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[2]));
+    specular_b_field = new TextField(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
     material_panel->add(specular_b_field, 3, 3);
 
 
-    TextField* specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
-    specular_a_field->setText(to_string(DynamicMaterials[selectedObject->material].specular[3]));
+    specular_a_field =new TextField(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
     material_panel->add(specular_a_field, 4, 3);
 
     //shininess
     Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
     material_panel->add(shininess_label, 0, 4);
-    TextField* shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
-    shininess_field->setText(to_string(DynamicMaterials[selectedObject->material].shininess));
+    shininess_field = new TextField(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 4);
 
+    update_material_hud();
+
+}//end init hud
 
 
+void update_material_hud() {
+    if (!selectedObject) return;
+
+    // Name
+    if (name_field)
+        name_field->setText(selectedObject->name);
+
+    if (selectedObject->drawType != MATERIAL) return;
+
+    MaterialProperties& mat = DynamicMaterials[selectedObject->material];
+
+    // Copy material → globals (so the fields stay bound to the globals)
+    ambient_r = mat.ambient[0];
+    ambient_g = mat.ambient[1];
+    ambient_b = mat.ambient[2];
+    ambient_a = mat.ambient[3];
+
+    diffuse_r = mat.diffuse[0];
+    diffuse_g = mat.diffuse[1];
+    diffuse_b = mat.diffuse[2];
+    diffuse_a = mat.diffuse[3];
+
+    specular_r = mat.specular[0];
+    specular_g = mat.specular[1];
+    specular_b = mat.specular[2];
+    specular_a = mat.specular[3];
+
+    shininess = mat.shininess;
+
+    // Refresh the displayed text
+    if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
+    if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
+    if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
+    if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
+
+    if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
+    if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
+    if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
+    if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
+
+    if (specular_r_field) specular_r_field->setText(to_string(specular_r));
+    if (specular_g_field) specular_g_field->setText(to_string(specular_g));
+    if (specular_b_field) specular_b_field->setText(to_string(specular_b));
+    if (specular_a_field) specular_a_field->setText(to_string(specular_a));
+
+    if(shininess_field) shininess_field->setText(to_string(shininess));
 }
