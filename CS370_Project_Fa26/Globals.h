@@ -19,7 +19,7 @@ mat4 normal_matrix;
 mat4 model_matrix;
 
 // Initial Camera
-vec3 eye = {3.0f, 0.0f, 0.0f};
+vec3 eye = {3.0f, 3.0f, 3.0f};
 vec3 center = {0.0f, 0.0f, 0.0f};
 vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -28,7 +28,7 @@ GLfloat azimuth = 0.0f;
 GLfloat daz = 2.0f;
 GLfloat elevation = 60.0f;
 GLfloat del = 2.0f;
-GLfloat radius = 2.0f;
+GLfloat radius = 7.5f;
 GLfloat dr = 0.1f;
 GLfloat min_radius = 0.5f;
 

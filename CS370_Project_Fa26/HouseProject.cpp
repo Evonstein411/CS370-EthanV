@@ -30,6 +30,7 @@ string name_string = "";
 
 
 //widgets
+Panel* object_panel = nullptr;
 Panel* material_panel = nullptr;
 
 TextField<string>* name_field = nullptr;
@@ -160,7 +161,7 @@ void display( )
     }
 
     // DEFAULT ORTHOGRAPHIC PROJECTION
-    proj_matrix = ortho(-5.0f*xratio, 5.0f*xratio, -5.0f*yratio, 5.0f*yratio, -5.0f, 5.0f);
+    proj_matrix = ortho(-radius*xratio, radius*xratio, -radius*yratio, radius*yratio, -100.0, 100.0);
 
     // Set camera matrix
     camera_matrix = lookat(eye, center, up);
@@ -189,7 +190,11 @@ void render_scene( ) {
 
 void init_scene() {
     SceneObject* sphereObject = new SceneObject(Sphere, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {20.0f, 2.0f, 20.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall = new SceneObject(Cube, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall2 = new SceneObject(Cube, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall3 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall4 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
 
 
 }
@@ -236,13 +241,18 @@ void toggle_lights() {
 void init_hud() {
     Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
+    object_panel = new Panel(20.0f, 90.0f);
+
 
     Panel* name_panel = new Panel(20.0f, 90.0f);
     name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
     name_panel->add(name_field, 0, 0);
+    object_panel->add(name_panel, 0, 0);
 
     //create panel for holding material widgets
     material_panel = new Panel(20.0f, 170.0f);
+    object_panel->add(material_panel, 0, 1);
+
     Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material Details");
     material_panel->add(material_label, 0, 0, 5, 1);
 

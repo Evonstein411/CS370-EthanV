@@ -109,12 +109,17 @@ struct Panel : Widget {
         cells.push_back(c);
         w->setChild(true);
     }
-
-
+    
     void layout() {
         if (cells.empty()) {
             w = padX * 2.0f;
             h = padY * 2.0f;
+            return;
+        }
+
+        if (hidden) {
+            w = 0.0f;
+            h = 0.0f;
             return;
         }
 
@@ -134,6 +139,7 @@ struct Panel : Widget {
 
         for (size_t i = 0; i < cells.size(); i++) {
             Cell& c = cells[i];
+            if (c.widget->hidden) continue;
             if (c.colSpan == 1 && c.widget->w > colW[c.col])
                 colW[c.col] = c.widget->w;
             if (c.rowSpan == 1 && c.widget->h > rowH[c.row])
@@ -194,7 +200,7 @@ struct Panel : Widget {
         }
 
         for (size_t i = 0; i < cells.size(); i++) {
-            cells[i].widget->draw();
+            if(cells[i].widget->hidden == false)cells[i].widget->draw();
         }
     }
 
