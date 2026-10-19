@@ -45,7 +45,7 @@ SceneObject* pick_scene_object(float mx, float my) {
     if (ww <= hh) yratio = (GLfloat)hh / (GLfloat)ww;
     else if (hh <= ww) xratio = (GLfloat)ww / (GLfloat)hh;
 
-    proj_matrix   = ortho(-5.0f*xratio, 5.0f*xratio, -5.0f*yratio, 5.0f*yratio, -5.0f, 5.0f);
+    proj_matrix = ortho(-radius*xratio, radius*xratio, -radius*yratio, radius*yratio, -100.0, 100.0);
     camera_matrix = lookat(eye, center, up);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
