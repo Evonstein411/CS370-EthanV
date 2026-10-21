@@ -30,6 +30,10 @@ string name_string = "";
 
 
 //widgets
+Section* material_section = nullptr;
+Section* object_section = nullptr;
+
+
 Panel* object_panel = nullptr;
 Panel* material_panel = nullptr;
 
@@ -241,20 +245,28 @@ void toggle_lights() {
 void init_hud() {
     Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
+    //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
 
+    //object settings section (name, type, etc)
+    object_section = new Section(0.0f, 0.0f, "Object Settings");
+    object_panel->add(object_section, 0, 0);
 
-    Panel* name_panel = new Panel(20.0f, 90.0f);
+    //material section
+    material_section = new Section(0.0f, 0.0f, "Material Details");
+    object_panel->add(material_section, 0, 1);
+
+
+    //setting panel
+    Panel* settings_panel = new Panel(20.0f, 90.0f);
+    object_section->add(settings_panel);
+
     name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
-    name_panel->add(name_field, 0, 0);
-    object_panel->add(name_panel, 0, 0);
+    settings_panel->add(name_field, 0, 0);
 
-    //create panel for holding material widgets
+    //material panel
     material_panel = new Panel(20.0f, 170.0f);
-    object_panel->add(material_panel, 0, 1);
-
-    Label* material_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "Material Details");
-    material_panel->add(material_label, 0, 0, 5, 1);
+    material_section->add(material_panel);
 
     //ambient
     Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");

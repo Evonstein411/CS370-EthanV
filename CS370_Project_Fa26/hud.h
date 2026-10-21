@@ -50,6 +50,10 @@ struct Widget {
         hidden = false;
     }
 
+    void setHidden(bool new_hidden) {
+        hidden = new_hidden;
+    }
+
     void setChild(bool isChild) {
         is_child = isChild;
     }
@@ -70,6 +74,12 @@ struct Widget {
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
 }; //end Widget
+
+
+
+
+// ------------------------------------------------------------------- Widget Child Structs ----------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------
 
 //Panel widget for widget organization
 struct Panel : Widget {
@@ -475,6 +485,84 @@ struct Label : Widget {
     }
 
 };//end Label
+
+struct Section : Widget {
+    string label;
+    bool collapsed = false;
+    Panel* content;
+    float headerH = 0.0f;
+
+    Section(float x, float y, const string& label)
+        : Widget(x, y, 0, 0), label(label) {
+        headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
+        content = new Panel(x, y);
+        content->setChild(true);
+    }
+
+    ~Section() {
+        delete content;
+    }
+
+    void add(Widget* w) {
+        content->add(w, 0, 0);
+    }
+
+    void layout() {
+        headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
+
+        if (collapsed || content->cells.empty()) {
+            float tw = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
+            w = std::max(tw, 48.0f);
+            h = headerH;
+            return;
+        }
+
+        content->x = x;
+        content->y = y + headerH;
+        content->layout();
+
+        w = std::max(content->w, text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f);
+        h = headerH + content->h;
+
+    }
+
+    void draw() override {
+        layout();
+
+        // header bar
+        mat4 trans_matrix = translate(x, (float)hh - headerH - y, 0.0f);
+        mat4 scale_matrix   = scale(w, headerH, 1.0f);
+        model_matrix = trans_matrix * scale_matrix;
+        draw_color_object(HUDQuad, hovered ? HUDHighlighted : HUDGray);
+
+        string arrow = collapsed ? ">" : "v";
+        draw_string(arrow, x + HUD_PAD_X, y + HUD_PAD_Y, HUD_FONT);
+        draw_string(label, x + HUD_PAD_X + 20.0f, y + HUD_PAD_Y, HUD_FONT);
+
+        if (!collapsed)
+            content->draw();
+
+    }
+
+    void on_click() override {
+        // mouse callback already confirmed we were the top-most hit
+        collapsed = !collapsed;
+        content->setHidden(collapsed);
+        layout();
+    }
+
+
+};//end Section
+
+
+
+
+
+
+
+// -------------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------- UTILITY FUNCTONS ------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------------------
 
 
 //util function for drawing text
