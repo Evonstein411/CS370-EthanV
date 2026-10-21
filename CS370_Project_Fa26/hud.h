@@ -58,8 +58,14 @@ struct Widget {
         return is_child;
     }
 
+    bool isHidden() {
+        return hidden;
+    }
+
+
 
     bool hit(float mx, float my) const {
+        if (hidden) return false;
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
@@ -187,7 +193,8 @@ struct Panel : Widget {
 
         w = padX * 2.0f + colX[nCols];
         h = padY * 2.0f + rowY[nRows];
-    }//end layout
+
+    }//end layout()
 
     void draw() override {
         //update layout before drawing
@@ -202,7 +209,23 @@ struct Panel : Widget {
         for (size_t i = 0; i < cells.size(); i++) {
             if(cells[i].widget->hidden == false)cells[i].widget->draw();
         }
+    }//end draw()
+
+
+    void Panel::hide(){
+        hidden = true;
+        for (auto& cell : cells)
+            if (cell.widget) cell.widget->hidden = true;
     }
+
+    void Panel::show() {
+        hidden = false;
+        for (auto& cell : cells)
+            if (cell.widget) cell.widget->hidden = false;
+    }
+
+
+
 
 
 

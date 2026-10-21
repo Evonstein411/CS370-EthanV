@@ -3,6 +3,10 @@ extern SceneObject* selectedObject;
 //exists in houseproject forward dec to avoid error
 void update_fields();
 
+//functions
+void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
+
+
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     //press escape either end typing or close window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -96,14 +100,19 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     //update mouse position
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    float mx = (float)xpos;
-    float my = (float)hh - (float)ypos;
+    float mx, my;
+    cursor_to_framebuffer(window, xpos, ypos, mx, my);
 
     //check if clicked on widget
     int hitIndex = -1;
     for (int i = (int)widgets.size() - 1; i >= 0; i--) {
-        if (widgets[i]->hit(mx, my)) { hitIndex = i; break; }
+        if (widgets[i]->hit(mx, my)) {
+            hitIndex = i;
+            break;
+        }
     }
+
+
 
     //check text fields
     for (size_t i = 0; i < widgets.size(); i++) {
@@ -136,11 +145,10 @@ void char_callback(GLFWwindow*, unsigned int codepoint) {
 }
 
 void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
-    float mx = (float)xpos;
-    float my = (float)hh - (float)ypos;
+    float mx, my;
+    cursor_to_framebuffer(window, xpos, ypos, mx, my);
     for (size_t i = 0; i < widgets.size(); i++) {
         widgets[i]->hovered = widgets[i]->hit(mx, my);
-
     }
 }
 
@@ -150,4 +158,19 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
     ww = width;
     hh = height;
+}
+
+//ensure cursor matching size of window and proper scaling
+void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my) {
+    int win_w, win_h;
+    glfwGetWindowSize(window, &win_w, &win_h);
+    if (win_w <= 0 || win_h <= 0) {
+        mx = (float)xpos;
+        my = (float)hh - (float)ypos;
+        return;
+    }
+    float xscale = (float)ww / (float)win_w;
+    float yscale = (float)hh / (float)win_h;
+    mx = (float)xpos * xscale;
+    my = (float)hh - (float)ypos * yscale;
 }
