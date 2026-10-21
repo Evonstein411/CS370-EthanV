@@ -27,16 +27,23 @@ const float HUD_PAD_Y = 8.0f;
 struct Widget {
     float x, y, w, h;
     bool hovered = false;
-    bool is_child = false;
     bool hidden = false;
+
+    vector<Widget*> children; //list of all current children
+    Widget* parent = nullptr; //pointer to parent if have one
 
     Widget(float x, float y, float w, float h)
         : x(x), y(y), w(w), h(h) {
         widgets.push_back(this);
     }
 
-    virtual ~Widget() {}
-    virtual void draw() = 0; // each child supplies its own draw
+    virtual ~Widget() {
+        if (parent) parent->removeChild(this); //if im a child remove myself from parent
+        for (Widget* c : children) c->parent = nullptr; //clear self from parent of all children
+        children.clear(); //clear children list
+    }
+
+    virtual void draw() = 0; //defined per widget
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
     virtual void on_click() {}
@@ -44,29 +51,66 @@ struct Widget {
 
     void hide() {
         hidden = true;
+        for (Widget* c : children) c->hide();
     }
 
     void show() {
         hidden = false;
+        for (Widget* c : children) c->show();
     }
 
     void setHidden(bool new_hidden) {
         hidden = new_hidden;
+        for (Widget* c : children) c->setHidden(new_hidden);
     }
 
-    void setChild(bool isChild) {
-        is_child = isChild;
+    Widget* getParent() {
+        return parent;
     }
 
-    bool isChild() {
-        return is_child;
+
+
+    void addChild(Widget* child) {
+        if(child == this) return; //cant child self
+
+        //remove from any prior parent
+        if (child->isChild()) {
+            child->getParent()->removeChild(child);
+        }
+
+        child->parent = this;
+        children.push_back(child);
+    }
+
+    void removeChild(Widget* child) {
+        if(!child) return; //do nothing if child doesn't exist
+        auto searched_child = std::find(children.begin(), children.end(), child);
+        if (searched_child == children.end()) return; //failed to find child do nothing
+        children.erase(searched_child); //found child remove from children list
+        if (child->getParent() == this) { //remove self from parent of prior child
+            child->parent = nullptr;
+        }
+    }
+
+
+    //only remove and add child directly write to parent to prevent desync of child and parent status
+    void setParent(Widget* new_parent) {
+        if(new_parent == parent) return; //do nothing if already parent
+        if(new_parent) {
+            new_parent->addChild(this);   //add to new parent
+        }
+        else if(parent) {
+            parent->removeChild(this);
+        }
+    }
+
+    bool isChild() const {
+        return parent != nullptr;
     }
 
     bool isHidden() {
         return hidden;
     }
-
-
 
     bool hit(float mx, float my) const {
         if (hidden) return false;
@@ -109,7 +153,7 @@ struct Panel : Widget {
     //destructor handle deleting cells and removing child status from widgets
     ~Panel() {
         for (size_t i = 0; i < cells.size(); i++)
-            cells[i].widget->setChild(false);
+            removeChild(cells[i].widget);
         cells.clear();
     }
 
@@ -123,7 +167,7 @@ struct Panel : Widget {
         c.colSpan = colSpan;
         c.rowSpan = rowSpan;
         cells.push_back(c);
-        w->setChild(true);
+        addChild(w);
     }
     
     void layout() {
@@ -220,23 +264,6 @@ struct Panel : Widget {
             if(cells[i].widget->hidden == false)cells[i].widget->draw();
         }
     }//end draw()
-
-
-    void Panel::hide(){
-        hidden = true;
-        for (auto& cell : cells)
-            if (cell.widget) cell.widget->hidden = true;
-    }
-
-    void Panel::show() {
-        hidden = false;
-        for (auto& cell : cells)
-            if (cell.widget) cell.widget->hidden = false;
-    }
-
-
-
-
 
 
 
@@ -496,7 +523,7 @@ struct Section : Widget {
         : Widget(x, y, 0, 0), label(label) {
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
         content = new Panel(x, y);
-        content->setChild(true);
+        addChild(content);
     }
 
     ~Section() {

@@ -270,59 +270,59 @@ void init_hud() {
 
     //ambient
     Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
-    material_panel->add(ambient_label, 0, 1);
+    material_panel->add(ambient_label, 0, 0);
 
     ambient_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
-    material_panel->add(ambient_r_field, 1, 1);
+    material_panel->add(ambient_r_field, 1, 0);
 
     ambient_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
-    material_panel->add(ambient_g_field, 2, 1);
+    material_panel->add(ambient_g_field, 2, 0);
 
     ambient_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
-    material_panel->add(ambient_b_field, 3, 1);
+    material_panel->add(ambient_b_field, 3, 0);
 
     ambient_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
-    material_panel->add(ambient_a_field, 4, 1);
+    material_panel->add(ambient_a_field, 4, 0);
 
     //diffuse
     Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
-    material_panel->add(diffuse_label, 0, 2);
+    material_panel->add(diffuse_label, 0, 1);
 
     diffuse_r_field = new TextField<float>(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
-    material_panel->add(diffuse_r_field, 1, 2);
+    material_panel->add(diffuse_r_field, 1, 1);
 
     diffuse_g_field = new TextField<float>(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
-    material_panel->add(diffuse_g_field, 2, 2);
+    material_panel->add(diffuse_g_field, 2, 1);
 
     diffuse_b_field = new TextField<float>(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
-    material_panel->add(diffuse_b_field, 3, 2);
+    material_panel->add(diffuse_b_field, 3, 1);
 
     diffuse_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
-    material_panel->add(diffuse_a_field, 4, 2);
+    material_panel->add(diffuse_a_field, 4, 1);
 
 
     //specular
     Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
-    material_panel->add(specular_label, 0, 3);
+    material_panel->add(specular_label, 0, 2);
 
     specular_r_field = new TextField<float>(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
-    material_panel->add(specular_r_field, 1, 3);
+    material_panel->add(specular_r_field, 1, 2);
 
     specular_g_field = new TextField<float>(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
-    material_panel->add(specular_g_field, 2, 3);
+    material_panel->add(specular_g_field, 2, 2);
 
     specular_b_field = new TextField<float>(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
-    material_panel->add(specular_b_field, 3, 3);
+    material_panel->add(specular_b_field, 3, 2);
 
 
     specular_a_field =new TextField<float>(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
-    material_panel->add(specular_a_field, 4, 3);
+    material_panel->add(specular_a_field, 4, 2);
 
     //shininess
     Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
-    material_panel->add(shininess_label, 0, 4);
+    material_panel->add(shininess_label, 0, 3);
     shininess_field = new TextField<float>(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
-    material_panel->add(shininess_field, 1, 4);
+    material_panel->add(shininess_field, 1, 3);
 
     update_fields();
 
