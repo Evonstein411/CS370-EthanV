@@ -6,8 +6,8 @@
 //Ethan VonStein
 // -------------------------------------------------
 // DOCUMENT YOUR UI CONTROLS AND ANY CREATIVITY HERE
-//
-//
+// added a torus with its own material, spot light, and animation (animate on off via 'M' turn light on and off via '4')
+// added an global animate toggle binded to spacebar
 // -------------------------------------------------
 
 
@@ -66,7 +66,8 @@ int main(int argc, char**argv)
     glEnable(GL_DEPTH_TEST);
 
     // TODO: Enable alpha blending and set blend factors
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Set background color
     glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
@@ -88,8 +89,41 @@ int main(int argc, char**argv)
         // Update other events like input handling
         glfwPollEvents();
         GLdouble curTime = glfwGetTime();
+    	GLdouble deltaTime = curTime - elTime;
 		// TODO: Add animations
-		
+    	if (cube_slide) {
+    		cube_pos[2] += cube_dir * cube_slps * deltaTime;
+    		if (fabs(cube_pos[2]) > 2.0f) {
+    			cube_dir *= -1.0f;
+    		}
+    	}
+
+    	if (sphere_bounce) {
+    		sphere_pos[1] += sphere_dir * sphere_bps * deltaTime;
+    		if (sphere_pos[1] > 2.5f || sphere_pos[1] < 1.0f) {
+    			sphere_dir *= -1.0f;
+    		}
+    	}
+
+    	if (pyr_spin) {
+    		pyr_ang += pyr_dps * deltaTime;
+    		if (pyr_ang > 360.0f) {
+    			pyr_ang -= 360.0f;
+    		}
+    	}
+
+    	if(torus_animate) {
+    		torus_ang += torus_dps * deltaTime;
+    		if (torus_ang > 360.0f) {
+    			torus_ang -= 360.0f;
+    		}
+    		torus_pos[1] += torus_dir * torus_bps * deltaTime;
+    		if (torus_pos[1] > 2.5f || torus_pos[1] < 1.0f) {
+    			torus_dir *= -1.0f;
+    		}
+    	}
+
+
 
         elTime = curTime;
         // Swap buffer onto screen
@@ -142,15 +176,60 @@ void render_scene( ) {
     mat4 trans_matrix = mat4().identity();
 
 	// TODO: Draw objects
+
+	//torus
+	trans_matrix = translate(torus_pos);
+	scale_matrix = scale(1.0f, 1.0f, 1.0f);
+	rot_matrix = rotate(torus_ang, vec3(0.0f, 0.0f, 1.0f));
+	model_matrix = trans_matrix * rot_matrix * scale_matrix;
+	normal_matrix = model_matrix.inverse().transpose();
+	draw_mat_object(Torus, TorusMaterial);
+
+
+	//sphere
 	trans_matrix = translate(sphere_pos);
 	scale_matrix = scale(1.0f, 1.0f, 1.0f);
 	model_matrix = trans_matrix*scale_matrix;
 	normal_matrix = model_matrix.inverse().transpose();
 	draw_mat_object(Sphere, SphereMaterial);
 
-	trans_matrix = translate(0.0f, -1.0f, 0.0f);
+	//cube
+	trans_matrix = translate(cube_pos);
+	scale_matrix = scale(1.0f, 1.0f, 1.0f);
+	rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
+	model_matrix = trans_matrix * rot_matrix * scale_matrix;
+	normal_matrix = model_matrix.inverse().transpose();
+	draw_mat_object(Cube, CubeMaterial);
+
+
+	//oct
+	trans_matrix = translate(pyr_pos);
+	scale_matrix = scale(1.0f, 1.0f, 1.0f);
+	rot_matrix = rotate(pyr_ang, vec3(0.0f, 1.0f, 0.0f));
+	model_matrix = trans_matrix * rot_matrix * scale_matrix;
+	normal_matrix = model_matrix.inverse().transpose();
+	draw_mat_object(Octahedron, OctMaterial);
+
+	//stage
+	trans_matrix = translate(0.0f, -0.5f, 0.0f);
 	scale_matrix = scale(15.0f, 1.0f, 7.5f);
 	model_matrix = trans_matrix*scale_matrix;
 	normal_matrix = model_matrix.inverse().transpose();
 	draw_mat_object(Cube, Wood);
+
+	//stage cylinder
+	trans_matrix = translate(0.0f, -0.5f, 3.75f);
+	scale_matrix = scale(7.5f, 0.5f, 7.5f);
+	rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
+	model_matrix = trans_matrix * rot_matrix * scale_matrix;
+	normal_matrix = model_matrix.inverse().transpose();
+	draw_mat_object(Cylinder, Wood);
+
+	//half circle
+	trans_matrix = translate(0.0f, 0.0f, 3.75f);
+	scale_matrix = scale(5.25f, 0.5f, 5.25f);
+	rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
+	model_matrix = trans_matrix * rot_matrix * scale_matrix;
+	normal_matrix = model_matrix.inverse().transpose();
+	draw_mat_object(HalfCircle, Wood);
 }

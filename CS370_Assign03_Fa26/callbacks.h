@@ -6,23 +6,51 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	// TODO: Add object key bindings
     //cube
-    if (key == GLFW_KEY_V) {
+    if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         cube_slide = !cube_slide;
     }
     //sphere
-    if (key == GLFW_KEY_B) {
+    if (key == GLFW_KEY_B && action == GLFW_PRESS) {
         sphere_bounce = !sphere_bounce;
     }
     //octahedron
-    if (key == GLFW_KEY_N) {
+    if (key == GLFW_KEY_N && action == GLFW_PRESS) {
         pyr_spin = !pyr_spin;
     }
+
+
+    if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+        torus_animate = !torus_animate;
+    }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        cube_slide = !cube_slide;
+        sphere_bounce = !sphere_bounce;
+        pyr_spin = !pyr_spin;
+        torus_animate = !torus_animate;
+    }
+
 
     //point light on off
-    if (key == GLFW_KEY_1) {
-        pyr_spin = !pyr_spin;
+    if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+        lightOn[WhitePointLight] = !lightOn[WhitePointLight];
     }
 
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+        lightOn[CubeLight] = !lightOn[CubeLight];
+    }
+
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        lightOn[SphereLight] = !lightOn[SphereLight];
+    }
+
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+        lightOn[OctLight] = !lightOn[OctLight];
+    }
+
+    if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+        lightOn[TorusLight] = !lightOn[TorusLight];
+    }
 
 
     // Adjust azimuth

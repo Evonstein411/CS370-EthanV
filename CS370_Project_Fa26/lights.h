@@ -32,6 +32,9 @@ LightProperties fillLight = {
 };
 
 
+
+
+
 void build_lights( ) {
 	// Allocate Lights vector
 	Lights.resize(NumLights);

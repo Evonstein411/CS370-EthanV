@@ -1,5 +1,5 @@
 // Model vertex arrays and buffer objects
-enum VAO_IDs {Cube, Sphere, Octahedron, HalfCircle, Cylinder, NumVAOs};
+enum VAO_IDs {Cube, Sphere, Octahedron, HalfCircle, Cylinder, Torus, NumVAOs};
 GLuint VAOs[NumVAOs];
 GLuint ObjBuffers[NumVAOs][NumObjBuffers];
 GLint numVertices[NumVAOs];
@@ -10,6 +10,7 @@ const char * sphereFile = "../../common/models/sphere.obj";
 const char * octFile = "../../common/models/octahedron.obj";
 const char * halfCircleFile = "../../common/models/half_circle.obj";
 const char * cylinderFile = "../../common/models/cylinder.obj";
+const char * torusFile = "../../common/models/torus.obj";
 
 void load_model(const char * filename, GLuint obj);
 
@@ -24,6 +25,7 @@ void build_geometry( )
     load_model(octFile, Octahedron);
     load_model(halfCircleFile, HalfCircle);
     load_model(cylinderFile, Cylinder);
+    load_model(torusFile, Torus);
 
 
 

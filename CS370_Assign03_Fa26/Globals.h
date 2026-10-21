@@ -48,6 +48,14 @@ GLfloat pyr_dps = 360.0f;
 GLboolean pyr_spin = true;
 GLdouble elTime = 0.0;
 
+vec3 torus_pos = { 0.0f, 1.0f, 5.5f };
+GLboolean torus_animate = true;
+GLfloat torus_dir = 1.0f;
+GLfloat torus_bps = 3.0f;
+GLfloat torus_ang = 0.0f;
+GLfloat torus_dps = 180.0f;
+
+
 // Global screen dimensions
 GLint ww = 640;
 GLint hh = 480;

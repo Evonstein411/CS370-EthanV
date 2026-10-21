@@ -17,6 +17,7 @@ struct SceneObject {
     GLuint texture;
     string name;
 
+    //solid color
     SceneObject(GLuint mesh, string name, vec3 position, vec3 scale, vec3 rotation, vec4 color)
     : mesh(mesh), name(name), position(position), rotation(rotation), scale(scale), color(color) {
         objects.push_back(this);
@@ -25,6 +26,7 @@ struct SceneObject {
         build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
     }
 
+    //materials
     SceneObject(GLuint mesh, string name, vec3 position, vec3 scale, vec3 rotation, MaterialProperties materialProperties)
     : mesh(mesh), name(name), position(position), rotation(rotation), scale(scale), materialProperties(materialProperties) {
         objects.push_back(this);
@@ -36,6 +38,7 @@ struct SceneObject {
 
     }
 
+    //texture
     SceneObject(GLuint mesh, string name, vec3 position, vec3 scale, vec3 rotation, GLuint texture)
     : mesh(mesh), name(name), position(position), rotation(rotation), scale(scale), texture(texture) {
         objects.push_back(this);
