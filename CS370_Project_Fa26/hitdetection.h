@@ -87,6 +87,7 @@ SceneObject* pick_scene_object(float mx, float my) {
     // IMPORTANT: immediately redraw the real scene so the next swap is correct
     // (this prevents the colored ID pass from appearing on screen)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
     render_scene();
     render_hud();
     glFlush();

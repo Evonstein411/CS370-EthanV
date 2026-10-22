@@ -113,6 +113,8 @@ int main(int argc, char**argv)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+
     // Set Initial camera position
     GLfloat x, y, z;
     x = (GLfloat)(radius*sin(deg2rad(azimuth))*sin(deg2rad(elevation)));
@@ -225,7 +227,7 @@ void render_hud() {
 
 
     for (size_t i = 0; i < widgets.size(); i++) {
-        if(widgets[i]->isChild() == false){widgets[i]->draw();}
+        if(!(widgets[i]->isChild())){widgets[i]->draw();}
     }
 
     //reset settings to pre hud state, restore camera

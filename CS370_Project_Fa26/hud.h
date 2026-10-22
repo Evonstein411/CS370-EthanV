@@ -57,7 +57,7 @@ struct Widget {
         }
         drawSelf();
         for(Widget* child: children) {
-            draw();
+            child->draw();
         }
 
     }
@@ -122,11 +122,20 @@ struct Widget {
         return hidden;
     }
 
+    bool isEffectivelyHidden() const {
+        for (const Widget* p = parent; p != nullptr; p = p->parent) {
+            if (p->hidden) return true;
+        }
+        return false;
+    }
+
     bool hit(float mx, float my) const {
-        if (hidden) return false;
+        if (hidden || isEffectivelyHidden()) return false;
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
+
+
 }; //end Widget
 
 
