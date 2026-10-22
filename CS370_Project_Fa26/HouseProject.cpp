@@ -225,7 +225,7 @@ void render_hud() {
 
 
     for (size_t i = 0; i < widgets.size(); i++) {
-        if(widgets[i]->isChild() == false && widgets[i]->hidden == false){widgets[i]->draw();}
+        if(widgets[i]->isChild() == false){widgets[i]->draw();}
     }
 
     //reset settings to pre hud state, restore camera
@@ -248,7 +248,7 @@ void init_hud() {
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
 
-    //object settings section (name, type, etc)
+    //object settings section (name, type, etc.)
     object_section = new Section(0.0f, 0.0f, "Object Settings");
     object_panel->add(object_section, 0, 0);
 

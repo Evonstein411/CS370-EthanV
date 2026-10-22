@@ -43,25 +43,35 @@ struct Widget {
         children.clear(); //clear children list
     }
 
-    virtual void draw() = 0; //defined per widget
+
+
+    virtual void drawSelf() = 0; //defined per widget
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
     virtual void on_click() {}
     virtual void on_drag(float mx, float my) {}
 
+    void draw() {
+        if(hidden) {
+            return;
+        }
+        drawSelf();
+        for(Widget* child: children) {
+            draw();
+        }
+
+    }
+
     void hide() {
         hidden = true;
-        for (Widget* c : children) c->hide();
     }
 
     void show() {
         hidden = false;
-        for (Widget* c : children) c->show();
     }
 
     void setHidden(bool new_hidden) {
         hidden = new_hidden;
-        for (Widget* c : children) c->setHidden(new_hidden);
     }
 
     Widget* getParent() {
@@ -250,7 +260,7 @@ struct Panel : Widget {
 
     }//end layout()
 
-    void draw() override {
+    void drawSelf() override {
         //update layout before drawing
         layout();
         if (drawBackground) {
@@ -260,9 +270,6 @@ struct Panel : Widget {
             draw_color_object(HUDQuad, HUDPanel);
         }
 
-        for (size_t i = 0; i < cells.size(); i++) {
-            if(cells[i].widget->hidden == false)cells[i].widget->draw();
-        }
     }//end draw()
 
 
@@ -291,7 +298,7 @@ struct Button : Widget {
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
     }
 
-    void draw() override {
+    void drawSelf() override {
         model_matrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
 
@@ -403,7 +410,7 @@ struct TextField : TextFieldBase {
         resize();
     }
 
-    void draw() override {
+    void drawSelf() override {
         model_matrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
         GLuint outer = focused ? HUDHighlighted : HUDGray;
@@ -499,7 +506,7 @@ struct Label : Widget {
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
     }
 
-    void draw() override {
+    void drawSelf() override {
         model_matrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
 
@@ -553,7 +560,7 @@ struct Section : Widget {
 
     }
 
-    void draw() override {
+    void drawSelf() override {
         layout();
 
         // header bar
@@ -566,8 +573,6 @@ struct Section : Widget {
         draw_string(arrow, x + HUD_PAD_X, y + HUD_PAD_Y, HUD_FONT);
         draw_string(label, x + HUD_PAD_X + 20.0f, y + HUD_PAD_Y, HUD_FONT);
 
-        if (!collapsed)
-            content->draw();
 
     }
 
