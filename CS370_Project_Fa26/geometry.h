@@ -6,7 +6,7 @@ GLint numVertices[NumVAOs];
 
 // Color buffers
 enum Color_Buffer_IDs {CubeRed, FloorGray, HUDGray, HUDPanel, HUDHighlighted, HUDTextField, NumColorBuffers};
-GLuint ColorBuffers[NumColorBuffers];
+vector<GLuint> ColorBuffers;
 
 
 // Model files
@@ -32,7 +32,8 @@ void build_geometry( )
     load_model(sphereFile, Sphere);
 
     // Generate color buffers
-    glGenBuffers(NumColorBuffers, ColorBuffers);
+    ColorBuffers.resize(NumColorBuffers);
+    glGenBuffers(NumColorBuffers, ColorBuffers.data());
 
     // Build color buffers
     build_solid_color_buffer(numVertices[Cube], vec4(1.0f, 0.0f, 0.0f, 1.0f), CubeRed);

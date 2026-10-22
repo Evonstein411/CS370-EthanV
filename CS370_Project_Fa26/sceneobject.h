@@ -21,6 +21,7 @@ struct SceneObject {
     GLuint material;
     GLuint texture;
     string name;
+    bool hasMaterial = false, hasColor = false;
 
     //solid color
     SceneObject(GLuint mesh, string name, vec3 position, vec3 scale, vec3 rotation, vec4 color)
@@ -29,6 +30,7 @@ struct SceneObject {
         drawType = SOLID_COLOR;
         glGenBuffers(1, &colorBuffer);
         build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
+        hasColor = true;
     }
 
     //materials
@@ -39,6 +41,7 @@ struct SceneObject {
 
         material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
         DynamicMaterials.push_back(materialProperties);
+        hasMaterial = true;
 
 
     }
@@ -50,6 +53,30 @@ struct SceneObject {
         drawType = TEXTURE;
 
     }
+
+    void initializeType(DrawType newType) {
+        //solid color add color if none and build buffer
+        if (newType == SOLID_COLOR) {
+            if(!hasColor) {
+                color = {0.0f, 0.0f, 0.0f, 1.0f,}; //set to white if no color set
+            }
+            glGenBuffers(1, &colorBuffer);
+            build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
+            hasColor = true;
+        //material add material properties if none
+        } else if (newType == MATERIAL) {
+            if(!hasMaterial) {
+                materialProperties = baseMaterial; //use base material
+            }
+            material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
+            DynamicMaterials.push_back(materialProperties);
+            hasMaterial = true;
+        } else if (newType == TEXTURE) {
+            if(!texture) {
+                texture = Blank; //use blank texture if none
+            }
+        }
+    }//end init type
 
     void draw() {
         mat4 trans_matrix = translate(position);

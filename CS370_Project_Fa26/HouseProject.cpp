@@ -400,6 +400,9 @@ void update_from_fields() {
     if (selectedObject) {
 
         if(selectedType >= 0 ) {
+            if(selectedObject->drawType != static_cast<DrawType>(selectedType)) {
+                selectedObject->initializeType(static_cast<DrawType>(selectedType));
+            }
             selectedObject->drawType = static_cast<DrawType>(selectedType);
         }
 
