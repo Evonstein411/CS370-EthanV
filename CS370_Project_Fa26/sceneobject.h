@@ -1,5 +1,10 @@
 
 enum DrawType {SOLID_COLOR, MATERIAL, TEXTURE};
+static const vector<string> drawTypeNames={
+    "Solid Color",
+    "Material",
+    "Texture"
+};
 struct SceneObject;
 extern vector<SceneObject*> objects;
 

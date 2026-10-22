@@ -50,6 +50,7 @@ struct Widget {
     virtual void on_key(int key, int action) {}
     virtual void on_click() {}
     virtual void on_drag(float mx, float my) {}
+    virtual void on_hover(float mx, float my){}
 
     void draw() {
         if(hidden) {
@@ -594,6 +595,165 @@ struct Section : Widget {
 
 
 };//end Section
+
+
+
+struct Dropdown : Widget {
+    string label;
+    vector<string> options;
+    int* selected = nullptr;   // binds to an int (index into options)
+    bool open = false;
+    float textSize = HUD_FONT;
+    float labelW = 0.0f;
+    float itemH = 0.0f;
+    int hoveredItem = -1;           // for highlighting while open
+    float lastMX = 0.0f, lastMY = 0.0f;
+    //int index base
+    Dropdown(float x, float y, float w, float h,
+                 const string& label,
+                 const vector<string>& options,
+                 int* selected)
+            : Widget(x, y, w, h), label(label), options(options), selected(selected)
+    {
+        resize();
+    }
+
+    //for passing in enums directly
+    template<typename E>
+    Dropdown(float x, float y, float w, float h,
+             const string& label,
+             const vector<string>& options,
+             E& selectedEnum)
+        : Dropdown(x, y, w, h, label, options, reinterpret_cast<int*>(&selectedEnum))
+    {
+        resize();
+    }
+
+    void resize() {
+        labelW = text_width(label, textSize) + HUD_PAD_X * 2.0f;
+        if (labelW < 48.0f) labelW = 48.0f;
+
+        float maxOpt = 0.0f;
+        for (const auto& o : options)
+            maxOpt = std::max(maxOpt, text_width(o, textSize));
+        float boxW = maxOpt + HUD_PAD_X * 2.0f + 20.0f; // extra for arrow
+        if (boxW < 80.0f) boxW = 80.0f;
+
+        w = labelW + boxW + HUD_PAD_X;
+        h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+        itemH = h;
+    }
+
+    string currentText() const {
+        if (!selected || *selected < 0 || *selected >= (int)options.size())
+            return "(none)";
+        return options[*selected];
+    }
+
+    void drawSelf() override {
+        //label and box
+        GLuint outer = hovered || open ? HUDHighlighted : HUDGray;
+        mat4 trans_matrix = translate(x, (float)hh - h - y, 0.0f);
+        mat4 scale_matrix = scale(w, h, 1.0f);
+        model_matrix = trans_matrix  * scale_matrix;
+        draw_color_object(HUDQuad, outer);
+        draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
+
+        //dropdown
+        float boxX = x + labelW;
+        float boxW = w - labelW - HUD_PAD_X;
+        trans_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f);
+        scale_matrix = scale(boxW, h - 8.0f, 1.0f);
+        model_matrix = trans_matrix * scale_matrix;
+        draw_color_object(HUDQuad, HUDTextField);
+        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize);
+        // simple arrow
+        draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize);
+
+        // Open list (drawn as part of this widget so it appears on top of siblings
+        if (open) {
+            for (int i = 0; i < (int)options.size(); ++i) {
+                float iy = y + h + (float)i * itemH;
+                GLuint col = (i == hoveredItem) ? HUDHighlighted : HUDGray;
+                trans_matrix = translate(x + labelW, (float)hh - itemH - iy, 0.0f);
+                scale_matrix = scale(boxW, itemH, 1.0f);
+                model_matrix = trans_matrix * scale_matrix;
+                draw_color_object(HUDQuad, col);
+                draw_string(options[i], x + labelW + 6.0f, iy + 6.0f, textSize);
+            }
+        }
+    }
+
+    // Expand hit area when open so the list is clickable
+    bool hit(float mx, float my) const {
+        if (hidden || isEffectivelyHidden()) return false;
+        float totalH = open ? h + (float)options.size() * itemH : h;
+        float bottom = (float)hh - totalH - y;
+        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + totalH;
+    }
+
+    void on_click() override {
+        if (!open) {
+            open = true;
+            return;
+        }
+        // reuse the same math as selectAt, but with lastMX / lastMY
+        if (!selected) { open = false; return; }
+        float boxX = x + labelW;
+        float boxW = w - labelW - HUD_PAD_X;
+        if (lastMX < boxX || lastMX > boxX + boxW) {
+            open = false;
+            return;
+        }
+        for (int i = 0; i < (int)options.size(); ++i) {
+            float iy = y + h + (float)i * itemH;
+            float bottom = (float)hh - itemH - iy;
+            if (lastMY >= bottom && lastMY <= bottom + itemH) {
+                *selected = i;
+                open = false;
+                return;
+            }
+        }
+        open = false;
+    }
+
+    void on_hover(float mx, float my) override {
+        lastMX = mx;
+        lastMY = my;
+        // optional: update hoveredItem here so the highlight works
+        hoveredItem = -1;
+        if (!open) return;
+        float boxX = x + labelW;
+        float boxW = w - labelW - HUD_PAD_X;
+        if (mx < boxX || mx > boxX + boxW) return;
+        for (int i = 0; i < (int)options.size(); ++i) {
+            float iy = y + h + (float)i * itemH;
+            float bottom = (float)hh - itemH - iy;
+            if (my >= bottom && my <= bottom + itemH) {
+                hoveredItem = i;
+                break;
+            }
+        }
+    }
+
+
+    void on_key(int key, int action) override {
+        if (!open || !selected || action != GLFW_PRESS) return;
+        if (key == GLFW_KEY_UP && *selected > 0) (*selected)--;
+        else if (key == GLFW_KEY_DOWN && *selected + 1 < (int)options.size()) (*selected)++;
+        else if (key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) open = false;
+    }
+};
+
+
+
+
+
+
+
+
+
+
 
 
 

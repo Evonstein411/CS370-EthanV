@@ -26,6 +26,7 @@
 vector<Widget*> widgets;
 vector<SceneObject*> objects;
 SceneObject* selectedObject = nullptr;
+int selectedType = -1;
 string name_string = "";
 
 
@@ -33,11 +34,11 @@ string name_string = "";
 Section* material_section = nullptr;
 Section* object_section = nullptr;
 
-
 Panel* object_panel = nullptr;
 Panel* material_panel = nullptr;
 
 TextField<string>* name_field = nullptr;
+Dropdown* type_dropdown = nullptr;
 
 TextField<float>* ambient_r_field = nullptr;
 TextField<float>* ambient_g_field = nullptr;
@@ -266,6 +267,9 @@ void init_hud() {
     name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
     settings_panel->add(name_field, 0, 0);
 
+    type_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
+    settings_panel->add(type_dropdown, 0, 1);
+
     //material panel
     material_panel = new Panel(20.0f, 170.0f);
     material_section->add(material_panel);
@@ -345,6 +349,9 @@ void update_fields() {
     if (name_field) {
         name_string = selectedObject->name;
         name_field->setText(name_string);
+    }
+    if(type_dropdown) {
+        selectedObject->drawType = static_cast<DrawType>(selectedType);
     }
 
     if (selectedObject->drawType != MATERIAL) return;

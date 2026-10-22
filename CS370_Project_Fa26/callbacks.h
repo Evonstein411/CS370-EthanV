@@ -7,6 +7,7 @@ void update_fields();
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
 
 
+//keyboard callback
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     //press escape either end typing or close window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -94,6 +95,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     eye = vec3(x,y,z);
 }
 
+//mouse callback
 void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS) return;
 
@@ -144,18 +146,20 @@ void char_callback(GLFWwindow*, unsigned int codepoint) {
     for (size_t i = 0; i < widgets.size(); i++) widgets[i]->on_char(codepoint);
 }
 
+//mouse move callback
 void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     float mx, my;
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
     for (size_t i = 0; i < widgets.size(); i++) {
         widgets[i]->hovered = widgets[i]->hit(mx, my);
+        widgets[i]->on_hover(mx, my);
     }
 }
 
 
+//update on window resize
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
-
     ww = width;
     hh = height;
 }
