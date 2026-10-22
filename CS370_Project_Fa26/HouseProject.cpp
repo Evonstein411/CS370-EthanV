@@ -448,9 +448,10 @@ void update_from_fields() {
         if(selectedType >= 0 ) {
             if(selectedObject->drawType != static_cast<DrawType>(selectedType)) {
                 selectedObject->initializeType(static_cast<DrawType>(selectedType));
+                selectedObject->drawType = static_cast<DrawType>(selectedType);
+                update_fields();
             }
             selectedObject->drawType = static_cast<DrawType>(selectedType);
-            update_fields();
         }
 
         //update material values from fields
@@ -464,7 +465,7 @@ void update_from_fields() {
 
         if (selectedObject->drawType == SOLID_COLOR) {
             vec4 new_color = {color_r, color_g, color_b, color_a};
-            selectedObject->color = new_color;
+            selectedObject->setColor(new_color);
         }
 
 

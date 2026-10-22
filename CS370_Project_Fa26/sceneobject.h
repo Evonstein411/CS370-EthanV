@@ -88,6 +88,12 @@ struct SceneObject {
         }
     }//end init type
 
+    void setColor(vec4 new_color) {
+        color = new_color;
+        build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
+
+    }
+
     void draw() {
         mat4 trans_matrix = translate(position);
         mat4 rotate_x_matrix = vmath::rotate(rotation[0], vec3(1, 0, 0));

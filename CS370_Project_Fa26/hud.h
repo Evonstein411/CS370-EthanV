@@ -225,9 +225,6 @@ struct Panel : Widget {
                 rowH[c.row] = c.widget->h;
         }
 
-        // Minimum size so empty cells don't collapse
-        for (int i = 0; i < nCols; i++) if (colW[i] < 48.0f) colW[i] = 48.0f;
-        for (int i = 0; i < nRows; i++) if (rowH[i] < 32.0f) rowH[i] = 32.0f;
 
         // Prefix sums for easy positioning
         vector<float> colX(nCols + 1, 0.0f);
