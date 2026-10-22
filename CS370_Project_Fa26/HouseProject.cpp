@@ -351,7 +351,7 @@ void update_fields() {
         name_field->setText(name_string);
     }
     if(type_dropdown) {
-        selectedObject->drawType = static_cast<DrawType>(selectedType);
+        selectedType = selectedObject->drawType;
     }
 
     if (selectedObject->drawType != MATERIAL) return;
@@ -398,6 +398,11 @@ void update_fields() {
 
 void update_from_fields() {
     if (selectedObject) {
+
+        if(selectedType >= 0 ) {
+            selectedObject->drawType = static_cast<DrawType>(selectedType);
+        }
+
         //update material values from fields
         if (selectedObject->drawType == MATERIAL) {
             MaterialProperties& mat = DynamicMaterials[selectedObject->material];
@@ -410,6 +415,7 @@ void update_from_fields() {
         if(name_field) {
             selectedObject->name = name_string;
         }
+
 
     }//if selected object
 

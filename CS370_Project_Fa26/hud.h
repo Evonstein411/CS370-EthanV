@@ -28,6 +28,7 @@ struct Widget {
     float x, y, w, h;
     bool hovered = false;
     bool hidden = false;
+    int priority = 0;
 
     vector<Widget*> children; //list of all current children
     Widget* parent = nullptr; //pointer to parent if have one
@@ -43,14 +44,18 @@ struct Widget {
         children.clear(); //clear children list
     }
 
-
-
     virtual void drawSelf() = 0; //defined per widget
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
     virtual void on_click() {}
     virtual void on_drag(float mx, float my) {}
     virtual void on_hover(float mx, float my){}
+
+    virtual bool hit(float mx, float my) const {
+        if (hidden || isEffectivelyHidden()) return false;
+        float bottom = (float)hh - h - y;
+        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
+    }
 
     void draw() {
         if(hidden) {
@@ -78,8 +83,6 @@ struct Widget {
     Widget* getParent() {
         return parent;
     }
-
-
 
     void addChild(Widget* child) {
         if(child == this) return; //cant child self
@@ -130,11 +133,7 @@ struct Widget {
         return false;
     }
 
-    bool hit(float mx, float my) const {
-        if (hidden || isEffectivelyHidden()) return false;
-        float bottom = (float)hh - h - y;
-        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
-    }
+
 
 
 }; //end Widget
@@ -292,10 +291,10 @@ struct Panel : Widget {
 struct Button : Widget {
     string label;
     float textSize = HUD_FONT;
-    void (*onPress)();
+    std::function<void()> onPress;
 
     //constructor (no label specified)
-    Button(float x, float y, float w, float h, void (*onPress)(), const string& label = "" )
+    Button(float x, float y, float w, float h, std::function<void()> onPress, const string& label = "" )
     : Widget(x, y, w, h), onPress(onPress), label(label) {
         fit();
     }
@@ -547,6 +546,13 @@ struct Section : Widget {
         delete content;
     }
 
+    bool hit(float mx, float my) const override {
+        if (hidden || isEffectivelyHidden()) return false;
+        // only the header bar is interactive
+        float bottom = (float)hh - headerH - y;
+        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + headerH;
+    }
+
     void add(Widget* w) {
         content->add(w, 0, 0);
     }
@@ -603,11 +609,13 @@ struct Dropdown : Widget {
     vector<string> options;
     int* selected = nullptr;   // binds to an int (index into options)
     bool open = false;
+    bool closing = false;
     float textSize = HUD_FONT;
     float labelW = 0.0f;
-    float itemH = 0.0f;
-    int hoveredItem = -1;           // for highlighting while open
-    float lastMX = 0.0f, lastMY = 0.0f;
+
+    Panel* popup = nullptr;
+
+
     //int index base
     Dropdown(float x, float y, float w, float h,
                  const string& label,
@@ -629,6 +637,10 @@ struct Dropdown : Widget {
         resize();
     }
 
+    ~Dropdown() {
+        delete popup;
+    }
+
     void resize() {
         labelW = text_width(label, textSize) + HUD_PAD_X * 2.0f;
         if (labelW < 48.0f) labelW = 48.0f;
@@ -636,12 +648,11 @@ struct Dropdown : Widget {
         float maxOpt = 0.0f;
         for (const auto& o : options)
             maxOpt = std::max(maxOpt, text_width(o, textSize));
-        float boxW = maxOpt + HUD_PAD_X * 2.0f + 20.0f; // extra for arrow
-        if (boxW < 80.0f) boxW = 80.0f;
+        float boxW = maxOpt + HUD_PAD_X * 2.0f + 24.0f;
+        if (boxW < 100.0f) boxW = 100.0f;
 
         w = labelW + boxW + HUD_PAD_X;
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
-        itemH = h;
     }
 
     string currentText() const {
@@ -651,98 +662,59 @@ struct Dropdown : Widget {
     }
 
     void drawSelf() override {
-        //label and box
         GLuint outer = hovered || open ? HUDHighlighted : HUDGray;
-        mat4 trans_matrix = translate(x, (float)hh - h - y, 0.0f);
-        mat4 scale_matrix = scale(w, h, 1.0f);
-        model_matrix = trans_matrix  * scale_matrix;
+        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
         draw_color_object(HUDQuad, outer);
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
 
-        //dropdown
         float boxX = x + labelW;
         float boxW = w - labelW - HUD_PAD_X;
-        trans_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f);
-        scale_matrix = scale(boxW, h - 8.0f, 1.0f);
-        model_matrix = trans_matrix * scale_matrix;
+        model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
+                     * scale(boxW, h - 8.0f, 1.0f);
         draw_color_object(HUDQuad, HUDTextField);
         draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize);
-        // simple arrow
         draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize);
-
-        // Open list (drawn as part of this widget so it appears on top of siblings
-        if (open) {
-            for (int i = 0; i < (int)options.size(); ++i) {
-                float iy = y + h + (float)i * itemH;
-                GLuint col = (i == hoveredItem) ? HUDHighlighted : HUDGray;
-                trans_matrix = translate(x + labelW, (float)hh - itemH - iy, 0.0f);
-                scale_matrix = scale(boxW, itemH, 1.0f);
-                model_matrix = trans_matrix * scale_matrix;
-                draw_color_object(HUDQuad, col);
-                draw_string(options[i], x + labelW + 6.0f, iy + 6.0f, textSize);
-            }
-        }
     }
 
-    // Expand hit area when open so the list is clickable
-    bool hit(float mx, float my) const {
-        if (hidden || isEffectivelyHidden()) return false;
-        float totalH = open ? h + (float)options.size() * itemH : h;
-        float bottom = (float)hh - totalH - y;
-        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + totalH;
+    void openPopup() {
+        if (!popup) {
+            popup = new Panel(x + labelW, y + h);
+
+            for (int i = 0; i < (int)options.size(); ++i) {
+                Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
+                    [this, i]() {
+                        if (selected) *selected = i;
+                        closePopup();          // only hides
+                    },
+                    options[i]);
+                popup->add(b, 0, i);
+            }
+            popup->layout();
+        }
+
+        popup->x = x + labelW;
+        popup->y = y + h;
+        popup->layout();
+        popup->show();
+        open = true;
+    }
+
+
+
+    void closePopup() {
+        if (popup) popup->hide();
+        open = false;
     }
 
     void on_click() override {
         if (!open) {
             open = true;
-            return;
-        }
-        // reuse the same math as selectAt, but with lastMX / lastMY
-        if (!selected) { open = false; return; }
-        float boxX = x + labelW;
-        float boxW = w - labelW - HUD_PAD_X;
-        if (lastMX < boxX || lastMX > boxX + boxW) {
-            open = false;
-            return;
-        }
-        for (int i = 0; i < (int)options.size(); ++i) {
-            float iy = y + h + (float)i * itemH;
-            float bottom = (float)hh - itemH - iy;
-            if (lastMY >= bottom && lastMY <= bottom + itemH) {
-                *selected = i;
-                open = false;
-                return;
-            }
-        }
-        open = false;
-    }
-
-    void on_hover(float mx, float my) override {
-        lastMX = mx;
-        lastMY = my;
-        // optional: update hoveredItem here so the highlight works
-        hoveredItem = -1;
-        if (!open) return;
-        float boxX = x + labelW;
-        float boxW = w - labelW - HUD_PAD_X;
-        if (mx < boxX || mx > boxX + boxW) return;
-        for (int i = 0; i < (int)options.size(); ++i) {
-            float iy = y + h + (float)i * itemH;
-            float bottom = (float)hh - itemH - iy;
-            if (my >= bottom && my <= bottom + itemH) {
-                hoveredItem = i;
-                break;
-            }
+            openPopup();
+        } else {
+            closePopup();
         }
     }
 
-
-    void on_key(int key, int action) override {
-        if (!open || !selected || action != GLFW_PRESS) return;
-        if (key == GLFW_KEY_UP && *selected > 0) (*selected)--;
-        else if (key == GLFW_KEY_DOWN && *selected + 1 < (int)options.size()) (*selected)++;
-        else if (key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) open = false;
-    }
 };
 
 
