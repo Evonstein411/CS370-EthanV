@@ -33,9 +33,11 @@ string name_string = "";
 //widgets
 Section* material_section = nullptr;
 Section* object_section = nullptr;
+Section* solid_color_section = nullptr;
 
 Panel* object_panel = nullptr;
 Panel* material_panel = nullptr;
+Panel* solid_color_panel = nullptr;
 
 TextField<string>* name_field = nullptr;
 Dropdown* type_dropdown = nullptr;
@@ -57,7 +59,10 @@ TextField<float>* specular_a_field = nullptr;
 
 TextField<float>* shininess_field = nullptr;
 
-
+TextField<float>* color_r_field = nullptr;
+TextField<float>* color_g_field = nullptr;
+TextField<float>* color_b_field = nullptr;
+TextField<float>* color_a_field = nullptr;
 
 //functions
 void display();
@@ -259,6 +264,9 @@ void init_hud() {
     material_section = new Section(0.0f, 0.0f, "Material Details");
     object_panel->add(material_section, 0, 1);
 
+    solid_color_section = new Section(0.0f, 0.0f, "Solid Color");
+    object_panel->add(solid_color_section, 0, 2);
+
 
     //setting panel
     Panel* settings_panel = new Panel(20.0f, 90.0f);
@@ -330,6 +338,25 @@ void init_hud() {
     shininess_field = new TextField<float>(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 3);
 
+    //solid color panel
+    solid_color_panel = new Panel(0.0f, 0.0f);
+    solid_color_section->add(solid_color_panel);
+
+    color_r_field = new TextField<float>(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &color_r);
+    solid_color_panel->add(color_r_field, 0, 0);
+
+    color_g_field = new TextField<float>(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &color_g);
+    solid_color_panel->add(color_g_field, 0, 1);
+
+    color_b_field = new TextField<float>(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &color_b);
+    solid_color_panel->add(color_b_field, 0, 2);
+
+    color_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &color_a);
+    solid_color_panel->add(color_a_field, 0, 3);
+
+
+
+
     update_fields();
 
 }//end init hud
@@ -339,7 +366,9 @@ void update_fields() {
     if (!selectedObject) {
         name_field->setText("NONE");
         name_field->setEditable(false);
-        if(material_panel) material_panel->hide();
+        selectedType = -1;
+        if(material_section) material_section->hide();
+        if(solid_color_section) solid_color_section->hide();
         return;
     }else {
         if(material_panel) material_panel->show();
@@ -354,45 +383,62 @@ void update_fields() {
         selectedType = selectedObject->drawType;
     }
 
-    if (selectedObject->drawType != MATERIAL) return;
+    if (selectedObject->drawType == MATERIAL) {
+        material_section->show();
+        solid_color_section->hide();
 
-    MaterialProperties& mat = DynamicMaterials[selectedObject->material];
+        MaterialProperties& mat = DynamicMaterials[selectedObject->material];
 
-    // Copy material → globals (so the fields stay bound to the globals)
-    ambient_r = mat.ambient[0];
-    ambient_g = mat.ambient[1];
-    ambient_b = mat.ambient[2];
-    ambient_a = mat.ambient[3];
+        // Copy material → globals (so the fields stay bound to the globals)
+        ambient_r = mat.ambient[0];
+        ambient_g = mat.ambient[1];
+        ambient_b = mat.ambient[2];
+        ambient_a = mat.ambient[3];
 
-    diffuse_r = mat.diffuse[0];
-    diffuse_g = mat.diffuse[1];
-    diffuse_b = mat.diffuse[2];
-    diffuse_a = mat.diffuse[3];
+        diffuse_r = mat.diffuse[0];
+        diffuse_g = mat.diffuse[1];
+        diffuse_b = mat.diffuse[2];
+        diffuse_a = mat.diffuse[3];
 
-    specular_r = mat.specular[0];
-    specular_g = mat.specular[1];
-    specular_b = mat.specular[2];
-    specular_a = mat.specular[3];
+        specular_r = mat.specular[0];
+        specular_g = mat.specular[1];
+        specular_b = mat.specular[2];
+        specular_a = mat.specular[3];
 
-    shininess = mat.shininess;
+        shininess = mat.shininess;
 
-    // Refresh the displayed text
-    if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
-    if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
-    if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
-    if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
+        // Refresh the displayed text
+        if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
+        if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
+        if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
+        if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
 
-    if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
-    if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
-    if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
-    if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
+        if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
+        if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
+        if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
+        if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
 
-    if (specular_r_field) specular_r_field->setText(to_string(specular_r));
-    if (specular_g_field) specular_g_field->setText(to_string(specular_g));
-    if (specular_b_field) specular_b_field->setText(to_string(specular_b));
-    if (specular_a_field) specular_a_field->setText(to_string(specular_a));
+        if (specular_r_field) specular_r_field->setText(to_string(specular_r));
+        if (specular_g_field) specular_g_field->setText(to_string(specular_g));
+        if (specular_b_field) specular_b_field->setText(to_string(specular_b));
+        if (specular_a_field) specular_a_field->setText(to_string(specular_a));
 
-    if(shininess_field) shininess_field->setText(to_string(shininess));
+        if(shininess_field) shininess_field->setText(to_string(shininess));
+    }else if(selectedObject->drawType == SOLID_COLOR){
+        material_section->hide();
+        solid_color_section->show();
+
+        vec4 color = selectedObject->color;
+        color_r = color[0];
+        color_g = color[1];
+        color_b = color[2];
+        color_a = color[3];
+
+        if (color_r_field) color_r_field->setText(to_string(color_r));
+        if (color_g_field) color_g_field->setText(to_string(color_g));
+        if (color_b_field) color_b_field->setText(to_string(color_b));
+        if (color_a_field) color_a_field->setText(to_string(color_a));
+    }
 
 }//end update fields
 
@@ -404,6 +450,7 @@ void update_from_fields() {
                 selectedObject->initializeType(static_cast<DrawType>(selectedType));
             }
             selectedObject->drawType = static_cast<DrawType>(selectedType);
+            update_fields();
         }
 
         //update material values from fields
@@ -414,6 +461,12 @@ void update_from_fields() {
             mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
             mat.shininess = shininess;
         }
+
+        if (selectedObject->drawType == SOLID_COLOR) {
+            vec4 new_color = {color_r, color_g, color_b, color_a};
+            selectedObject->color = new_color;
+        }
+
 
         if(name_field) {
             selectedObject->name = name_string;

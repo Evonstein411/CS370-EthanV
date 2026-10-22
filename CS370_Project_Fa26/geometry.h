@@ -8,6 +8,11 @@ GLint numVertices[NumVAOs];
 enum Color_Buffer_IDs {CubeRed, FloorGray, HUDGray, HUDPanel, HUDHighlighted, HUDTextField, NumColorBuffers};
 vector<GLuint> ColorBuffers;
 
+float color_r = 0.0f;
+float color_g = 0.0f;
+float color_b = 0.0f;
+float color_a = 0.0f;
+
 
 // Model files
 const char * cubeFile = "../../common/models/unitcube.obj";

@@ -28,9 +28,15 @@ struct SceneObject {
     : mesh(mesh), name(name), position(position), rotation(rotation), scale(scale), color(color) {
         objects.push_back(this);
         drawType = SOLID_COLOR;
-        glGenBuffers(1, &colorBuffer);
+
+
+        GLuint buf;
+        glGenBuffers(1, &buf);
+        ColorBuffers.push_back(buf);
+        colorBuffer = (GLuint)ColorBuffers.size() - 1;   // index, like material
         build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
         hasColor = true;
+
     }
 
     //materials
@@ -58,19 +64,23 @@ struct SceneObject {
         //solid color add color if none and build buffer
         if (newType == SOLID_COLOR) {
             if(!hasColor) {
-                color = {0.0f, 0.0f, 0.0f, 1.0f,}; //set to white if no color set
+                color = {1.0f, 1.0f, 1.0f, 1.0f,}; //set to white if no color set
+                GLuint buf;
+                glGenBuffers(1, &buf);
+                ColorBuffers.push_back(buf);
+                colorBuffer = (GLuint)ColorBuffers.size() - 1;
+                hasColor = true;
             }
-            glGenBuffers(1, &colorBuffer);
             build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
-            hasColor = true;
         //material add material properties if none
         } else if (newType == MATERIAL) {
             if(!hasMaterial) {
                 materialProperties = baseMaterial; //use base material
+                material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
+                DynamicMaterials.push_back(materialProperties);
+                hasMaterial = true;
             }
-            material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
-            DynamicMaterials.push_back(materialProperties);
-            hasMaterial = true;
+
         } else if (newType == TEXTURE) {
             if(!texture) {
                 texture = Blank; //use blank texture if none
