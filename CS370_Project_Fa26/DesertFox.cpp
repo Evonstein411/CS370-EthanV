@@ -17,17 +17,15 @@
 #include "textures.h"
 #include "drawObjects.h"
 #include "shaders.h"
-#include "ui.h"
 #include "sceneobject.h"
 #include "hitdetection.h"
 #include "callbacks.h"
+#include "ui.h"
+
 
 //globals
 vector<SceneObject*> objects;
 SceneObject* selectedObject = nullptr;
-int selectedType = -1;
-int selectedTexture = -1;
-string name_string = "";
 
 
 
@@ -36,9 +34,7 @@ void display();
 void render_scene();
 void init_scene();
 void render_hud();
-void init_hud();
-void update_fields();
-void update_from_fields();
+
 
 
 
@@ -174,43 +170,10 @@ void init_scene() {
     SceneObject* wall2 = new SceneObject(Cube, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
     SceneObject* wall3 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
     SceneObject* wall4 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-
-
 }
 
 
-void render_hud() {
-    //don't need to check depth for ui
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    //NOTE: IF YOU WANT TRANSPARENCY OF HUD ELEMENTS MAKE SURE ALPHA BLENDING IS ON
 
-
-    //switch to pixel based ortho camera, store camera data pre hud draw
-    mat4 scene_proj_matrix = proj_matrix;
-    mat4 scene_camera_matrix = camera_matrix;
-    proj_matrix = ortho(0.0f, (float)ww, 0.0f, (float)hh, -1.0f, 1.0f);
-    camera_matrix  = mat4().identity();
-
-
-    //model matrices
-    model_matrix = mat4().identity();
-    mat4 scale_matrix = mat4().identity();
-    mat4 trans_matrix = mat4().identity();
-
-
-    for (size_t i = 0; i < widgets.size(); i++) {
-        if(!(widgets[i]->isChild())){widgets[i]->draw();}
-    }
-
-    //reset settings to pre hud state, restore camera
-    proj_matrix = scene_proj_matrix;
-    camera_matrix = scene_camera_matrix;
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-
-
-}//end render hud
 
 
 

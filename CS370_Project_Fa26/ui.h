@@ -1,10 +1,10 @@
 
+#include "kitUI/hud.h"
 
-
-
-
-//Header file for all widget declarations
-
+//globals
+int selectedType = -1;
+int selectedTexture = -1;
+string name_string = "";
 
 //sections
 Section* material_section = nullptr;
@@ -33,6 +33,10 @@ Label* shininess_label = nullptr;
 Button* light_button = nullptr;
 Button* add_texture_button = nullptr;
 
+//button functions
+void toggle_lights();
+void add_texture();
+
 //text fields
 TextField<string>* name_field = nullptr;
 
@@ -58,6 +62,10 @@ TextField<float>* color_g_field = nullptr;
 TextField<float>* color_b_field = nullptr;
 TextField<float>* color_a_field = nullptr;
 
+
+void render_hud() {
+    draw_widgets();
+}
 
 void init_hud() {
     light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");

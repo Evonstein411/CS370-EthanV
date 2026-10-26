@@ -92,6 +92,7 @@ set(COMMON_FILES
         ui.h
         kitUI/widgets.h
         kitUI/hud.h
+        DesertFox.cpp
 )
 
 #-------------------------------------------------------------
