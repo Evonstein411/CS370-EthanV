@@ -230,10 +230,9 @@ struct Panel : Widget {
         vector<float> colX(nCols + 1, 0.0f);
         vector<float> rowY(nRows + 1, 0.0f);
         for (int i = 0; i < nCols; i++)
-            colX[i + 1] = colX[i] + colW[i] + (i < nCols - 1 ? gapX : 0.0f);
+            colX[i + 1] = colX[i] + colW[i] + ((i < nCols - 1 && colW[i] > 0.0f) ? gapX : 0.0f);
         for (int i = 0; i < nRows; i++)
-            rowY[i + 1] = rowY[i] + rowH[i] + (i < nRows - 1 ? gapY : 0.0f);
-
+            rowY[i + 1] = rowY[i] + rowH[i] + ((i < nRows - 1 && rowH[i] > 0.0f) ? gapY : 0.0f);
         // Position children relative to the panel
         for (size_t i = 0; i < cells.size(); i++) {
             Cell& c = cells[i];

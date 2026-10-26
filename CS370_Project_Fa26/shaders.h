@@ -43,8 +43,8 @@ const char *lighting_vertex_shader = "../../common/shaders/Phonglighting.vert";
 const char *lighting_frag_shader = "../../common/shaders/Phonglighting.frag";
 
 // Texture shader files
-const char *texture_vertex_shader = "../../CS370_Project_Fa26/shaders/texture2.vert";
-const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/texture2.frag";
+const char *texture_vertex_shader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
+const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
 
 
 void build_shaders() {

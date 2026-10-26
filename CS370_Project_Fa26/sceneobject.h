@@ -19,7 +19,7 @@ struct SceneObject {
     GLuint colorBuffer;
     MaterialProperties materialProperties;
     GLuint material;
-    GLuint texture;
+    GLuint texture = 0;
     string name;
     bool hasMaterial = false, hasColor = false;
 

@@ -6,7 +6,7 @@
 enum Textures {Blank, Font, NumTextures};
 // Texture files
 const char * blankFile = "../textures/blank.png";
-const char * fontFile = "../textures/Roboto-Regular.ttf";
+const char * fontFile = "../fonts/Roboto-Regular.ttf";
 
 GLuint TextureIDs[NumTextures];
 stbtt_bakedchar glyphs[96];
