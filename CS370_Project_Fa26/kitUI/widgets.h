@@ -1,3 +1,6 @@
+#ifndef KITUI_WIDGETS_H
+#define KITUI_WIDGETS_H
+
 #include <string>
 #include <functional>
 #include <cstdlib>
@@ -10,6 +13,7 @@ struct TextFieldBase;
 template<typename T> struct TextField;
 struct Label;
 struct Panel;
+
 //list of widgets
 vector<Widget*> widgets;
 
@@ -795,3 +799,5 @@ float text_width(const string& text, float size) {
     }
     return width;
 }
+
+#endif

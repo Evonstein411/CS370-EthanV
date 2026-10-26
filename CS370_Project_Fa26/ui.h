@@ -1,5 +1,8 @@
-
 #include "kitUI/hud.h"
+
+
+//selected object (exists in DesertFox.cpp)
+extern SceneObject* selectedObject;
 
 //globals
 int selectedType = -1;
@@ -61,6 +64,9 @@ TextField<float>* color_r_field = nullptr;
 TextField<float>* color_g_field = nullptr;
 TextField<float>* color_b_field = nullptr;
 TextField<float>* color_a_field = nullptr;
+
+//forward decs
+void update_fields();
 
 
 void render_hud() {

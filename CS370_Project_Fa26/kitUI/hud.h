@@ -1,4 +1,95 @@
+#ifndef KITUI_HUD_H
+#define KITUI_HUD_H
+
 #include "widgets.h"
+
+bool hud_mouse_button(float mx, float my, int button, int action);
+bool hud_cursor(float mx, float my);
+bool hud_char(unsigned int codepoint);
+bool hud_key(int key, int action);   // returns true if UI consumed it
+
+
+bool hud_cursor(float mx, float my) {
+    for (size_t i = 0; i < widgets.size(); i++) {
+        widgets[i]->hovered = widgets[i]->hit(mx, my);
+        widgets[i]->on_hover(mx, my);
+    }
+    return true;
+}
+
+
+bool hud_char(unsigned int codepoint) {
+    for (size_t i = 0; i < widgets.size(); i++) widgets[i]->on_char(codepoint);
+    return true;
+}
+
+
+bool hud_key(int key, int action) {
+    bool typing = false;
+    //if a field is focused we are typing
+    for (size_t i = 0; i < widgets.size(); i++) {
+        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
+        if (field && field->focused) typing = true;
+    }
+
+    //not typing
+    if (!typing)
+        return false;
+
+    //commit and unfocus if enter or escape pressed after typing
+    if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
+        for (size_t i = 0; i < widgets.size(); i++) {
+            TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
+            if (field && field->focused) field->commit();
+            if (field) field->focused = false;
+        }
+        return true;
+    }
+
+    //call on keys
+    for (size_t i = 0; i < widgets.size(); i++)
+        widgets[i]->on_key(key, action);
+    return true;
+
+}
+
+
+bool hud_mouse_button(float mx, float my, int button, int action) {
+    //not left click
+    if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS)
+        return false;
+
+    //check if clicked on widget
+    int hitIndex = -1;
+    for (int i = (int)widgets.size() - 1; i >= 0; i--) {
+        if (widgets[i]->hit(mx, my)) {
+            hitIndex = i;
+            break;
+        }
+    }
+
+    //check text fields for focus
+    for (size_t i = 0; i < widgets.size(); i++) {
+        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
+        if(field) {
+            //if focused and not clicked commit
+            if (field->focused && (int)i != hitIndex)
+                field->commit();
+            field->focused = (field->editable && (int)i == hitIndex);
+        }
+    }
+
+    //hit something call on click
+    if (hitIndex >= 0) {
+        widgets[hitIndex]->on_click();
+        return true;
+    }
+
+    return false;
+
+
+}
+
 
 
 void draw_widgets() {
@@ -33,3 +124,5 @@ void draw_widgets() {
 
 
 }//end render hud
+
+#endif

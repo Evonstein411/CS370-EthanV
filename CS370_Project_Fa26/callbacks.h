@@ -1,7 +1,7 @@
+#include "kitUI/hud.h"
+
 extern SceneObject* selectedObject;
 
-//exists in houseproject forward dec to avoid error
-void update_fields();
 
 //functions
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
@@ -9,37 +9,11 @@ void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& 
 
 //keyboard callback
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    //press escape either end typing or close window
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        bool typing = false;
-        for (size_t i = 0; i < widgets.size(); i++) {
-            TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-            if (field && field->focused) typing = true;
-        }
-        if (!typing) {
-            glfwSetWindowShouldClose(window, true);
-            return;
-        }
-    }
 
-    bool typing = false;
-    for (size_t i = 0; i < widgets.size(); i++) {
-        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-        if (field && field->focused) typing = true;
-    }
-
-    if (typing) {
-        if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
-            for (size_t i = 0; i < widgets.size(); i++) {
-                TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-                if (field && field->focused) field->commit();
-                if (field) field->focused = false;
-            }
-            return;
-        }
-        for (size_t i = 0; i < widgets.size(); i++) widgets[i]->on_key(key, action);
+    if(hud_key(key, action)) {
         return;
     }
+
     
     // A/D Adjust azimuth
     if (key == GLFW_KEY_A) {
@@ -105,33 +79,10 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     float mx, my;
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
 
-    //check if clicked on widget
-    int hitIndex = -1;
-    for (int i = (int)widgets.size() - 1; i >= 0; i--) {
-        if (widgets[i]->hit(mx, my)) {
-            hitIndex = i;
-            break;
-        }
-    }
+    if (hud_mouse_button(mx, my, button, action))
+        return;   // UI ate it
 
 
-
-    //check text fields
-    for (size_t i = 0; i < widgets.size(); i++) {
-        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-        if(field) {
-            //if focused and not clicked commit
-            if (field->focused && (int)i != hitIndex)
-                field->commit();
-            field->focused = (field->editable && (int)i == hitIndex);
-        }
-    }
-
-    //call on click for widget clicked on
-    if (hitIndex >= 0) {
-        widgets[hitIndex]->on_click();
-        return;
-    }
 
     //check if clicked on object
     SceneObject* clicked = pick_scene_object(mx, my);
@@ -143,17 +94,14 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
 
 
 void char_callback(GLFWwindow*, unsigned int codepoint) {
-    for (size_t i = 0; i < widgets.size(); i++) widgets[i]->on_char(codepoint);
+    hud_char(codepoint);
 }
 
 //mouse move callback
 void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     float mx, my;
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
-    for (size_t i = 0; i < widgets.size(); i++) {
-        widgets[i]->hovered = widgets[i]->hit(mx, my);
-        widgets[i]->on_hover(mx, my);
-    }
+    hud_cursor(mx, my);
 }
 
 

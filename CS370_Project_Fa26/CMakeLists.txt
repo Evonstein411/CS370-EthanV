@@ -86,13 +86,10 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/textureutils.cpp
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
-        hud.h
         hitdetection.h
-        widgets.h
         ui.h
         kitUI/widgets.h
         kitUI/hud.h
-        DesertFox.cpp
 )
 
 #-------------------------------------------------------------
