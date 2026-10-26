@@ -34,10 +34,13 @@ string name_string = "";
 Section* material_section = nullptr;
 Section* object_section = nullptr;
 Section* solid_color_section = nullptr;
+Section* texture_section = nullptr;
 
 Panel* object_panel = nullptr;
 Panel* material_panel = nullptr;
 Panel* solid_color_panel = nullptr;
+Panel* texture_panel = nullptr;
+
 
 TextField<string>* name_field = nullptr;
 Dropdown* type_dropdown = nullptr;
@@ -264,8 +267,13 @@ void init_hud() {
     material_section = new Section(0.0f, 0.0f, "Material Details");
     object_panel->add(material_section, 0, 1);
 
+    //color section
     solid_color_section = new Section(0.0f, 0.0f, "Solid Color");
     object_panel->add(solid_color_section, 0, 2);
+
+    //texture section
+    texture_section = new Section(0.0f, 0.0f, "Texture");
+    object_panel->add(texture_section, 0, 3);
 
 
     //setting panel
@@ -354,6 +362,9 @@ void init_hud() {
     color_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &color_a);
     solid_color_panel->add(color_a_field, 0, 3);
 
+    //texture panel
+    texture_panel = new Panel(0.0f, 0.0f);
+
 
 
 
@@ -369,6 +380,8 @@ void update_fields() {
         selectedType = -1;
         if(material_section) material_section->hide();
         if(solid_color_section) solid_color_section->hide();
+        if(texture_section) texture_section->hide();
+
         return;
     }else {
         if(material_panel) material_panel->show();
@@ -386,6 +399,8 @@ void update_fields() {
     if (selectedObject->drawType == MATERIAL) {
         material_section->show();
         solid_color_section->hide();
+        texture_section->hide();
+
 
         MaterialProperties& mat = DynamicMaterials[selectedObject->material];
 
@@ -426,6 +441,7 @@ void update_fields() {
         if(shininess_field) shininess_field->setText(to_string(shininess));
     }else if(selectedObject->drawType == SOLID_COLOR){
         material_section->hide();
+        texture_section->hide();
         solid_color_section->show();
 
         vec4 color = selectedObject->color;
@@ -438,6 +454,12 @@ void update_fields() {
         if (color_g_field) color_g_field->setText(to_string(color_g));
         if (color_b_field) color_b_field->setText(to_string(color_b));
         if (color_a_field) color_a_field->setText(to_string(color_a));
+    }else if(selectedObject -> drawType == TEXTURE) {
+        material_section->hide();
+        solid_color_section->hide();
+        texture_section->show();
+
+
     }
 
 }//end update fields
