@@ -89,6 +89,9 @@ set(COMMON_FILES
         hud.h
         hitdetection.h
         widgets.h
+        ui.h
+        kitUI/widgets.h
+        kitUI/hud.h
 )
 
 #-------------------------------------------------------------

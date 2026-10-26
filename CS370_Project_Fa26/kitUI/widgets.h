@@ -11,7 +11,7 @@ template<typename T> struct TextField;
 struct Label;
 struct Panel;
 //list of widgets
-extern vector<Widget*> widgets;
+vector<Widget*> widgets;
 
 //HUD util function defs
 void draw_string(const string& text, float x, float y, float size);
@@ -188,7 +188,7 @@ struct Panel : Widget {
         cells.push_back(c);
         addChild(w);
     }
-    
+
     void layout() {
         if (cells.empty()) {
             w = padX * 2.0f;
