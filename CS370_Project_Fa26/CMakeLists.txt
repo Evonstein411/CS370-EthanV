@@ -88,6 +88,7 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
         hud.h
         hitdetection.h
+        widgets.h
 )
 
 #-------------------------------------------------------------

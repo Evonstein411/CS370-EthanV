@@ -82,9 +82,9 @@ void draw_mat_object(GLuint obj, GLuint material){
 
 
 
-void draw_tex_object(GLuint obj, GLuint texture){
+void draw_tex_object(GLuint obj, GLuint texture, GLuint program=texture_program){
     // Select shader program
-    glUseProgram(texture_program);
+    glUseProgram(program);
 
     // Pass projection matrix to shader
     glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);

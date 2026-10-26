@@ -781,7 +781,7 @@ void draw_string(const string& text, float x, float y, float size) {
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
         model_matrix = mat4().identity();
-        draw_tex_object(HUDTextQuad, Font);
+        draw_tex_object(HUDTextQuad, Font, hud_program);
     }
 }
 

@@ -18,6 +18,7 @@
 #include "drawObjects.h"
 #include "shaders.h"
 #include "hud.h"
+#include "widgets.h"
 #include "sceneobject.h"
 #include "hitdetection.h"
 #include "callbacks.h"
@@ -27,45 +28,10 @@ vector<Widget*> widgets;
 vector<SceneObject*> objects;
 SceneObject* selectedObject = nullptr;
 int selectedType = -1;
+int selectedTexture = -1;
 string name_string = "";
 
 
-//widgets
-Section* material_section = nullptr;
-Section* object_section = nullptr;
-Section* solid_color_section = nullptr;
-Section* texture_section = nullptr;
-
-Panel* object_panel = nullptr;
-Panel* material_panel = nullptr;
-Panel* solid_color_panel = nullptr;
-Panel* texture_panel = nullptr;
-
-
-TextField<string>* name_field = nullptr;
-Dropdown* type_dropdown = nullptr;
-
-TextField<float>* ambient_r_field = nullptr;
-TextField<float>* ambient_g_field = nullptr;
-TextField<float>* ambient_b_field = nullptr;
-TextField<float>* ambient_a_field = nullptr;
-
-TextField<float>* diffuse_r_field = nullptr;
-TextField<float>* diffuse_g_field = nullptr;
-TextField<float>* diffuse_b_field = nullptr;
-TextField<float>* diffuse_a_field = nullptr;
-
-TextField<float>* specular_r_field = nullptr;
-TextField<float>* specular_g_field = nullptr;
-TextField<float>* specular_b_field = nullptr;
-TextField<float>* specular_a_field = nullptr;
-
-TextField<float>* shininess_field = nullptr;
-
-TextField<float>* color_r_field = nullptr;
-TextField<float>* color_g_field = nullptr;
-TextField<float>* color_b_field = nullptr;
-TextField<float>* color_a_field = nullptr;
 
 //functions
 void display();
@@ -252,9 +218,13 @@ void toggle_lights() {
     lightOn[WhitePointLight] = !lightOn[WhitePointLight];
 }
 
+void add_texture(){
+    printf("Texture added");
+}
+
 
 void init_hud() {
-    Button* light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
@@ -277,7 +247,7 @@ void init_hud() {
 
 
     //setting panel
-    Panel* settings_panel = new Panel(20.0f, 90.0f);
+    settings_panel = new Panel(20.0f, 90.0f);
     object_section->add(settings_panel);
 
     name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
@@ -291,7 +261,7 @@ void init_hud() {
     material_section->add(material_panel);
 
     //ambient
-    Label* ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
+    ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
     material_panel->add(ambient_label, 0, 0);
 
     ambient_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
@@ -307,65 +277,70 @@ void init_hud() {
     material_panel->add(ambient_a_field, 4, 0);
 
     //diffuse
-    Label* diffuse_label= new Label(20.0f, 220.0f, 130.0f, 48.0f, "diffuse");
+    diffuse_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "diffuse");
     material_panel->add(diffuse_label, 0, 1);
 
-    diffuse_r_field = new TextField<float>(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
+    diffuse_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
     material_panel->add(diffuse_r_field, 1, 1);
 
-    diffuse_g_field = new TextField<float>(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
+    diffuse_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
     material_panel->add(diffuse_g_field, 2, 1);
 
-    diffuse_b_field = new TextField<float>(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
+    diffuse_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
     material_panel->add(diffuse_b_field, 3, 1);
 
-    diffuse_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
+    diffuse_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
     material_panel->add(diffuse_a_field, 4, 1);
 
 
     //specular
-    Label* specular_label = new Label(20.0f, 300.0f, 130.0f, 48.0f, "specular");
+    specular_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "specular");
     material_panel->add(specular_label, 0, 2);
 
-    specular_r_field = new TextField<float>(180.0f, 300.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
+    specular_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
     material_panel->add(specular_r_field, 1, 2);
 
-    specular_g_field = new TextField<float>(320.0f, 300.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
+    specular_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
     material_panel->add(specular_g_field, 2, 2);
 
-    specular_b_field = new TextField<float>(460.0f, 300.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
+    specular_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
     material_panel->add(specular_b_field, 3, 2);
 
 
-    specular_a_field =new TextField<float>(600.0f, 300.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
+    specular_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
     material_panel->add(specular_a_field, 4, 2);
 
     //shininess
-    Label* shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
+    shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
     material_panel->add(shininess_label, 0, 3);
-    shininess_field = new TextField<float>(20.0f, 380.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
+    shininess_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 3);
 
     //solid color panel
     solid_color_panel = new Panel(0.0f, 0.0f);
     solid_color_section->add(solid_color_panel);
 
-    color_r_field = new TextField<float>(180.0f, 220.0f, 65.0f, 48.0f, "R:", 4.0f, true, &color_r);
+    color_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &color_r);
     solid_color_panel->add(color_r_field, 0, 0);
 
-    color_g_field = new TextField<float>(320.0f, 220.0f, 65.0f, 48.0f, "G:", 4.0f, true, &color_g);
+    color_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &color_g);
     solid_color_panel->add(color_g_field, 0, 1);
 
-    color_b_field = new TextField<float>(460.0f, 220.0f, 65.0f, 48.0f, "B:", 4.0f, true, &color_b);
+    color_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &color_b);
     solid_color_panel->add(color_b_field, 0, 2);
 
-    color_a_field =new TextField<float>(600.0f, 220.0f, 65.0f, 48.0f, "A:", 4.0f, true, &color_a);
+    color_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &color_a);
     solid_color_panel->add(color_a_field, 0, 3);
 
     //texture panel
     texture_panel = new Panel(0.0f, 0.0f);
+    texture_section->add(texture_panel);
 
+    texture_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Texture:", textureNames, selectedTexture);
+    texture_panel->add(texture_dropdown, 0, 0);
 
+    add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
+    texture_panel->add(add_texture_button, 0, 1);
 
 
     update_fields();

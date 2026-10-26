@@ -24,7 +24,7 @@ GLuint lighting_num_lights_loc;
 GLuint lighting_light_on_loc;
 GLuint lighting_eye_loc;
 
-// Texture shader program references
+// Object Texture shader program references
 GLuint texture_program;
 GLuint texture_vPos;
 GLuint texture_vTex;
@@ -33,6 +33,16 @@ GLuint texture_camera_mat_loc;
 GLuint texture_model_mat_loc;
 GLuint texture_uv_scale_loc;
 GLuint texture_uv_offset_loc;
+
+//HUD Texture shader program
+GLuint hud_program;
+GLuint hud_vPos;
+GLuint hud_vTex;
+GLuint hud_proj_mat_loc;
+GLuint hud_camera_mat_loc;
+GLuint hud_model_mat_loc;
+GLuint hud_uv_scale_loc;
+GLuint hud_uv_offset_loc;
 
 // Color shader files
 const char *color_vertex_shader = "../../common/shaders/color.vert";
@@ -43,8 +53,12 @@ const char *lighting_vertex_shader = "../../common/shaders/Phonglighting.vert";
 const char *lighting_frag_shader = "../../common/shaders/Phonglighting.frag";
 
 // Texture shader files
-const char *texture_vertex_shader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
-const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
+const char *texture_vertex_shader = "../../CS370_Project_Fa26/shaders/objectTexture.vert";
+const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/objectTexture.frag";
+
+//HUD shader files
+const char *hud_vertex_shader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
+const char *hud_frag_shader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
 
 
 void build_shaders() {
@@ -73,7 +87,7 @@ void build_shaders() {
     lighting_light_on_loc = glGetUniformLocation(lighting_program, "LightOn");
     lighting_eye_loc = glGetUniformLocation(lighting_program, "EyePosition");
 
-    // Load texture shaders
+    // Load object texture shaders
     ShaderInfo texture_shaders[] = { {GL_VERTEX_SHADER, texture_vertex_shader},{GL_FRAGMENT_SHADER, texture_frag_shader},{GL_NONE, NULL} };
     texture_program = LoadShaders(texture_shaders);
     texture_vPos = glGetAttribLocation(texture_program, "vPosition");
@@ -83,6 +97,20 @@ void build_shaders() {
     texture_model_mat_loc = glGetUniformLocation(texture_program, "model_matrix");
 	texture_uv_scale_loc = glGetUniformLocation(texture_program, "uvScale");
 	texture_uv_offset_loc = glGetUniformLocation(texture_program, "uvOffset");
+
+	// Load hud texture shaders
+	ShaderInfo hud_shaders[] = { {GL_VERTEX_SHADER, hud_vertex_shader},{GL_FRAGMENT_SHADER, hud_frag_shader},{GL_NONE, NULL} };
+	hud_program = LoadShaders(hud_shaders);
+	hud_vPos = glGetAttribLocation(hud_program, "vPosition");
+	hud_vTex = glGetAttribLocation(hud_program, "vTexCoord");
+	hud_proj_mat_loc = glGetUniformLocation(hud_program, "proj_matrix");
+	hud_camera_mat_loc = glGetUniformLocation(hud_program, "camera_matrix");
+	hud_model_mat_loc = glGetUniformLocation(hud_program, "model_matrix");
+	hud_uv_scale_loc = glGetUniformLocation(hud_program, "uvScale");
+	hud_uv_offset_loc = glGetUniformLocation(hud_program, "uvOffset");
+
+	glUseProgram(hud_program);
+	glUniform1i(glGetUniformLocation(hud_program, "tex"), 0);
 
 	glUseProgram(texture_program);
 	glUniform1i(glGetUniformLocation(texture_program, "tex"), 0);

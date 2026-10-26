@@ -1,9 +1,12 @@
 #define STB_TRUETYPE_IMPLEMENTATION
+#include <string>
+
 #include "../common/stb_truetype.h"
 
 
 // Textures
 enum Textures {Blank, Font, NumTextures};
+vector<string> textureNames = {"Blank", "Font"};
 // Texture files
 const char * blankFile = "../textures/blank.png";
 const char * fontFile = "../fonts/Roboto-Regular.ttf";
