@@ -82,9 +82,9 @@ void draw_mat_object(GLuint obj, GLuint material){
 
 
 
-void draw_tex_object(GLuint obj, GLuint texture, GLuint program=texture_program){
+void draw_tex_object(GLuint obj, GLuint textureID){
     // Select shader program
-    glUseProgram(program);
+    glUseProgram(texture_program);
 
     // Pass projection matrix to shader
     glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);
@@ -97,7 +97,7 @@ void draw_tex_object(GLuint obj, GLuint texture, GLuint program=texture_program)
 
     // TODO: Bind texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, TextureIDs[texture]);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);
@@ -114,4 +114,27 @@ void draw_tex_object(GLuint obj, GLuint texture, GLuint program=texture_program)
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
+}
+
+void draw_text_quad() {
+    glUseProgram(hud_program);
+
+    glUniformMatrix4fv(hud_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(hud_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(hud_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fontTextureID);
+
+    glBindVertexArray(VAOs[HUDTextQuad]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][PosBuffer]);
+    glVertexAttribPointer(hud_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(hud_vPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][TexBuffer]);
+    glVertexAttribPointer(hud_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(hud_vTex);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

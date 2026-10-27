@@ -83,7 +83,7 @@ struct SceneObject {
 
         } else if (newType == TEXTURE) {
             if(!texture) {
-                texture = Blank; //use blank texture if none
+                texture = TextureIDs[Blank];; //use blank texture if none
             }
         }
     }//end init type
@@ -111,13 +111,7 @@ struct SceneObject {
         }else if(drawType == TEXTURE) {
             draw_tex_object(mesh, texture);
         }
+    }//end draw
 
 
-
-
-
-
-    }
-
-
-};
+};//end scene object

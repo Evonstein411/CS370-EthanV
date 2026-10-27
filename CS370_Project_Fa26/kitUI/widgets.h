@@ -5,6 +5,8 @@
 #include <functional>
 #include <cstdlib>
 
+#include "../drawObjects.h"
+
 
 //structs
 struct Widget;
@@ -788,7 +790,7 @@ void draw_string(const string& text, float x, float y, float size, vec4 color) {
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
         model_matrix = mat4().identity();
-        draw_tex_object(HUDTextQuad, fontTextureID, hud_program);
+        draw_text_quad();
     }
 }
 

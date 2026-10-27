@@ -85,6 +85,7 @@ void build_font() {
     memset(pixels, 0, W * H);
     stbtt_BakeFontBitmap(ttf, 0, 32.0f, pixels, W, H, 32, 96, glyphs);
 
+    glGenTextures(1, &fontTextureID);
     glBindTexture(GL_TEXTURE_2D, fontTextureID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, W, H, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

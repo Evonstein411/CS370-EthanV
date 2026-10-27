@@ -31,3 +31,12 @@ extern GLuint texture_camera_mat_loc;
 extern GLuint texture_model_mat_loc;
 extern GLuint texture_uv_scale_loc;
 extern GLuint texture_uv_offset_loc;
+
+extern GLuint hud_program;
+extern GLuint hud_vPos;
+extern GLuint hud_vTex;
+extern GLuint hud_proj_mat_loc;
+extern GLuint hud_camera_mat_loc;
+extern GLuint hud_model_mat_loc;
+extern GLuint hud_uv_scale_loc;
+extern GLuint hud_uv_offset_loc;
