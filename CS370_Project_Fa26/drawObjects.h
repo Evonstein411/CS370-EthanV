@@ -1,3 +1,5 @@
+#ifndef DRAW_OBJECTS_H
+#define DRAW_OBJECTS_H
 #include "shadervars.h"
 
 void draw_color_object(GLuint obj, GLuint color) {
@@ -138,3 +140,5 @@ void draw_text_quad() {
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+#endif // DRAW_OBJECTS_H

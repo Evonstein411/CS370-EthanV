@@ -208,8 +208,14 @@ void update_fields() {
         if(texture_section) texture_section->hide();
 
         return;
-    }else {
-        if(material_panel) material_panel->show();
+    }
+
+    if (texture_dropdown) {
+        scan_textures();
+        texture_dropdown->setOptions(textureNames);
+    }
+
+    if(material_panel) material_panel->show();{
         name_field->setEditable(true);
     }
     // Name
@@ -292,6 +298,7 @@ void update_fields() {
 void update_from_fields() {
     if (selectedObject) {
 
+
         if(selectedType >= 0 ) {
             if(selectedObject->drawType != static_cast<DrawType>(selectedType)) {
                 selectedObject->initializeType(static_cast<DrawType>(selectedType));
@@ -315,13 +322,21 @@ void update_from_fields() {
             selectedObject->setColor(new_color);
         }
 
+        if (selectedObject->drawType == TEXTURE) {
+            selectedObject->texture = selectedTexture;
+        }
+
 
         if(name_field) {
             selectedObject->name = name_string;
         }
 
 
+
+
     }//if selected object
+
+
 
 }//end update from fields
 

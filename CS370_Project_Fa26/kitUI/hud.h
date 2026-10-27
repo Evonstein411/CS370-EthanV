@@ -79,6 +79,13 @@ bool hud_mouse_button(float mx, float my, int button, int action) {
         }
     }
 
+    //check dropdowns for closing
+    for (size_t i = 0; i < widgets.size(); i++) {
+        Dropdown* dd = dynamic_cast<Dropdown*>(widgets[i]);
+        if (dd && dd->open && !dd->contains(mx, my))
+            dd->closePopup();
+    }
+
     //hit something call on click
     if (hitIndex >= 0) {
         widgets[hitIndex]->on_click();

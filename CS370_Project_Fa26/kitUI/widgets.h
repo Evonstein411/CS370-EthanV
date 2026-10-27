@@ -656,6 +656,22 @@ struct Dropdown : Widget {
         delete popup;
     }
 
+    void setOptions(const vector<string>& newOptions) {
+        options = newOptions;
+        if (popup) {
+            delete popup;
+            popup = nullptr;
+        }
+        resize();
+    }
+
+    bool contains(float mx, float my) const {
+        if (hit(mx, my)) return true;                       // header
+        if (popup && !popup->hidden && popup->hit(mx, my))  // popup panel
+            return true;
+        return false;
+    }
+
     void resize() {
         labelW = text_width(label, textSize) + HUD_PAD_X * 2.0f;
         if (labelW < 48.0f) labelW = 48.0f;

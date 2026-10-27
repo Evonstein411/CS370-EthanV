@@ -26,7 +26,7 @@ void scan_textures(const std::string& folder) {
     TextureIDs.clear();
 
     // Blank always at index 0
-    textureNames.push_back("Blank");
+    textureNames.push_back("blank");
     GLuint blankID;
     glGenTextures(1, &blankID);
     load_texture("../textures/blank.png", blankID, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT, GL_REPEAT, true, false);
@@ -38,19 +38,31 @@ void scan_textures(const std::string& folder) {
 
     //go through each file
     for (const auto& entry : fs::directory_iterator(folder)) {
-        if (!entry.is_regular_file()) continue;
+        if (!entry.is_regular_file()) {
+            continue;
+        }
+
+        printf("  entry: %s  (regular=%d)\n");
 
         fs::path p = entry.path();
         std::string ext = p.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        if (ext != ".png") continue;
+
+        printf("    ext=\"%s\"\n", ext.c_str());
+        if (ext != ".png" && ext != ".jpg") {
+            continue;
+        }
 
         std::string stem = p.stem().string();
-        if (stem == "blank") continue;   // skip specials
+        printf("    stem=\"%s\"\n", stem.c_str());
+        if (stem == "blank") {
+            continue;
+        }
 
         GLuint id;
         glGenTextures(1, &id);
         load_texture(p.string().c_str(), id, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT, GL_REPEAT, true, false);
+        printf("loaded texture");
         textureNames.push_back(stem);
         TextureIDs.push_back(id);
 
