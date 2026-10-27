@@ -40,7 +40,7 @@ endforeach()
 #-------------------------------------------------------------
 project(${PROJECT_NAME})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
         ${CMAKE_SOURCE_DIR}/${SRC_FOLDER}/bin)
 
@@ -97,7 +97,7 @@ set(COMMON_FILES
 #-------------------------------------------------------------
 function(configure_target TARGET)
 
-    target_compile_features(${TARGET} PRIVATE cxx_std_11)
+    target_compile_features(${TARGET} PRIVATE cxx_std_17)
     target_compile_definitions(${TARGET} PRIVATE TARGET_NAME="${TARGET}")
 
     if(APPLE)

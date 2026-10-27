@@ -17,14 +17,20 @@ struct Panel;
 //list of widgets
 vector<Widget*> widgets;
 
-//HUD util function defs
-void draw_string(const string& text, float x, float y, float size);
-float text_width(const string& text, float size);
-
 //HUD globals
 const float HUD_FONT = 32.0f;
 const float HUD_PAD_X = 8.0f;
 const float HUD_PAD_Y = 8.0f;
+const vec4 HUD_COLOR = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+const vec4 ALT_HUD_COLOR = vec4(0.2f, 0.2f, 0.2f, 1.0f);
+
+
+//HUD util function defs
+void draw_string(const string& text, float x, float y, float size,
+                 vec4 color = HUD_COLOR);
+float text_width(const string& text, float size);
+
+
 
 
 //parent HUD element struct
@@ -285,7 +291,8 @@ struct Panel : Widget {
 
 };//end Panel
 
-
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
 
 //Button widget for interactivity
 struct Button : Widget {
@@ -327,6 +334,8 @@ struct Button : Widget {
 
 };//end Button
 
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
 
 //base for text field needed for callback logic
 struct TextFieldBase : Widget {
@@ -438,7 +447,7 @@ struct TextField : TextFieldBase {
         scale_matrix = scale(boxW, boxH, 1.0f);
         model_matrix =  trans_matrix * scale_matrix;
         draw_color_object(HUDQuad, HUDTextField);
-        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize);
+        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, ALT_HUD_COLOR);
     }
 
     void on_char(unsigned int charCode) override {
@@ -498,6 +507,9 @@ inline void TextField<string>::commit() {
 //generic fallback
 template<typename T>
 inline void TextField<T>::commit() {}
+
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
 
 //Label for labeling UI sections
 struct Label : Widget {
@@ -602,7 +614,8 @@ struct Section : Widget {
 
 };//end Section
 
-
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
 
 struct Dropdown : Widget {
     string label;
@@ -672,7 +685,7 @@ struct Dropdown : Widget {
         model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
         draw_color_object(HUDQuad, HUDTextField);
-        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize);
+        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, ALT_HUD_COLOR);
         draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize);
     }
 
@@ -718,37 +731,27 @@ struct Dropdown : Widget {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // -------------------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------- UTILITY FUNCTONS ------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------------------------
 
 
 //util function for drawing text
-void draw_string(const string& text, float x, float y, float size) {
+void draw_string(const string& text, float x, float y, float size, vec4 color) {
     float scale = size / 32.0f;   // bake height is 32
 
-    glUseProgram(texture_program);
-    glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(texture_camera_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniform2f(texture_uv_scale_loc, 1.0f, 1.0f);
-    glUniform2f(texture_uv_offset_loc, 0.0f, 0.0f);
+    glUseProgram(hud_program);
+    glUniformMatrix4fv(hud_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(hud_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniform2f(hud_uv_scale_loc, 1.0f, 1.0f);
+    glUniform2f(hud_uv_offset_loc, 0.0f, 0.0f);
+
+    GLint colorLoc = glGetUniformLocation(hud_program, "textColor");
+    if (colorLoc != -1)
+        glUniform4fv(colorLoc, 1, color);
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, TextureIDs[Font]);
+    glBindTexture(GL_TEXTURE_2D, fontTextureID);
 
     float penX = x;
     float baseline = y + size;    // y is pixels down from the top
@@ -785,7 +788,7 @@ void draw_string(const string& text, float x, float y, float size) {
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
         model_matrix = mat4().identity();
-        draw_tex_object(HUDTextQuad, Font, hud_program);
+        draw_tex_object(HUDTextQuad, fontTextureID, hud_program);
     }
 }
 
