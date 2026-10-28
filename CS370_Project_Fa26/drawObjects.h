@@ -2,6 +2,8 @@
 #define DRAW_OBJECTS_H
 #include "shadervars.h"
 
+GLuint dynamicHUDColorBuffer = 0;
+
 void draw_color_object(GLuint obj, GLuint color) {
     // Select shader program
     glUseProgram(color_program);
@@ -30,6 +32,39 @@ void draw_color_object(GLuint obj, GLuint color) {
 
     // Draw geometry
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
+}
+
+
+void draw_solid_hud_quad(vec4 color) {
+    //setup dynamic buffer
+    if (dynamicHUDColorBuffer == 0){
+        glGenBuffers(1, &dynamicHUDColorBuffer);
+        // allocate once to the size of the HUD quad
+        vector<vec4> tmp(numVertices[HUDQuad], color);
+        glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, tmp.size() * sizeof(vec4), tmp.data(), GL_DYNAMIC_DRAW);
+    }
+
+    vector<vec4> cols(numVertices[HUDQuad], color);
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, cols.size() * sizeof(vec4), cols.data());
+
+    //draw color object
+    glUseProgram(color_program);
+    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    glBindVertexArray(VAOs[HUDQuad]);
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDQuad][PosBuffer]);
+    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vCol);
+
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[HUDQuad]);
 }
 
 void draw_mat_object(GLuint obj, GLuint material){

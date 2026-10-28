@@ -9,6 +9,9 @@ int selectedType = -1;
 int selectedTexture = -1;
 string name_string = "";
 
+//file browsers
+FileBrowser* texture_file_browser = nullptr;
+
 //sections
 Section* material_section = nullptr;
 Section* object_section = nullptr;
@@ -192,10 +195,70 @@ void init_hud() {
     add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
     texture_panel->add(add_texture_button, 0, 1);
 
+    texture_file_browser = new FileBrowser(500.0f, 0.0f);
+    texture_file_browser->setPriority(2);
+    texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
 
     update_fields();
 
 }//end init hud
+
+void set_section_visibility(DrawType type) {
+    if (material_section)    material_section->setHidden(type != MATERIAL);
+    if (solid_color_section) solid_color_section->setHidden(type != SOLID_COLOR);
+    if (texture_section)     texture_section->setHidden(type != TEXTURE);
+}
+
+void sync_material_to_fields(const MaterialProperties& mat) {
+    ambient_r = mat.ambient[0];  ambient_g = mat.ambient[1];
+    ambient_b = mat.ambient[2];  ambient_a = mat.ambient[3];
+    diffuse_r = mat.diffuse[0];  diffuse_g = mat.diffuse[1];
+    diffuse_b = mat.diffuse[2];  diffuse_a = mat.diffuse[3];
+    specular_r = mat.specular[0]; specular_g = mat.specular[1];
+    specular_b = mat.specular[2]; specular_a = mat.specular[3];
+    shininess = mat.shininess;
+
+    if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
+    if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
+    if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
+    if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
+    if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
+    if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
+    if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
+    if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
+    if (specular_r_field) specular_r_field->setText(to_string(specular_r));
+    if (specular_g_field) specular_g_field->setText(to_string(specular_g));
+    if (specular_b_field) specular_b_field->setText(to_string(specular_b));
+    if (specular_a_field) specular_a_field->setText(to_string(specular_a));
+    if (shininess_field)  shininess_field->setText(to_string(shininess));
+}
+
+void sync_material_from_fields(MaterialProperties& mat) {
+    mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
+    mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
+    mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
+    mat.shininess = shininess;
+}
+
+void sync_color_to_fields(const vec4& color) {
+    color_r = color[0]; color_g = color[1];
+    color_b = color[2]; color_a = color[3];
+    if (color_r_field) color_r_field->setText(to_string(color_r));
+    if (color_g_field) color_g_field->setText(to_string(color_g));
+    if (color_b_field) color_b_field->setText(to_string(color_b));
+    if (color_a_field) color_a_field->setText(to_string(color_a));
+}
+
+void sync_color_from_fields(vec4& color) {
+    color = vec4(color_r, color_g, color_b, color_a);
+}
+
+int find_texture_index(GLuint texID) {
+    for (int i = 0; i < (int)TextureIDs.size(); ++i)
+        if (TextureIDs[i] == texID) return i;
+    return -1;
+}
+
 
 
 void update_fields() {
@@ -204,149 +267,60 @@ void update_fields() {
         name_field->setEditable(false);
         selectedType = -1;
         selectedTexture = -1;
-        if(material_section) material_section->hide();
-        if(solid_color_section) solid_color_section->hide();
-        if(texture_section) texture_section->hide();
-
+        set_section_visibility(static_cast<DrawType>(-1)); // hides all
         return;
     }
 
-    if (texture_dropdown) {
-        texture_dropdown->setOptions(textureNames);
-        for (int i = 0; i < (int)TextureIDs.size(); ++i) {
-            if (TextureIDs[i] == selectedObject->texture) {
-                selectedTexture = i;
-                break;
-            }
-        }
-    }
+    name_field->setEditable(true);
+    name_string = selectedObject->name;
+    name_field->setText(name_string);
 
-    if(material_panel) material_panel->show();{
-        name_field->setEditable(true);
-    }
-    // Name
-    if (name_field) {
-        name_string = selectedObject->name;
-        name_field->setText(name_string);
-    }
-    if(type_dropdown) {
-        selectedType = selectedObject->drawType;
+    selectedType = selectedObject->drawType;
+    set_section_visibility(selectedObject->drawType);
+
+    // Refresh texture list only when the texture section is relevant
+    if (texture_dropdown && selectedObject->drawType == TEXTURE) {
+        texture_dropdown->setOptions(textureNames);
+        selectedTexture = find_texture_index(selectedObject->texture);
+    } else {
+        selectedTexture = -1;
     }
 
     if (selectedObject->drawType == MATERIAL) {
-        material_section->show();
-        solid_color_section->hide();
-        texture_section->hide();
-
-
-        MaterialProperties& mat = DynamicMaterials[selectedObject->material];
-
-        // Copy material → globals (so the fields stay bound to the globals)
-        ambient_r = mat.ambient[0];
-        ambient_g = mat.ambient[1];
-        ambient_b = mat.ambient[2];
-        ambient_a = mat.ambient[3];
-
-        diffuse_r = mat.diffuse[0];
-        diffuse_g = mat.diffuse[1];
-        diffuse_b = mat.diffuse[2];
-        diffuse_a = mat.diffuse[3];
-
-        specular_r = mat.specular[0];
-        specular_g = mat.specular[1];
-        specular_b = mat.specular[2];
-        specular_a = mat.specular[3];
-
-        shininess = mat.shininess;
-
-        // Refresh the displayed text
-        if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
-        if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
-        if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
-        if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
-
-        if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
-        if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
-        if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
-        if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
-
-        if (specular_r_field) specular_r_field->setText(to_string(specular_r));
-        if (specular_g_field) specular_g_field->setText(to_string(specular_g));
-        if (specular_b_field) specular_b_field->setText(to_string(specular_b));
-        if (specular_a_field) specular_a_field->setText(to_string(specular_a));
-
-        if(shininess_field) shininess_field->setText(to_string(shininess));
-    }else if(selectedObject->drawType == SOLID_COLOR){
-        material_section->hide();
-        texture_section->hide();
-        solid_color_section->show();
-
-        vec4 color = selectedObject->color;
-        color_r = color[0];
-        color_g = color[1];
-        color_b = color[2];
-        color_a = color[3];
-
-        if (color_r_field) color_r_field->setText(to_string(color_r));
-        if (color_g_field) color_g_field->setText(to_string(color_g));
-        if (color_b_field) color_b_field->setText(to_string(color_b));
-        if (color_a_field) color_a_field->setText(to_string(color_a));
-    }else if(selectedObject -> drawType == TEXTURE) {
-        material_section->hide();
-        solid_color_section->hide();
-        texture_section->show();
-
-
+        sync_material_to_fields(DynamicMaterials[selectedObject->material]);
+    } else if (selectedObject->drawType == SOLID_COLOR) {
+        sync_color_to_fields(selectedObject->color);
     }
+}
 
-}//end update fields
 
 void update_from_fields() {
-    if (selectedObject) {
+    if (!selectedObject) return;
 
+    // Name always
+    if (name_field)
+        selectedObject->name = name_string;
 
-        if(selectedType >= 0 ) {
-            if(selectedObject->drawType != static_cast<DrawType>(selectedType)) {
-                selectedObject->initializeType(static_cast<DrawType>(selectedType));
-                selectedObject->drawType = static_cast<DrawType>(selectedType);
-                update_fields();
-            }
-            selectedObject->drawType = static_cast<DrawType>(selectedType);
-        }
+    // Type change (do this first)
+    if (selectedType >= 0 && selectedObject->drawType != static_cast<DrawType>(selectedType)) {
+        selectedObject->initializeType(static_cast<DrawType>(selectedType));
+        selectedObject->drawType = static_cast<DrawType>(selectedType);
+        update_fields();          // refresh UI for the new type
+        return;                   // avoid writing stale field values this frame
+    }
 
-        //update material values from fields
-        if (selectedObject->drawType == MATERIAL) {
-            MaterialProperties& mat = DynamicMaterials[selectedObject->material];
-            mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
-            mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
-            mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
-            mat.shininess = shininess;
-        }
-
-        if (selectedObject->drawType == SOLID_COLOR) {
-            vec4 new_color = {color_r, color_g, color_b, color_a};
-            selectedObject->setColor(new_color);
-        }
-
-        if (selectedObject->drawType == TEXTURE) {
-            if (selectedTexture >= 0 && selectedTexture < (int)TextureIDs.size()) {
-                selectedObject->texture = TextureIDs[selectedTexture];
-            }
-        }
-
-
-        if(name_field) {
-            selectedObject->name = name_string;
-        }
-
-
-
-
-    }//if selected object
-
-
-
-}//end update from fields
+    // Per-type writes
+    if (selectedObject->drawType == MATERIAL) {
+        sync_material_from_fields(DynamicMaterials[selectedObject->material]);
+    } else if (selectedObject->drawType == SOLID_COLOR) {
+        vec4 c;
+        sync_color_from_fields(c);
+        selectedObject->setColor(c);
+    } else if (selectedObject->drawType == TEXTURE) {
+        if (selectedTexture >= 0 && selectedTexture < (int)TextureIDs.size())
+            selectedObject->texture = TextureIDs[selectedTexture];
+    }
+}
 
 
 //-----------------------------------Button Functions--------------------------------------
@@ -357,5 +331,5 @@ void toggle_lights() {
 }
 
 void add_texture(){
-    printf("Texture added");
+    texture_file_browser->openBrowser();
 }

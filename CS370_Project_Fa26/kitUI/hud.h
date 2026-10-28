@@ -8,14 +8,43 @@ bool hud_cursor(float mx, float my);
 bool hud_char(unsigned int codepoint);
 bool hud_key(int key, int action);   // returns true if UI consumed it
 
+Widget* find_topmost(Widget* w, float mx, float my) {
+    if (!w || w->hidden || w->isEffectivelyHidden())
+        return nullptr;
 
-bool hud_cursor(float mx, float my) {
-    for (size_t i = 0; i < widgets.size(); i++) {
-        widgets[i]->hovered = widgets[i]->hit(mx, my);
-        widgets[i]->on_hover(mx, my);
+    // Children: higher priority first, then reverse creation order
+    vector<Widget*> kids = w->children;
+    std::stable_sort(kids.begin(), kids.end(),
+        [](Widget* a, Widget* b) { return a->priority > b->priority; });
+
+    for (Widget* c : kids) {
+        if (Widget* hit = find_topmost(c, mx, my))
+            return hit;
     }
-    return true;
+
+    if (w->hit(mx, my))
+        return w;
+    return nullptr;
 }
+
+Widget* find_topmost_widget(float mx, float my) {
+    vector<Widget*> topLevel;
+    for (Widget* w : widgets)
+        if (!w->isChild())
+            topLevel.push_back(w);
+
+    // Higher priority first
+    std::stable_sort(topLevel.begin(), topLevel.end(),
+        [](Widget* a, Widget* b) { return a->priority > b->priority; });
+
+    for (Widget* w : topLevel) {
+        if (Widget* hit = find_topmost(w, mx, my))
+            return hit;
+    }
+    return nullptr;
+}
+
+
 
 
 bool hud_char(unsigned int codepoint) {
@@ -53,48 +82,45 @@ bool hud_key(int key, int action) {
 
 }
 
+bool hud_cursor(float mx, float my) {
+    Widget* top = find_topmost_widget(mx, my);
+
+    for (size_t i = 0; i < widgets.size(); i++) {
+        widgets[i]->hovered = (widgets[i] == top);
+        if (widgets[i]->hovered)
+            widgets[i]->on_hover(mx, my);
+    }
+    return true;
+}
+
 
 bool hud_mouse_button(float mx, float my, int button, int action) {
-    //not left click
     if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS)
         return false;
 
-    //check if clicked on widget
-    int hitIndex = -1;
-    for (int i = (int)widgets.size() - 1; i >= 0; i--) {
-        if (widgets[i]->hit(mx, my)) {
-            hitIndex = i;
-            break;
-        }
-    }
+    Widget* top = find_topmost_widget(mx, my);
 
-    //check text fields for focus
+    // Focus: only the field that *is* the topmost hit gets focus
     for (size_t i = 0; i < widgets.size(); i++) {
         TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-        if(field) {
-            //if focused and not clicked commit
-            if (field->focused && (int)i != hitIndex)
-                field->commit();
-            field->focused = (field->editable && (int)i == hitIndex);
-        }
+        if (!field) continue;
+        if (field->focused && field != top)
+            field->commit();
+        field->focused = (field->editable && field == top);
     }
 
-    //check dropdowns for closing
+    //close dropdowns
     for (size_t i = 0; i < widgets.size(); i++) {
         Dropdown* dd = dynamic_cast<Dropdown*>(widgets[i]);
         if (dd && dd->open && !dd->contains(mx, my))
             dd->closePopup();
     }
 
-    //hit something call on click
-    if (hitIndex >= 0) {
-        widgets[hitIndex]->on_click();
+    if (top) {
+        top->on_click();
         return true;
     }
-
     return false;
-
-
 }
 
 
@@ -119,9 +145,18 @@ void draw_widgets() {
     mat4 trans_matrix = mat4().identity();
 
 
-    for (size_t i = 0; i < widgets.size(); i++) {
-        if(!(widgets[i]->isChild())){widgets[i]->draw();}
-    }
+    //list of parents
+    vector<Widget*> topLevel;
+    for (Widget* w : widgets)
+        if (!w->isChild())
+            topLevel.push_back(w);
+
+    //sort by priority
+    std::stable_sort(topLevel.begin(), topLevel.end(),
+        [](Widget* a, Widget* b) { return a->priority < b->priority; });
+
+    for (Widget* w : topLevel)
+        w->draw();
 
     //reset settings to pre hud state, restore camera
     proj_matrix = scene_proj_matrix;

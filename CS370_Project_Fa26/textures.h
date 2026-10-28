@@ -49,7 +49,7 @@ void scan_textures(const std::string& folder) {
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
         printf("    ext=\"%s\"\n", ext.c_str());
-        if (ext != ".png" && ext != ".jpg") {
+        if (ext != ".png" && ext != ".jpg" && ext != ".jpeg") {
             continue;
         }
 

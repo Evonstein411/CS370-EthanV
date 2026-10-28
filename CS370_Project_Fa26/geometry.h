@@ -5,7 +5,7 @@ GLuint ObjBuffers[NumVAOs][NumObjBuffers];
 GLint numVertices[NumVAOs];
 
 // Color buffers
-enum Color_Buffer_IDs {CubeRed, FloorGray, HUDGray, HUDPanel, HUDHighlighted, HUDTextField, NumColorBuffers};
+enum Color_Buffer_IDs {CubeRed, FloorGray, NumColorBuffers};
 vector<GLuint> ColorBuffers;
 
 float color_r = 0.0f;
@@ -44,10 +44,6 @@ void build_geometry( )
     build_solid_color_buffer(numVertices[Cube], vec4(1.0f, 0.0f, 0.0f, 1.0f), CubeRed);
     build_solid_color_buffer(numVertices[Cube], vec4(0.6f, 0.6f, 0.6f, 1.0f), FloorGray);
 
-    build_solid_color_buffer(numVertices[HUDQuad], vec4(0.4f, 0.4f, 0.4f, 0.85f), HUDGray);
-    build_solid_color_buffer(numVertices[HUDQuad], vec4(0.3f, 0.3f, 0.3f, 0.85f), HUDPanel);
-    build_solid_color_buffer(numVertices[HUDQuad], vec4(0.8f, 0.8f, 0.8f, 0.85f), HUDHighlighted);
-    build_solid_color_buffer(numVertices[HUDQuad], vec4(0.9f, 0.9f, 0.9f, 0.85f), HUDTextField);
 
 }
 

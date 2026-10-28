@@ -20,16 +20,20 @@ struct Panel;
 vector<Widget*> widgets;
 
 //HUD globals
+const vec4 HUD_GRAY = vec4(0.4f, 0.4f, 0.4f, 0.85f);
+const vec4 HUD_PANEL = vec4(0.3f, 0.3f, 0.3f, 0.85);
+const vec4 HUD_HIGHLIGHTED = vec4(0.8f, 0.8f, 0.8f, 0.85f);
+const vec4 HUD_FIELD = vec4(0.9f, 0.9f, 0.9f, 0.85f);
 const float HUD_FONT = 32.0f;
 const float HUD_PAD_X = 8.0f;
 const float HUD_PAD_Y = 8.0f;
-const vec4 HUD_COLOR = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-const vec4 ALT_HUD_COLOR = vec4(0.2f, 0.2f, 0.2f, 1.0f);
+const vec4 TEXT_COLOR = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+const vec4 ALT_TEXT_COLOR = vec4(0.2f, 0.2f, 0.2f, 1.0f);
 
 
 //HUD util function defs
 void draw_string(const string& text, float x, float y, float size,
-                 vec4 color = HUD_COLOR);
+                 vec4 color = TEXT_COLOR);
 float text_width(const string& text, float size);
 
 
@@ -40,7 +44,7 @@ struct Widget {
     float x, y, w, h;
     bool hovered = false;
     bool hidden = false;
-    int priority = 0;
+    int priority = 0; //higher priority value drawn first
 
     vector<Widget*> children; //list of all current children
     Widget* parent = nullptr; //pointer to parent if have one
@@ -72,6 +76,10 @@ struct Widget {
         if (hidden || isEffectivelyHidden()) return false;
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
+    }
+
+    void setPriority(int new_priority) {
+        priority = new_priority;
     }
 
     void draw() {
@@ -163,7 +171,6 @@ struct Widget {
 
 //Panel widget for widget organization
 struct Panel : Widget {
-
     //cell holds widget and information on placement in panel
     struct Cell {
         Widget* widget = NULL;
@@ -179,6 +186,7 @@ struct Panel : Widget {
     float gapX = 6.0f;
     float gapY = 12.0f;
     bool drawBackground = true;
+    vec4 color = HUD_PANEL;
 
 
     Panel(float x, float y)
@@ -289,7 +297,7 @@ struct Panel : Widget {
             mat4 trans_matrix = translate(x, (float)hh - h - y, 0.0f);
             mat4 scale_matrix = scale(w, h, 1.0f);
             model_matrix = trans_matrix * scale_matrix;
-            draw_color_object(HUDQuad, HUDPanel);
+            draw_solid_hud_quad(color);
         }
 
     }//end draw()
@@ -306,6 +314,8 @@ struct Button : Widget {
     string label;
     float textSize = HUD_FONT;
     std::function<void()> onPress;
+    vec4 color = HUD_GRAY;
+    vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     //constructor (no label specified)
     Button(float x, float y, float w, float h, std::function<void()> onPress, const string& label = "" )
@@ -325,12 +335,11 @@ struct Button : Widget {
         model_matrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
 
-        GLuint color = hovered ? HUDHighlighted : HUDGray;
 
         scale_matrix = scale(w, h, 1.0f);
         trans_matrix = translate(x, (float)hh - h - y, 0.0f);//move to top left for more intuitive positioning increase in y goes down
         model_matrix = trans_matrix * scale_matrix;
-        draw_color_object(HUDQuad, color);
+        draw_solid_hud_quad(hovered ? highlightedColor: color);
 
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
     }
@@ -349,6 +358,7 @@ struct TextFieldBase : Widget {
     bool focused = false;
     bool editable = true;
 
+
     TextFieldBase(float x, float y, float w, float h)
         : Widget(x, y, w, h) {}
 
@@ -366,6 +376,9 @@ struct TextFieldBase : Widget {
 //Text field for user input
 template<typename T>
 struct TextField : TextFieldBase {
+    vec4 color = HUD_GRAY;
+    vec4 fieldColor = HUD_FIELD;
+    vec4 textColor = ALT_TEXT_COLOR;
     string label;
     string text;
     int maxLen;
@@ -438,9 +451,8 @@ struct TextField : TextFieldBase {
     void drawSelf() override {
         model_matrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
-        GLuint outer = focused ? HUDHighlighted : HUDGray;
         model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
-        draw_color_object(HUDQuad, outer);
+        draw_solid_hud_quad(color);
         draw_string(label, x + 8.0f, y + 8.0f, 32);
 
         float boxX = x + labelW;
@@ -453,8 +465,15 @@ struct TextField : TextFieldBase {
         trans_matrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
         scale_matrix = scale(boxW, boxH, 1.0f);
         model_matrix =  trans_matrix * scale_matrix;
-        draw_color_object(HUDQuad, HUDTextField);
-        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, ALT_HUD_COLOR);
+        draw_solid_hud_quad(fieldColor);
+        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, textColor);
+
+        if (focused){
+            float textW = text_width(text, textSize);
+            float caretX = x + labelW + 4.0f + textW + 1.0f;
+            float caretY = boxY + 10.0f;          // same top as the text
+            drawCaret(caretX, caretY);
+        }
     }
 
     void on_char(unsigned int charCode) override {
@@ -480,6 +499,20 @@ struct TextField : TextFieldBase {
             resize();
         }
 
+    }
+
+    void drawCaret(float caretX, float caretY) {
+        // 1 second full cycle → 0.5s on, 0.5s off
+        if (fmod((float)glfwGetTime(), 1.0f) > 0.5f)
+            return;
+
+        float cw = 2.0f;
+        float ch = textSize - 8.0f;
+
+        mat4 trans_matrix = translate(caretX, (float)hh - ch - caretY, 0.0f);
+        mat4 scale_matrix = scale(cw, ch, 1.0f);
+        model_matrix = trans_matrix * scale_matrix;
+        draw_solid_hud_quad(textColor);
     }
 
 
@@ -522,9 +555,15 @@ inline void TextField<T>::commit() {}
 struct Label : Widget {
     string label;
     float textSize = HUD_FONT;
+    vec4 color = HUD_GRAY;
 
     Label(float x, float y, float w, float h, const string& label)
     : Widget(x, y, w, h), label(label) {
+        fit();
+    }
+
+    void setText(string n_text) {
+        label = n_text;
         fit();
     }
 
@@ -541,18 +580,23 @@ struct Label : Widget {
         scale_matrix = scale(w, h, 1.0f);
         trans_matrix = translate(x, (float)hh - h - y, 0.0f);
         model_matrix = trans_matrix * scale_matrix;
-        draw_color_object(HUDQuad, HUDGray);
+        draw_solid_hud_quad(color);
 
         draw_string(label, x + 8.0f, y + 6.0f, textSize);
     }
 
 };//end Label
 
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
+
 struct Section : Widget {
     string label;
     bool collapsed = false;
     Panel* content;
     float headerH = 0.0f;
+    vec4 color = HUD_GRAY;
+    vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     Section(float x, float y, const string& label)
         : Widget(x, y, 0, 0), label(label) {
@@ -602,7 +646,7 @@ struct Section : Widget {
         mat4 trans_matrix = translate(x, (float)hh - headerH - y, 0.0f);
         mat4 scale_matrix   = scale(w, headerH, 1.0f);
         model_matrix = trans_matrix * scale_matrix;
-        draw_color_object(HUDQuad, hovered ? HUDHighlighted : HUDGray);
+        draw_solid_hud_quad(hovered ? highlightedColor : color);
 
         string arrow = collapsed ? ">" : "v";
         draw_string(arrow, x + HUD_PAD_X, y + HUD_PAD_Y, HUD_FONT);
@@ -632,6 +676,9 @@ struct Dropdown : Widget {
     bool closing = false;
     float textSize = HUD_FONT;
     float labelW = 0.0f;
+    vec4 color = HUD_GRAY;
+    vec4 highlightedColor = HUD_HIGHLIGHTED;
+    vec4 selectedColor = HUD_FIELD;
 
     Panel* popup = nullptr;
 
@@ -724,23 +771,23 @@ struct Dropdown : Widget {
     }
 
     void drawSelf() override {
-        GLuint outer = hovered || open ? HUDHighlighted : HUDGray;
         model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
-        draw_color_object(HUDQuad, outer);
+        draw_solid_hud_quad(color);
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
 
         float boxX = x + labelW;
         float boxW = w - labelW - HUD_PAD_X;
         model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
-        draw_color_object(HUDQuad, HUDTextField);
-        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, ALT_HUD_COLOR);
+        draw_solid_hud_quad(selectedColor);
+        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, ALT_TEXT_COLOR);
         draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize);
     }
 
     void openPopup() {
         if (!popup) {
             popup = new Panel(x + labelW, y + h);
+            popup->setPriority(1);
             buildOptions();
         }
 
@@ -765,6 +812,163 @@ struct Dropdown : Widget {
         } else {
             closePopup();
         }
+    }
+
+};
+
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
+
+struct FileBrowser : Widget {
+    string currentPath;
+    bool open = false;
+
+    vector<string> allowedExtensions;
+
+    Panel* content = nullptr;       // the visible panel
+    Label* pathLabel = nullptr;
+    Panel* listPanel = nullptr;     // holds the entry buttons
+    Button* closeButton = nullptr;
+
+    // Optional: callback when a file is chosen
+    std::function<void(const string& path)> onFileSelected;
+
+    FileBrowser(float x, float y)
+            : Widget(x, y, 0, 0) {
+        content = new Panel(x, y);
+        addChild(content);
+
+        pathLabel = new Label(0, 0, 320, 32, "");
+        content->add(pathLabel, 0, 0);
+
+        listPanel = new Panel(0, 0);
+        content->add(listPanel, 0, 1);
+
+        closeButton = new Button(0, 0, 100, 32,
+            [this]() { closeBrowser(); }, "Close");
+        content->add(closeButton, 0, 2);
+
+        content->hide();
+        open = false;
+
+        const char* home = getenv("HOME");          // Linux/macOS (losers)
+        if (!home) home = getenv("USERPROFILE");    // Windows (chads)
+        currentPath = home ? home : fs::current_path().string();
+    }
+
+    ~FileBrowser() {
+        // Panel destructor unparents; we explicitly delete what we own
+        if (content) {
+            // Delete entry buttons first (same pattern as Dropdown::setOptions)
+            clearList();
+            delete content;
+            content = nullptr;
+        }
+    };
+
+    //set allowed file extensions
+    void setFilter(const vector<string>& extensions) {
+        allowedExtensions = extensions;
+        // Normalize to lowercase with leading dot
+        for (auto& ext : allowedExtensions) {
+            if (!ext.empty() && ext[0] != '.')
+                ext = "." + ext;
+            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        }
+    }
+
+    void openBrowser(const string& startPath = "") {
+        if (!startPath.empty())
+            currentPath = startPath;
+        open = true;
+        content->show();
+        refresh();
+    }
+
+    void closeBrowser() {
+        open = false;
+        content->hide();
+    }
+
+    void clearList() {
+        if (!listPanel) return;
+        for (auto& cell : listPanel->cells) {
+            if (cell.widget) {
+                listPanel->removeChild(cell.widget);
+                delete cell.widget;
+            }
+        }
+        listPanel->cells.clear();
+    }
+
+    //helper to check if file follows current extension filter
+    bool passesFilter(const fs::path& p) const {
+        if (allowedExtensions.empty())
+            return true;   // no filter → show all files
+        string ext = p.extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        for (const auto& allowed : allowedExtensions)
+            if (ext == allowed)
+                return true;
+        return false;
+    }
+
+    void refresh() {
+        if (!listPanel || !pathLabel) return;
+
+        clearList();
+        pathLabel->setText(currentPath);
+
+        int row = 0;
+
+        // ".." entry
+        Button* up = new Button(0, 0, 280, 32,
+            [this]() {
+                fs::path p(currentPath);
+                if (p.has_parent_path()) {
+                    currentPath = p.parent_path().string();
+                    refresh();
+                }
+            }, "..");
+        listPanel->add(up, 0, row++);
+
+        // Directory contents
+        if (fs::exists(currentPath) && fs::is_directory(currentPath)) {
+            for (const auto& entry : fs::directory_iterator(currentPath)) {
+                string name = entry.path().filename().string();
+                string full = entry.path().string();
+
+                if (entry.is_directory()) {
+                    Button* b = new Button(0, 0, 280, 32,
+                        [this, full]() {
+                            currentPath = full;
+                            refresh();
+                        }, name + "/");
+                    listPanel->add(b, 0, row++);
+                } else if (passesFilter(entry.path())) {
+                    string ext = entry.path().extension().string();
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                        Button* b = new Button(0, 0, 280, 32,
+                            [this, full]() {
+                                if (onFileSelected)
+                                    onFileSelected(full);
+                                closeBrowser();
+                            }, name);
+                        listPanel->add(b, 0, row++);
+                    }
+                }
+            }
+        }
+
+        listPanel->layout();
+        content->layout();
+        w = content->w;
+        h = content->h;
+    }// rebuild the list of entries
+
+    void drawSelf() override {
+        //draw handled by children
     }
 
 };
@@ -842,4 +1046,4 @@ float text_width(const string& text, float size) {
     return width;
 }
 
-#endif
+#endif //widgets.h
