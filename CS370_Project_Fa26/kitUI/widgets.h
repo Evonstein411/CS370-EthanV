@@ -849,6 +849,7 @@ struct FileBrowser : Widget {
         content->add(closeButton, 0, 2);
 
         content->hide();
+        hide();
         open = false;
 
         const char* home = getenv("HOME");          // Linux/macOS (losers)
@@ -878,6 +879,7 @@ struct FileBrowser : Widget {
     }
 
     void openBrowser(const string& startPath = "") {
+        show();
         if (!startPath.empty())
             currentPath = startPath;
         open = true;

@@ -81,6 +81,7 @@ void init_hud() {
 
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
+    object_panel->color = vec4(0.2f, 0.2f, 0.25f, 0.85f);
 
     //object settings section (name, type, etc.)
     object_section = new Section(0.0f, 0.0f, "Object Settings");
