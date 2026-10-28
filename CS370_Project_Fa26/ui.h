@@ -203,6 +203,7 @@ void update_fields() {
         name_field->setText("NONE");
         name_field->setEditable(false);
         selectedType = -1;
+        selectedTexture = -1;
         if(material_section) material_section->hide();
         if(solid_color_section) solid_color_section->hide();
         if(texture_section) texture_section->hide();
@@ -211,8 +212,13 @@ void update_fields() {
     }
 
     if (texture_dropdown) {
-        scan_textures();
         texture_dropdown->setOptions(textureNames);
+        for (int i = 0; i < (int)TextureIDs.size(); ++i) {
+            if (TextureIDs[i] == selectedObject->texture) {
+                selectedTexture = i;
+                break;
+            }
+        }
     }
 
     if(material_panel) material_panel->show();{
@@ -323,7 +329,9 @@ void update_from_fields() {
         }
 
         if (selectedObject->drawType == TEXTURE) {
-            selectedObject->texture = selectedTexture;
+            if (selectedTexture >= 0 && selectedTexture < (int)TextureIDs.size()) {
+                selectedObject->texture = TextureIDs[selectedTexture];
+            }
         }
 
 

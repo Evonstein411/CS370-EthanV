@@ -51,9 +51,14 @@ struct Widget {
     }
 
     virtual ~Widget() {
+        auto it = std::find(widgets.begin(), widgets.end(), this);
+        if (it != widgets.end())
+            widgets.erase(it);
+
         if (parent) parent->removeChild(this); //if im a child remove myself from parent
         for (Widget* c : children) c->parent = nullptr; //clear self from parent of all children
         children.clear(); //clear children list
+
     }
 
     virtual void drawSelf() = 0; //defined per widget
@@ -658,12 +663,38 @@ struct Dropdown : Widget {
 
     void setOptions(const vector<string>& newOptions) {
         options = newOptions;
+        //guard if no popup
         if (popup) {
-            delete popup;
-            popup = nullptr;
+            // delete the old option buttons
+            for (auto& cell : popup->cells) {
+                if (cell.widget) {
+                    popup->removeChild(cell.widget);
+                    delete cell.widget;
+                }
+            }
+            popup->cells.clear();
+            buildOptions();
+            if (open) popup->show(); else popup->hide();
         }
+
         resize();
     }
+
+    void buildOptions() {
+        if (popup) {
+            for (int i = 0; i < (int)options.size(); ++i) {
+                Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
+                    [this, i]() {
+                        if (selected) *selected = i;
+                        closePopup();          // only hides
+                    },
+                    options[i]);
+                popup->add(b, 0, i);
+            }
+            popup->layout();
+        }
+    }
+
 
     bool contains(float mx, float my) const {
         if (hit(mx, my)) return true;                       // header
@@ -710,17 +741,7 @@ struct Dropdown : Widget {
     void openPopup() {
         if (!popup) {
             popup = new Panel(x + labelW, y + h);
-
-            for (int i = 0; i < (int)options.size(); ++i) {
-                Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
-                    [this, i]() {
-                        if (selected) *selected = i;
-                        closePopup();          // only hides
-                    },
-                    options[i]);
-                popup->add(b, 0, i);
-            }
-            popup->layout();
+            buildOptions();
         }
 
         popup->x = x + labelW;
