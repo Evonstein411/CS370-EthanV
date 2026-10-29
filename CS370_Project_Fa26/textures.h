@@ -20,6 +20,42 @@ void build_font();
 void build_textures();
 void scan_textures(const std::string& folder = "../textures");
 
+int add_texture_file(const string& path) {
+    if (path.empty() || !fs::exists(path))
+        return -1;
+
+    fs::path src(path);
+    fs::path destDir = "../textures";
+    if (!fs::exists(destDir))
+        fs::create_directories(destDir);
+
+    // don't clobber blank or an existing file of the same name
+    fs::path dest = destDir / src.filename();
+    if (dest.stem() == "blank" || fs::exists(dest)) {
+        int n = 1;
+        fs::path candidate;
+        do {
+            candidate = destDir / (src.stem().string() + "_" + std::to_string(n) + src.extension().string());
+            n++;
+        } while (fs::exists(candidate));
+        dest = candidate;
+    }
+
+    std::error_code ec;
+    fs::copy_file(src, dest, ec);
+    if (ec)
+        return -1;
+
+    GLuint id;
+    glGenTextures(1, &id);
+    load_texture(dest.string().c_str(), id,
+                 GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR,
+                 GL_REPEAT, GL_REPEAT, true, false);
+
+    textureNames.push_back(dest.stem().string());
+    TextureIDs.push_back(id);
+    return (int)TextureIDs.size() - 1;
+}
 
 void scan_textures(const std::string& folder) {
     textureNames.clear();

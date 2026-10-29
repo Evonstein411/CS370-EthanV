@@ -4,7 +4,6 @@
 #include <string>
 #include <functional>
 #include <cstdlib>
-
 #include "../drawObjects.h"
 
 
@@ -17,18 +16,23 @@ struct Label;
 struct Panel;
 
 //list of widgets
-vector<Widget*> widgets;
-
+inline vector<Widget*> widgets;
+inline vector<Widget*> trash;
+inline bool handlingEvent = false;
+inline int eventDepth = 0;
 //HUD globals
 const vec4 HUD_GRAY = vec4(0.4f, 0.4f, 0.4f, 0.85f);
 const vec4 HUD_PANEL = vec4(0.3f, 0.3f, 0.3f, 0.85);
 const vec4 HUD_HIGHLIGHTED = vec4(0.8f, 0.8f, 0.8f, 0.85f);
 const vec4 HUD_FIELD = vec4(0.9f, 0.9f, 0.9f, 0.85f);
+const vec4 HUD_DISABLED = vec4(0.6f, 0.6f, 0.6f, 0.85f);
 const float HUD_FONT = 32.0f;
 const float HUD_PAD_X = 8.0f;
 const float HUD_PAD_Y = 8.0f;
 const vec4 TEXT_COLOR = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 const vec4 ALT_TEXT_COLOR = vec4(0.2f, 0.2f, 0.2f, 1.0f);
+
+enum class Alignment {START, CENTER, END, STRETCH};
 
 
 //HUD util function defs
@@ -42,9 +46,16 @@ float text_width(const string& text, float size);
 //parent HUD element struct
 struct Widget {
     float x, y, w, h;
+    float prefW = 0.0f;
+    float prefH = 0.0f;
     bool hovered = false;
     bool hidden = false;
+    bool grabbed = false;
+    bool pendingDelete = false;
     int priority = 0; //higher priority value drawn first
+
+    std::function<void(float, float)> onDragCallback;
+    std::function<void()> onReleaseCallback;
 
     vector<Widget*> children; //list of all current children
     Widget* parent = nullptr; //pointer to parent if have one
@@ -66,10 +77,10 @@ struct Widget {
     }
 
     virtual void drawSelf() = 0; //defined per widget
+    virtual void drawAfter(){}
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
-    virtual void on_click() {}
-    virtual void on_drag(float mx, float my) {}
+    virtual void on_click(float mx, float my) {}
     virtual void on_hover(float mx, float my){}
 
     virtual bool hit(float mx, float my) const {
@@ -78,33 +89,47 @@ struct Widget {
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
 
-    void setPriority(int new_priority) {
-        priority = new_priority;
+    //function for drawing children
+    virtual void drawChildren() {
+        for (Widget* c : children) {
+            c->draw();
+        }
     }
 
+    void markForDelete() {
+        if (pendingDelete) return;
+        pendingDelete = true;
+        hidden = true;
+    }
+
+    //if hidden skip else draws self, draws children, and finally draws after for any drawing that needs to be done after children
     void draw() {
         if(hidden) {
             return;
         }
         drawSelf();
-        for(Widget* child: children) {
-            child->draw();
-        }
+        drawChildren();
+        drawAfter();
 
     }
 
-    void hide() {
-        hidden = true;
+    //interaction
+
+    virtual void on_drag(float mx, float my) {
+        if (onDragCallback) {onDragCallback(mx, my);}
     }
 
-    void show() {
-        hidden = false;
+    virtual void on_release() {
+        grabbed = false;
+        if (onReleaseCallback) onReleaseCallback();
     }
 
-    void setHidden(bool new_hidden) {
-        hidden = new_hidden;
+    void grab() {
+        grabbed = true;
     }
 
+
+    //parent child relations
     Widget* getParent() {
         return parent;
     }
@@ -147,6 +172,12 @@ struct Widget {
         return parent != nullptr;
     }
 
+
+    //visibility status
+    void setPriority(int new_priority) {
+        priority = new_priority;
+    }
+
     bool isHidden() {
         return hidden;
     }
@@ -158,13 +189,51 @@ struct Widget {
         return false;
     }
 
+    void hide() {
+        hidden = true;
+    }
 
+    void show() {
+        hidden = false;
+    }
+
+    void setHidden(bool new_hidden) {
+        hidden = new_hidden;
+    }
 
 
 }; //end Widget
 
 
+//widget deletion utils
+inline void destroy_widget(Widget* w) {
+    if (!w || w->pendingDelete) return;
+    if (handlingEvent) {
+        w->markForDelete();
+        trash.push_back(w);
+    } else {
+        delete w;
+    }
+}
 
+inline void flush_destroyed() {
+    if (trash.empty()) return;
+    vector<Widget*> batch;
+    batch.swap(trash);
+    for (Widget* w : batch)
+        delete w;                      // destructor already unregisters from widgets
+}
+
+//place this object in any callback/event to cleanly handle deletion
+struct EventScope {
+    EventScope() { eventDepth++; handlingEvent = true; }
+    ~EventScope() {
+        if (--eventDepth == 0) {
+            handlingEvent = false;
+            flush_destroyed();
+        }
+    }
+};
 
 // ------------------------------------------------------------------- Widget Child Structs ----------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -178,6 +247,8 @@ struct Panel : Widget {
         int row = 0;
         int colSpan = 1;
         int rowSpan = 1;
+        Alignment xAlign = Alignment::START;
+        Alignment yAlign = Alignment::START;
     };
 
     vector<Cell> cells;
@@ -203,92 +274,170 @@ struct Panel : Widget {
 
 
     //add widget to layout
-    void add(Widget* w, int col, int row, int colSpan = 1, int rowSpan = 1) {
+    void add(Widget* w, int col, int row, int colSpan = 1, int rowSpan = 1,
+        Alignment xAlign = Alignment::START,
+        Alignment yAlign = Alignment::START) {
         Cell c;
         c.widget = w;
         c.col = col;
         c.row = row;
         c.colSpan = colSpan;
         c.rowSpan = rowSpan;
+        c.xAlign = xAlign;
+        c.yAlign = yAlign;
         cells.push_back(c);
         addChild(w);
     }
 
-    void layout() {
-        if (cells.empty()) {
-            w = padX * 2.0f;
-            h = padY * 2.0f;
-            return;
-        }
+virtual void layout() {
+    if (cells.empty()) { w = padX * 2.0f; h = padY * 2.0f; return; }
+    if (hidden)        { w = 0.0f;        h = 0.0f;        return; }
 
-        if (hidden) {
-            w = 0.0f;
-            h = 0.0f;
-            return;
-        }
+    // ----------------------------------------------------------
+    // 1. how many columns and rows
+    // ----------------------------------------------------------
+    int maxCol = 0, maxRow = 0;
+    for (size_t i = 0; i < cells.size(); i++) {
+        int c = cells[i].col + cells[i].colSpan - 1;
+        int r = cells[i].row + cells[i].rowSpan - 1;
+        if (c > maxCol) maxCol = c;
+        if (r > maxRow) maxRow = r;
+    }
+    int nCols = maxCol + 1;
+    int nRows = maxRow + 1;
 
-        int maxCol = 0, maxRow = 0;
+    // ----------------------------------------------------------
+    // 2. column widths and row heights from preferred size
+    //    a cell that spans columns still contributes its height
+    // ----------------------------------------------------------
+    vector<float> colW(nCols, 0.0f);
+    vector<float> rowH(nRows, 0.0f);
+
+    for (size_t i = 0; i < cells.size(); i++) {
+        Cell& c = cells[i];
+        if (!c.widget || c.widget->hidden) continue;
+
+        float pw = c.widget->prefW > 0.0f ? c.widget->prefW : c.widget->w;
+        float ph = c.widget->prefH > 0.0f ? c.widget->prefH : c.widget->h;
+
+        if (c.colSpan == 1 && pw > colW[c.col]) colW[c.col] = pw;
+        if (c.rowSpan == 1 && ph > rowH[c.row]) rowH[c.row] = ph;
+    }
+
+    // ----------------------------------------------------------
+    // 3. turn sizes into positions (gap lives here, not in the size)
+    // ----------------------------------------------------------
+    vector<float> colX(nCols + 1, 0.0f);
+    vector<float> rowY(nRows + 1, 0.0f);
+    for (int i = 0; i < nCols; i++)
+        colX[i + 1] = colX[i] + colW[i] + ((i < nCols - 1 && colW[i] > 0.0f) ? gapX : 0.0f);
+    for (int i = 0; i < nRows; i++)
+        rowY[i + 1] = rowY[i] + rowH[i] + ((i < nRows - 1 && rowH[i] > 0.0f) ? gapY : 0.0f);
+
+    // ----------------------------------------------------------
+    // 4. each cell's box, before any stretch borrowing
+    // ----------------------------------------------------------
+    struct Place { float x, y, w, h; };
+    vector<Place> place(cells.size());
+
+    for (size_t i = 0; i < cells.size(); i++) {
+        Cell& c = cells[i];
+        if (!c.widget) { place[i] = {}; continue; }
+
+        float cw = 0.0f, ch = 0.0f;
+        for (int k = 0; k < c.colSpan; k++) {
+            cw += colW[c.col + k];
+            if (k + 1 < c.colSpan) cw += gapX;
+        }
+        for (int k = 0; k < c.rowSpan; k++) {
+            ch += rowH[c.row + k];
+            if (k + 1 < c.rowSpan) ch += gapY;
+        }
+        place[i] = { x + padX + colX[c.col], y + padY + rowY[c.row], cw, ch };
+    }
+
+    // ----------------------------------------------------------
+    // 5. same row only: a STRETCH cell takes unused space from
+    //    the neighbor column. path grows, X stays on the right.
+    // ----------------------------------------------------------
+    for (int row = 0; row < nRows; row++) {
         for (size_t i = 0; i < cells.size(); i++) {
-            int c = cells[i].col + cells[i].colSpan - 1;
-            int r = cells[i].row + cells[i].rowSpan - 1;
-            if (c > maxCol) maxCol = c;
-            if (r > maxRow) maxRow = r;
-        }
-        int nCols = maxCol + 1;
-        int nRows = maxRow + 1;
+            Cell& donor = cells[i];
+            if (!donor.widget || donor.widget->hidden) continue;
+            if (donor.row != row || donor.rowSpan != 1) continue;
+            if (donor.xAlign == Alignment::STRETCH) continue;
 
-        // Column widths and row heights driven by content
-        vector<float> colW(nCols, 0.0f);
-        vector<float> rowH(nRows, 0.0f);
+            float used = donor.widget->prefW > 0.0f ? donor.widget->prefW : donor.widget->w;
+            float unused = place[i].w - used;
+            if (unused <= 1.0f) continue;
 
-        for (size_t i = 0; i < cells.size(); i++) {
-            Cell& c = cells[i];
-            if (c.widget->hidden) continue;
-            if (c.colSpan == 1 && c.widget->w > colW[c.col])
-                colW[c.col] = c.widget->w;
-            if (c.rowSpan == 1 && c.widget->h > rowH[c.row])
-                rowH[c.row] = c.widget->h;
-        }
+            // column to the left is stretch -> it borrows
+            for (size_t j = 0; j < cells.size(); j++) {
+                Cell& left = cells[j];
+                if (!left.widget || left.row != row || left.rowSpan != 1) continue;
+                if (left.xAlign != Alignment::STRETCH) continue;
+                if (left.col + left.colSpan != donor.col) continue;
 
-
-        // Prefix sums for easy positioning
-        vector<float> colX(nCols + 1, 0.0f);
-        vector<float> rowY(nRows + 1, 0.0f);
-        for (int i = 0; i < nCols; i++)
-            colX[i + 1] = colX[i] + colW[i] + ((i < nCols - 1 && colW[i] > 0.0f) ? gapX : 0.0f);
-        for (int i = 0; i < nRows; i++)
-            rowY[i + 1] = rowY[i] + rowH[i] + ((i < nRows - 1 && rowH[i] > 0.0f) ? gapY : 0.0f);
-        // Position children relative to the panel
-        for (size_t i = 0; i < cells.size(); i++) {
-            Cell& c = cells[i];
-            float cx = colX[c.col];
-            float cy = rowY[c.row];
-            float cw = colX[c.col + c.colSpan] - colX[c.col]
-                     - (c.colSpan > 1 ? gapX * (c.colSpan - 1) : 0.0f);
-            float ch = rowY[c.row + c.rowSpan] - rowY[c.row]
-                     - (c.rowSpan > 1 ? gapY * (c.rowSpan - 1) : 0.0f);
-
-            float px = x + padX + cx;
-            float py = y + padY + cy;
-
-            // Center only if the widget spans more than one cell
-            if (c.colSpan > 1 || c.rowSpan > 1) {
-                float offsetX = (cw - c.widget->w) * 0.5f;
-                float offsetY = (ch - c.widget->h) * 0.5f;
-                if (offsetX < 0.0f) offsetX = 0.0f;
-                if (offsetY < 0.0f) offsetY = 0.0f;
-                px += offsetX;
-                py += offsetY;
+                place[j].w += unused;
+                place[i].x += unused;
+                place[i].w -= unused;
+                unused = 0.0f;
+                break;
             }
+            if (unused <= 0.0f) continue;
 
-            c.widget->x = px;
-            c.widget->y = py;
+            // otherwise a stretch column to the right borrows
+            for (size_t j = 0; j < cells.size(); j++) {
+                Cell& right = cells[j];
+                if (!right.widget || right.row != row || right.rowSpan != 1) continue;
+                if (right.xAlign != Alignment::STRETCH) continue;
+                if (right.col != donor.col + donor.colSpan) continue;
+
+                place[j].x -= unused;
+                place[j].w += unused;
+                place[i].w -= unused;
+                break;
+            }
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 6. write the box back onto the widget
+    // ----------------------------------------------------------
+    for (size_t i = 0; i < cells.size(); i++) {
+        Cell& c = cells[i];
+        if (!c.widget) continue;
+        Place& p = place[i];
+
+        if (c.xAlign == Alignment::STRETCH) {
+            c.widget->w = p.w;
+            c.widget->x = p.x;
+        } else if (c.xAlign == Alignment::CENTER) {
+            c.widget->x = p.x + (p.w - c.widget->w) * 0.5f;
+        } else if (c.xAlign == Alignment::END) {
+            c.widget->x = p.x + (p.w - c.widget->w);
+        } else {
+            c.widget->x = p.x;
         }
 
-        w = padX * 2.0f + colX[nCols];
-        h = padY * 2.0f + rowY[nRows];
+        if (c.yAlign == Alignment::STRETCH) {
+            c.widget->h = p.h;
+            c.widget->y = p.y;
+        } else if (c.yAlign == Alignment::CENTER) {
+            c.widget->y = p.y + (p.h - c.widget->h) * 0.5f;
+        } else if (c.yAlign == Alignment::END) {
+            c.widget->y = p.y + (p.h - c.widget->h);
+        } else {
+            c.widget->y = p.y;
+        }
+    }
 
-    }//end layout()
+    // ----------------------------------------------------------
+    // 7. panel size
+    // ----------------------------------------------------------
+    w = padX * 2.0f + colX[nCols];
+    h = padY * 2.0f + rowY[nRows];
+}
 
     void drawSelf() override {
         //update layout before drawing
@@ -301,8 +450,6 @@ struct Panel : Widget {
         }
 
     }//end draw()
-
-
 
 };//end Panel
 
@@ -321,14 +468,20 @@ struct Button : Widget {
     Button(float x, float y, float w, float h, std::function<void()> onPress, const string& label = "" )
     : Widget(x, y, w, h), onPress(onPress), label(label) {
         fit();
+        if (prefW <= 0.0f) prefW = w;   // explicit size, no label
+        if (prefH <= 0.0f) prefH = h;
     }
 
 
 
     void fit() {
-        w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
-        if (w < 48.0f) w = 48.0f;
-        h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+        if (label != "") {
+            w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
+            if (w < 48.0f) w = 48.0f;
+            h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+            prefW = w;
+            prefH = h;
+        }
     }
 
     void drawSelf() override {
@@ -344,7 +497,7 @@ struct Button : Widget {
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
     }
 
-    void on_click() override {
+    void on_click(float mx, float my) override {
         if (onPress) onPress();
     }
 
@@ -364,7 +517,7 @@ struct TextFieldBase : Widget {
 
     void setEditable(bool status) { editable = status; }
 
-    void on_click() override {
+    void on_click(float mx, float my) override {
         if (editable) focused = true;
     }
     virtual void commit() = 0;
@@ -379,6 +532,7 @@ struct TextField : TextFieldBase {
     vec4 color = HUD_GRAY;
     vec4 fieldColor = HUD_FIELD;
     vec4 textColor = ALT_TEXT_COLOR;
+    vec4 disabledColor = HUD_DISABLED;
     string label;
     string text;
     int maxLen;
@@ -465,7 +619,7 @@ struct TextField : TextFieldBase {
         trans_matrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
         scale_matrix = scale(boxW, boxH, 1.0f);
         model_matrix =  trans_matrix * scale_matrix;
-        draw_solid_hud_quad(fieldColor);
+        draw_solid_hud_quad(editable ? fieldColor : disabledColor);
         draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, textColor);
 
         if (focused){
@@ -569,8 +723,9 @@ struct Label : Widget {
 
     void fit() {
         w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
-        if (w < 48.0f) w = 48.0f;
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
+        prefW = w;   // what the text actually needs
+        prefH = h;
     }
 
     void drawSelf() override {
@@ -655,7 +810,7 @@ struct Section : Widget {
 
     }
 
-    void on_click() override {
+    void on_click(float mx, float my) override {
         // mouse callback already confirmed we were the top-most hit
         collapsed = !collapsed;
         content->setHidden(collapsed);
@@ -674,11 +829,13 @@ struct Dropdown : Widget {
     int* selected = nullptr;   // binds to an int (index into options)
     bool open = false;
     bool closing = false;
+    bool enabled = true;
     float textSize = HUD_FONT;
     float labelW = 0.0f;
     vec4 color = HUD_GRAY;
     vec4 highlightedColor = HUD_HIGHLIGHTED;
     vec4 selectedColor = HUD_FIELD;
+    vec4 disabledColor = HUD_DISABLED;
 
     Panel* popup = nullptr;
 
@@ -706,6 +863,12 @@ struct Dropdown : Widget {
 
     ~Dropdown() {
         delete popup;
+    }
+
+    void setEnabled(bool on) {
+        enabled = on;
+        if (!enabled)
+            closePopup();
     }
 
     void setOptions(const vector<string>& newOptions) {
@@ -779,9 +942,9 @@ struct Dropdown : Widget {
         float boxW = w - labelW - HUD_PAD_X;
         model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
-        draw_solid_hud_quad(selectedColor);
+        draw_solid_hud_quad(enabled ? selectedColor: disabledColor);
         draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, ALT_TEXT_COLOR);
-        draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize);
+        draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize, ALT_TEXT_COLOR);
     }
 
     void openPopup() {
@@ -805,7 +968,8 @@ struct Dropdown : Widget {
         open = false;
     }
 
-    void on_click() override {
+    void on_click(float mx, float my) override {
+        if (!enabled) return;
         if (!open) {
             open = true;
             openPopup();
@@ -819,6 +983,143 @@ struct Dropdown : Widget {
 //---------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------
 
+struct ScrollPanel : Panel {
+    float viewportHeight = 200.0f;   // visible height
+    float scrollOffset = 0.0f;
+    float contentHeight = 0.0f;
+    float maxScroll = 0.0f;
+    float scrollbarWidth = 12.0f;
+    Button* thumb = nullptr;
+
+    ScrollPanel(float x, float y, float viewH = 200.0f)
+        : Panel(x, y), viewportHeight(viewH) {
+        h = viewportHeight;
+        w = 280.0f;
+
+        thumb = new Button(0, 0, scrollbarWidth - 2.0f, 20.0f, []() {}, "");
+        thumb->color = vec4(0.55f, 0.55f, 0.55f, 1.0f);
+        thumb->highlightedColor = vec4(0.85f, 0.85f, 0.85f, 1.0f);
+        addChild(thumb);   // hit-test + hide with parent; not a layout cell
+
+        thumb->onPress = [this]() { thumb->grab(); };
+        thumb->onDragCallback = [this](float mx, float my) { dragThumbTo(my); };
+    }
+
+
+
+    void layout() override{
+        // Run normal panel layout first (computes full content size and positions)
+        float assignedW = w;
+
+        Panel::layout();
+        contentHeight = h;
+        maxScroll = std::max(0.0f, contentHeight - viewportHeight);
+        scrollOffset = std::clamp(scrollOffset, 0.0f, maxScroll);
+
+        // Apply scroll offset to children (shift them up)
+        for (auto& cell : cells) {
+            if (cell.widget)
+                cell.widget->y -= scrollOffset;
+        }
+
+        h = viewportHeight;
+        float needed = w;
+        if (maxScroll > 0.0f)
+            needed += scrollbarWidth;
+        w = std::max(needed, assignedW);   // parent stretch wins; bar is not re-added
+
+        placeThumb();
+    }
+
+    void placeThumb() {
+        if (!thumb) return;
+        if (maxScroll <= 0.0f) { thumb->hide(); return; }
+        thumb->show();
+
+        float ratio = viewportHeight / contentHeight;
+        thumb->w = scrollbarWidth - 2.0f;
+        thumb->h = std::max(20.0f, h * ratio);
+        thumb->x = x + w - scrollbarWidth + 1.0f;
+
+        float travel = h - thumb->h;
+        float thumbY = (scrollOffset / maxScroll) * travel;
+        thumb->y = y + thumbY;
+    }
+
+    void dragThumbTo(float my) {
+        if (!thumb || !thumb->grabbed || maxScroll <= 0.0f) return;
+        float bottom = (float)hh - h - y;
+        float travel = h - thumb->h;
+        if (travel <= 0.0f) return;
+
+        float rel = 1.0f - (my - bottom - thumb->h * 0.5f) / travel;
+        scrollOffset = std::clamp(rel * maxScroll, 0.0f, maxScroll);
+        placeThumb();
+    }
+
+    bool hit(float mx, float my) const override {
+        if (hidden || isEffectivelyHidden()) return false;
+        float bottom = (float)hh - h - y;
+        return mx >= x && mx <= x + w &&
+               my >= bottom && my <= bottom + h;
+    }
+
+    void on_click(float mx, float my) override {
+        if (thumb && thumb->hit(mx, my))
+            return;
+        float bottom = (float)hh - h - y;
+        float trackX = x + w - scrollbarWidth;
+        if (mx >= trackX && maxScroll > 0.0f) {
+            float rel =1.0f - (my - bottom) / h;
+            scrollOffset = std::clamp(rel * maxScroll, 0.0f, maxScroll);
+            placeThumb();
+        }
+    }
+
+
+    void drawSelf() override {
+        layout();
+        float contentW = w - (maxScroll > 0.0f ? scrollbarWidth : 0.0f);
+        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(contentW, h, 1.0f);
+        draw_solid_hud_quad(color);
+
+        int sx = (int)x;
+        int sy = (int)((float)hh - h - y);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(sx, sy, (int)contentW, (int)h);
+    }
+
+    void drawChildren() override {
+        for (Widget* c : children)
+            if (c != thumb)
+                c->draw();
+    }
+
+
+    void drawAfter() override {
+        glDisable(GL_SCISSOR_TEST);
+        if (maxScroll > 0.0f) {
+            float bottom = (float)hh - h - y;
+            float trackX = x + w - scrollbarWidth;
+            model_matrix = translate(trackX, bottom, 0.0f) * scale(scrollbarWidth, h, 1.0f);
+            draw_solid_hud_quad(vec4(0.2f, 0.2f, 0.2f, 0.9f));
+        }
+        if (thumb && !thumb->hidden)
+            thumb->draw();
+    }
+
+    void scrollBy(float delta) {
+        scrollOffset = std::clamp(scrollOffset - delta, 0.0f, maxScroll);
+        placeThumb();
+    }
+};
+
+
+
+
+//---------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------
+
 struct FileBrowser : Widget {
     string currentPath;
     bool open = false;
@@ -827,8 +1128,11 @@ struct FileBrowser : Widget {
 
     Panel* content = nullptr;       // the visible panel
     Label* pathLabel = nullptr;
-    Panel* listPanel = nullptr;     // holds the entry buttons
+    ScrollPanel* listPanel = nullptr;     // holds the entry buttons
     Button* closeButton = nullptr;
+    Label* selectedLabel = nullptr;
+    Label* filterLabel = nullptr;
+    string selectedPath;
 
     // Optional: callback when a file is chosen
     std::function<void(const string& path)> onFileSelected;
@@ -839,14 +1143,20 @@ struct FileBrowser : Widget {
         addChild(content);
 
         pathLabel = new Label(0, 0, 320, 32, "");
-        content->add(pathLabel, 0, 0);
+        content->add(pathLabel, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
-        listPanel = new Panel(0, 0);
-        content->add(listPanel, 0, 1);
+        closeButton = new Button(0, 0, 32, 32,
+            [this]() { closeBrowser(); }, "X");
+        content->add(closeButton, 1, 0, 1, 1, Alignment::END, Alignment::START);
 
-        closeButton = new Button(0, 0, 100, 32,
-            [this]() { closeBrowser(); }, "Close");
-        content->add(closeButton, 0, 2);
+        listPanel = new ScrollPanel(0, 0, 480.0f);
+        content->add(listPanel, 0, 1, 2, 1, Alignment::STRETCH, Alignment::START);
+
+        selectedLabel = new Label(0, 0, 200, 32, "(none)");
+        content->add(selectedLabel, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
+
+        filterLabel = new Label(0, 0, 120, 32, "");
+        content->add(filterLabel, 1, 2);
 
         content->hide();
         hide();
@@ -876,6 +1186,21 @@ struct FileBrowser : Widget {
                 ext = "." + ext;
             std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
         }
+        updateFilterLabel();
+    }
+
+    void updateFilterLabel() {
+        if (!filterLabel) return;
+        if (allowedExtensions.empty()) {
+            filterLabel->setText("(any)");
+            return;
+        }
+        string s;
+        for (size_t i = 0; i < allowedExtensions.size(); i++) {
+            if (i) s += " ";
+            s += allowedExtensions[i];
+        }
+        filterLabel->setText(s);
     }
 
     void openBrowser(const string& startPath = "") {
@@ -885,6 +1210,7 @@ struct FileBrowser : Widget {
         open = true;
         content->show();
         refresh();
+        centerOnScreen();
     }
 
     void closeBrowser() {
@@ -892,12 +1218,22 @@ struct FileBrowser : Widget {
         content->hide();
     }
 
+    void centerOnScreen() {
+        if (!content) return;
+        content->layout();
+        w = content->w;
+        h = content->h;
+        x = (ww - w) * 0.5f;
+        y = (hh - h) * 0.5f;
+        content->x = x;
+        content->y = y;
+    }
+
     void clearList() {
         if (!listPanel) return;
         for (auto& cell : listPanel->cells) {
             if (cell.widget) {
-                listPanel->removeChild(cell.widget);
-                delete cell.widget;
+                destroy_widget(cell.widget);
             }
         }
         listPanel->cells.clear();
@@ -936,7 +1272,10 @@ struct FileBrowser : Widget {
 
         // Directory contents
         if (fs::exists(currentPath) && fs::is_directory(currentPath)) {
-            for (const auto& entry : fs::directory_iterator(currentPath)) {
+            std::error_code ec;
+            for (fs::directory_iterator it(currentPath, fs::directory_options::skip_permission_denied, ec), end;
+                 !ec && it != end; it.increment(ec)){
+                const auto& entry = *it;
                 string name = entry.path().filename().string();
                 string full = entry.path().string();
 
@@ -953,6 +1292,8 @@ struct FileBrowser : Widget {
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                         Button* b = new Button(0, 0, 280, 32,
                             [this, full]() {
+                                selectedPath = full;
+                                selectedLabel->setText(fs::path(full).filename().string());
                                 if (onFileSelected)
                                     onFileSelected(full);
                                 closeBrowser();
@@ -1048,4 +1389,4 @@ float text_width(const string& text, float size) {
     return width;
 }
 
-#endif //widgets.h
+#endif //KITUI_WIDGETS_H

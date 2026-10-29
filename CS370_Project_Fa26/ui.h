@@ -196,10 +196,22 @@ void init_hud() {
     add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
     texture_panel->add(add_texture_button, 0, 1);
 
-    texture_file_browser = new FileBrowser(500.0f, 0.0f);
+    texture_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
     texture_file_browser->setPriority(2);
     texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
+    texture_file_browser->onFileSelected = [](const string& path) {
+        int index = add_texture_file(path);
+        if (index < 0) return;
 
+        selectedTexture = index;
+        if (texture_dropdown)
+            texture_dropdown->setOptions(textureNames);
+
+        if (selectedObject) {
+            selectedObject->drawType = TEXTURE;
+            selectedObject->texture = TextureIDs[index];
+        }
+    };
     update_fields();
 
 }//end init hud
@@ -266,12 +278,14 @@ void update_fields() {
     if (!selectedObject) {
         name_field->setText("NONE");
         name_field->setEditable(false);
+        type_dropdown->setEnabled(false);
         selectedType = -1;
         selectedTexture = -1;
         set_section_visibility(static_cast<DrawType>(-1)); // hides all
         return;
     }
 
+    type_dropdown->setEnabled(true);
     name_field->setEditable(true);
     name_string = selectedObject->name;
     name_field->setText(name_string);
