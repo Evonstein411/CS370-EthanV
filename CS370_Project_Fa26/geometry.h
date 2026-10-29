@@ -1,5 +1,8 @@
+#include <string>
+
 // Model vertex arrays and buffer objects
 enum VAO_IDs {Cube, Sphere, HUDQuad, HUDTextQuad, NumVAOs};
+vector<string> meshNames = {"Cube", "Sphere"};
 GLuint VAOs[NumVAOs];
 GLuint ObjBuffers[NumVAOs][NumObjBuffers];
 GLint numVertices[NumVAOs];

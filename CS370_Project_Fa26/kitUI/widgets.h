@@ -293,20 +293,14 @@ struct Panel : Widget {
 virtual void layout() {
     float assignedWidth = stretched ? w : 0.0f;
     stretched = false;
+
     if (cells.empty()) {
         w = std::max(padX * 2.0f, assignedWidth);
         h = padY * 2.0f;
         return;
     }
-    if (hidden) {
-        w = 0.0f;
-        h = 0.0f;
-        return;
-    }
+    if (hidden) { w = 0.0f; h = 0.0f; return; }
 
-    // ----------------------------------------------------------
-    // 1. how many columns and rows
-    // ----------------------------------------------------------
     int maxCol = 0, maxRow = 0;
     for (size_t i = 0; i < cells.size(); i++) {
         int c = cells[i].col + cells[i].colSpan - 1;
@@ -317,141 +311,114 @@ virtual void layout() {
     int nCols = maxCol + 1;
     int nRows = maxRow + 1;
 
-    // ----------------------------------------------------------
-    // 2. column widths and row heights from preferred size
-    //    a cell that spans columns still contributes its height
-    // ----------------------------------------------------------
-    vector<float> colW(nCols, 0.0f);
+    // preferred size, per row
+    vector<vector<float>> rowColW(nRows, vector<float>(nCols, 0.0f));
     vector<float> rowH(nRows, 0.0f);
 
     for (size_t i = 0; i < cells.size(); i++) {
         Cell& c = cells[i];
         if (!c.widget || c.widget->hidden) continue;
-
         float pw = c.widget->prefW > 0.0f ? c.widget->prefW : c.widget->w;
         float ph = c.widget->prefH > 0.0f ? c.widget->prefH : c.widget->h;
-
-        if (c.colSpan == 1 && pw > colW[c.col]) colW[c.col] = pw;
-        if (c.rowSpan == 1 && ph > rowH[c.row]) rowH[c.row] = ph;
+        if (c.colSpan == 1 && c.rowSpan == 1 && pw > rowColW[c.row][c.col])
+            rowColW[c.row][c.col] = pw;
+        if (c.rowSpan == 1 && ph > rowH[c.row])
+            rowH[c.row] = ph;
     }
 
-    // ----------------------------------------------------------
-    // 3. turn sizes into positions (gap lives here, not in the size)
-    // ----------------------------------------------------------
-    vector<float> colX(nCols + 1, 0.0f);
-    vector<float> rowY(nRows + 1, 0.0f);
-    for (int i = 0; i < nCols; i++)
-        colX[i + 1] = colX[i] + colW[i] + ((i < nCols - 1 && colW[i] > 0.0f) ? gapX : 0.0f);
-    for (int i = 0; i < nRows; i++)
-        rowY[i + 1] = rowY[i] + rowH[i] + ((i < nRows - 1 && rowH[i] > 0.0f) ? gapY : 0.0f);
+    auto rowWidth = [&](int r) {
+        float s = 0.0f;
+        for (int c = 0; c < nCols; c++) {
+            s += rowColW[r][c];
+            if (c + 1 < nCols && rowColW[r][c] > 0.0f) s += gapX;
+        }
+        return s;
+    };
 
-    // ----------------------------------------------------------
-    // 4. each cell's box, before any stretch borrowing
-    // ----------------------------------------------------------
-    struct Place { float x, y, w, h; };
-    vector<Place> place(cells.size());
+    // panel content width = widest row, or whatever a parent stretched us to
+    float contentW = 0.0f;
+    for (int r = 0; r < nRows; r++)
+        contentW = std::max(contentW, rowWidth(r));
+    if (assignedWidth > contentW + padX * 2.0f)
+        contentW = assignedWidth - padX * 2.0f;
+
+    // a short row gives its leftover to STRETCH cells in that row
+    for (int r = 0; r < nRows; r++) {
+        float extra = contentW - rowWidth(r);
+        if (extra <= 1.0f) continue;
+
+        int growers = 0;
+        for (size_t i = 0; i < cells.size(); i++) {
+            Cell& c = cells[i];
+            if (!c.widget || c.widget->hidden || c.row != r || c.rowSpan != 1) continue;
+            if (c.xAlign == Alignment::STRETCH) growers++;
+        }
+        if (growers == 0) continue;
+
+        float add = extra / (float)growers;
+        for (size_t i = 0; i < cells.size(); i++) {
+            Cell& c = cells[i];
+            if (!c.widget || c.widget->hidden || c.row != r || c.rowSpan != 1) continue;
+            if (c.xAlign != Alignment::STRETCH) continue;
+            for (int k = 0; k < c.colSpan; k++)
+                rowColW[r][c.col + k] += add / (float)c.colSpan;
+        }
+    }
+
+    // positions from the (now stretched) per-row columns
+    vector<vector<float>> rowColX(nRows, vector<float>(nCols + 1, 0.0f));
+    vector<float> rowY(nRows + 1, 0.0f);
+    for (int r = 0; r < nRows; r++)
+        for (int c = 0; c < nCols; c++)
+            rowColX[r][c + 1] = rowColX[r][c] + rowColW[r][c]
+                              + ((c < nCols - 1 && rowColW[r][c] > 0.0f) ? gapX : 0.0f);
+    for (int r = 0; r < nRows; r++)
+        rowY[r + 1] = rowY[r] + rowH[r] + ((r < nRows - 1 && rowH[r] > 0.0f) ? gapY : 0.0f);
 
     for (size_t i = 0; i < cells.size(); i++) {
         Cell& c = cells[i];
-        if (!c.widget) { place[i] = {}; continue; }
+        if (!c.widget) continue;
 
         float cw = 0.0f, ch = 0.0f;
         for (int k = 0; k < c.colSpan; k++) {
-            cw += colW[c.col + k];
+            cw += rowColW[c.row][c.col + k];
             if (k + 1 < c.colSpan) cw += gapX;
         }
         for (int k = 0; k < c.rowSpan; k++) {
             ch += rowH[c.row + k];
             if (k + 1 < c.rowSpan) ch += gapY;
         }
-        place[i] = { x + padX + colX[c.col], y + padY + rowY[c.row], cw, ch };
-    }
-
-    // ----------------------------------------------------------
-    // 5. same row only: a STRETCH cell takes unused space from
-    //    the neighbor column. path grows, X stays on the right.
-    // ----------------------------------------------------------
-    for (int row = 0; row < nRows; row++) {
-        for (size_t i = 0; i < cells.size(); i++) {
-            Cell& donor = cells[i];
-            if (!donor.widget || donor.widget->hidden) continue;
-            if (donor.row != row || donor.rowSpan != 1) continue;
-            if (donor.xAlign == Alignment::STRETCH) continue;
-
-            float used = donor.widget->prefW > 0.0f ? donor.widget->prefW : donor.widget->w;
-            float unused = place[i].w - used;
-            if (unused <= 1.0f) continue;
-
-            // column to the left is stretch -> it borrows
-            for (size_t j = 0; j < cells.size(); j++) {
-                Cell& left = cells[j];
-                if (!left.widget || left.row != row || left.rowSpan != 1) continue;
-                if (left.xAlign != Alignment::STRETCH) continue;
-                if (left.col + left.colSpan != donor.col) continue;
-
-                place[j].w += unused;
-                place[i].x += unused;
-                place[i].w -= unused;
-                unused = 0.0f;
-                break;
-            }
-            if (unused <= 0.0f) continue;
-
-            // otherwise a stretch column to the right borrows
-            for (size_t j = 0; j < cells.size(); j++) {
-                Cell& right = cells[j];
-                if (!right.widget || right.row != row || right.rowSpan != 1) continue;
-                if (right.xAlign != Alignment::STRETCH) continue;
-                if (right.col != donor.col + donor.colSpan) continue;
-
-                place[j].x -= unused;
-                place[j].w += unused;
-                place[i].w -= unused;
-                break;
-            }
-        }
-    }
-
-    // ----------------------------------------------------------
-    // 6. write the box back onto the widget
-    // ----------------------------------------------------------
-    for (size_t i = 0; i < cells.size(); i++) {
-        Cell& c = cells[i];
-        if (!c.widget) continue;
-        Place& p = place[i];
+        float px = x + padX + rowColX[c.row][c.col];
+        float py = y + padY + rowY[c.row];
 
         if (c.xAlign == Alignment::STRETCH) {
-            c.widget->w = p.w;
-            c.widget->x = p.x;
+            c.widget->w = cw;
+            c.widget->x = px;
             c.widget->stretched = true;
         } else if (c.xAlign == Alignment::CENTER) {
-            c.widget->x = p.x + (p.w - c.widget->w) * 0.5f;
+            c.widget->x = px + (cw - c.widget->w) * 0.5f;
         } else if (c.xAlign == Alignment::END) {
-            c.widget->x = p.x + (p.w - c.widget->w);
+            c.widget->x = px + (cw - c.widget->w);
         } else {
-            c.widget->x = p.x;
+            c.widget->x = px;
         }
 
         if (c.yAlign == Alignment::STRETCH) {
-            c.widget->h = p.h;
-            c.widget->y = p.y;
+            c.widget->h = ch;
+            c.widget->y = py;
         } else if (c.yAlign == Alignment::CENTER) {
-            c.widget->y = p.y + (p.h - c.widget->h) * 0.5f;
+            c.widget->y = py + (ch - c.widget->h) * 0.5f;
         } else if (c.yAlign == Alignment::END) {
-            c.widget->y = p.y + (p.h - c.widget->h);
+            c.widget->y = py + (ch - c.widget->h);
         } else {
-            c.widget->y = p.y;
+            c.widget->y = py;
         }
     }
 
-    // ----------------------------------------------------------
-    // 7. panel size
-    // ----------------------------------------------------------
-
-    w = padX * 2.0f + colX[nCols];
+    w = padX * 2.0f + contentW;
     if (assignedWidth > w) w = assignedWidth;
     h = padY * 2.0f + rowY[nRows];
-}
+}//end layout
 
     void drawSelf() override {
         //update layout before drawing

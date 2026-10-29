@@ -5,6 +5,7 @@
 extern SceneObject* selectedObject;
 
 //globals
+int selectedMesh = -1;
 int selectedType = -1;
 int selectedTexture = -1;
 string name_string = "";
@@ -27,6 +28,7 @@ Panel* texture_panel = nullptr;
 
 //dropdowns
 Dropdown* type_dropdown = nullptr;
+Dropdown* model_dropdown = nullptr;
 Dropdown* texture_dropdown = nullptr;
 
 //labels
@@ -38,10 +40,12 @@ Label* shininess_label = nullptr;
 //buttons
 Button* light_button = nullptr;
 Button* add_texture_button = nullptr;
+Button* add_model_button = nullptr;
 
 //button functions
 void toggle_lights();
 void add_texture();
+void add_model();
 
 //text fields
 TextField<string>* name_field = nullptr;
@@ -110,6 +114,12 @@ void init_hud() {
     type_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
     settings_panel->add(type_dropdown, 0, 1);
 
+    model_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Mesh:", meshNames, selectedMesh);
+    settings_panel->add(model_dropdown, 0, 2);
+
+    add_model_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
+    settings_panel->add(add_model_button, 1, 2);
+
     //material panel
     material_panel = new Panel(20.0f, 170.0f);
     material_section->add(material_panel);
@@ -166,7 +176,7 @@ void init_hud() {
 
     //shininess
     shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
-    material_panel->add(shininess_label, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
+    material_panel->add(shininess_label, 0, 3, 1, 1, Alignment::START, Alignment::START);
     shininess_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 3);
 
@@ -194,7 +204,7 @@ void init_hud() {
     texture_panel->add(texture_dropdown, 0, 0);
 
     add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
-    texture_panel->add(add_texture_button, 0, 1);
+    texture_panel->add(add_texture_button, 1, 0, 1, 1, Alignment::START, Alignment::START);
 
     texture_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
     texture_file_browser->setPriority(2);
@@ -347,4 +357,8 @@ void toggle_lights() {
 
 void add_texture(){
     texture_file_browser->openBrowser();
+}
+
+void add_model() {
+    //TODO
 }
