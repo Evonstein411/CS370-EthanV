@@ -52,6 +52,7 @@ struct Widget {
     bool hidden = false;
     bool grabbed = false;
     bool pendingDelete = false;
+    bool stretched = false;
     int priority = 0; //higher priority value drawn first
 
     std::function<void(float, float)> onDragCallback;
@@ -290,8 +291,18 @@ struct Panel : Widget {
     }
 
 virtual void layout() {
-    if (cells.empty()) { w = padX * 2.0f; h = padY * 2.0f; return; }
-    if (hidden)        { w = 0.0f;        h = 0.0f;        return; }
+    float assignedWidth = stretched ? w : 0.0f;
+    stretched = false;
+    if (cells.empty()) {
+        w = std::max(padX * 2.0f, assignedWidth);
+        h = padY * 2.0f;
+        return;
+    }
+    if (hidden) {
+        w = 0.0f;
+        h = 0.0f;
+        return;
+    }
 
     // ----------------------------------------------------------
     // 1. how many columns and rows
@@ -412,6 +423,7 @@ virtual void layout() {
         if (c.xAlign == Alignment::STRETCH) {
             c.widget->w = p.w;
             c.widget->x = p.x;
+            c.widget->stretched = true;
         } else if (c.xAlign == Alignment::CENTER) {
             c.widget->x = p.x + (p.w - c.widget->w) * 0.5f;
         } else if (c.xAlign == Alignment::END) {
@@ -435,7 +447,9 @@ virtual void layout() {
     // ----------------------------------------------------------
     // 7. panel size
     // ----------------------------------------------------------
+
     w = padX * 2.0f + colX[nCols];
+    if (assignedWidth > w) w = assignedWidth;
     h = padY * 2.0f + rowY[nRows];
 }
 
@@ -776,11 +790,15 @@ struct Section : Widget {
     }
 
     void layout() {
+        float assignedW = stretched ? w : 0.0f;
+        stretched = false;
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
 
+        float labelW = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
+
         if (collapsed || content->cells.empty()) {
-            float tw = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
-            w = std::max(tw, 48.0f);
+            prefW = std::max(labelW, 48.0f);
+            w = std::max(prefW, assignedW);
             h = headerH;
             return;
         }
@@ -789,9 +807,11 @@ struct Section : Widget {
         content->y = y + headerH;
         content->layout();
 
-        w = std::max(content->w, text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f);
+        prefW = std::max(content->w, labelW);
+        w = std::max(prefW, assignedW);
         h = headerH + content->h;
-
+        content->w = w;
+        content->stretched = true;   // body layout must not shrink this
     }
 
     void drawSelf() override {
@@ -891,18 +911,26 @@ struct Dropdown : Widget {
     }
 
     void buildOptions() {
-        if (popup) {
-            for (int i = 0; i < (int)options.size(); ++i) {
-                Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
-                    [this, i]() {
-                        if (selected) *selected = i;
-                        closePopup();          // only hides
-                    },
-                    options[i]);
-                popup->add(b, 0, i);
-            }
-            popup->layout();
+        if (!popup) return;
+
+        float maxOpt = 0.0f;
+        for (const auto& o : options)
+            maxOpt = std::max(maxOpt, text_width(o, textSize));
+        float boxW = maxOpt + HUD_PAD_X * 2.0f + 24.0f;   // 24 = ^ / v
+        if (boxW < 100.0f) boxW = 100.0f;
+
+        for (int i = 0; i < (int)options.size(); ++i) {
+            Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
+                [this, i]() {
+                    if (selected) *selected = i;
+                    closePopup();
+                },
+                options[i]);
+            b->w = boxW;
+            b->prefW = boxW;
+            popup->add(b, 0, i, 1, 1, Alignment::STRETCH, Alignment::START);
         }
+        popup->layout();
     }
 
 
@@ -950,12 +978,16 @@ struct Dropdown : Widget {
     void openPopup() {
         if (!popup) {
             popup = new Panel(x + labelW, y + h);
+            popup->color = vec4(0.3f, 0.3f, 0.3f, 1.0f);
             popup->setPriority(1);
             buildOptions();
         }
 
+        float boxW = w - labelW - HUD_PAD_X;
         popup->x = x + labelW;
         popup->y = y + h;
+        popup->w = boxW;
+        popup->stretched = true;
         popup->layout();
         popup->show();
         open = true;

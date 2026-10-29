@@ -85,19 +85,19 @@ void init_hud() {
 
     //object settings section (name, type, etc.)
     object_section = new Section(0.0f, 0.0f, "Object Settings");
-    object_panel->add(object_section, 0, 0);
+    object_panel->add(object_section, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //material section
     material_section = new Section(0.0f, 0.0f, "Material Details");
-    object_panel->add(material_section, 0, 1);
+    object_panel->add(material_section, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //color section
     solid_color_section = new Section(0.0f, 0.0f, "Solid Color");
-    object_panel->add(solid_color_section, 0, 2);
+    object_panel->add(solid_color_section, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //texture section
     texture_section = new Section(0.0f, 0.0f, "Texture");
-    object_panel->add(texture_section, 0, 3);
+    object_panel->add(texture_section, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
 
 
     //setting panel
@@ -116,7 +116,7 @@ void init_hud() {
 
     //ambient
     ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
-    material_panel->add(ambient_label, 0, 0);
+    material_panel->add(ambient_label, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
     ambient_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
     material_panel->add(ambient_r_field, 1, 0);
@@ -132,7 +132,7 @@ void init_hud() {
 
     //diffuse
     diffuse_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "diffuse");
-    material_panel->add(diffuse_label, 0, 1);
+    material_panel->add(diffuse_label, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
     diffuse_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
     material_panel->add(diffuse_r_field, 1, 1);
@@ -149,7 +149,7 @@ void init_hud() {
 
     //specular
     specular_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "specular");
-    material_panel->add(specular_label, 0, 2);
+    material_panel->add(specular_label, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
 
     specular_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
     material_panel->add(specular_r_field, 1, 2);
@@ -166,7 +166,7 @@ void init_hud() {
 
     //shininess
     shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
-    material_panel->add(shininess_label, 0, 3);
+    material_panel->add(shininess_label, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
     shininess_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
     material_panel->add(shininess_field, 1, 3);
 
