@@ -12,6 +12,7 @@ string name_string = "";
 
 //file browsers
 FileBrowser* texture_file_browser = nullptr;
+FileBrowser* mesh_file_browser = nullptr;
 
 //sections
 Section* material_section = nullptr;
@@ -120,6 +121,24 @@ void init_hud() {
     add_model_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
     settings_panel->add(add_model_button, 1, 2);
 
+    mesh_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
+    mesh_file_browser->setPriority(2);
+    mesh_file_browser->setFilter({".obj"});
+    mesh_file_browser->onFileSelected = [](const string& path) {
+        int index = add_model_file(path);
+        if (index < 0) return;
+
+        selectedMesh = index;
+        if (model_dropdown)
+            model_dropdown->setOptions(meshNames);
+
+        if (selectedObject) {
+            selectedObject->mesh = (GLuint)index;
+            if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor)
+                build_solid_color_buffer(numVertices[index],selectedObject->color,selectedObject->colorBuffer);
+        }
+    };
+
     //material panel
     material_panel = new Panel(20.0f, 170.0f);
     material_section->add(material_panel);
@@ -209,17 +228,17 @@ void init_hud() {
     texture_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
     texture_file_browser->setPriority(2);
     texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
-    texture_file_browser->onFileSelected = [](const string& path) {
-        int index = add_texture_file(path);
-        if (index < 0) return;
+    texture_file_browser->onFileSelected = [](const string& texturePath) {
+        int tex_index = add_texture_file(texturePath);
+        if (tex_index < 0) return;
 
-        selectedTexture = index;
+        selectedTexture = tex_index;
         if (texture_dropdown)
             texture_dropdown->setOptions(textureNames);
 
         if (selectedObject) {
             selectedObject->drawType = TEXTURE;
-            selectedObject->texture = TextureIDs[index];
+            selectedObject->texture = TextureIDs[tex_index];
         }
     };
     update_fields();
@@ -289,6 +308,7 @@ void update_fields() {
         name_field->setText("NONE");
         name_field->setEditable(false);
         type_dropdown->setEnabled(false);
+        model_dropdown->setEnabled(false);
         selectedType = -1;
         selectedTexture = -1;
         set_section_visibility(static_cast<DrawType>(-1)); // hides all
@@ -299,6 +319,9 @@ void update_fields() {
     name_field->setEditable(true);
     name_string = selectedObject->name;
     name_field->setText(name_string);
+
+    model_dropdown->setEnabled(true);
+    selectedMesh = (int)selectedObject->mesh;
 
     selectedType = selectedObject->drawType;
     set_section_visibility(selectedObject->drawType);
@@ -334,6 +357,16 @@ void update_from_fields() {
         return;                   // avoid writing stale field values this frame
     }
 
+    //mesh
+    if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() && selectedObject->mesh != selectedMesh) {
+        selectedObject->mesh = selectedMesh;
+        if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor) {
+            build_solid_color_buffer(numVertices[selectedObject->mesh],
+                                     selectedObject->color,
+                                     selectedObject->colorBuffer);
+        }
+    }
+
     // Per-type writes
     if (selectedObject->drawType == MATERIAL) {
         sync_material_from_fields(DynamicMaterials[selectedObject->material]);
@@ -360,5 +393,5 @@ void add_texture(){
 }
 
 void add_model() {
-    //TODO
+    mesh_file_browser->openBrowser();
 }

@@ -164,12 +164,20 @@ void render_scene( ) {
 }
 
 void init_scene() {
-    SceneObject* sphereObject = new SceneObject(Sphere, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* floor = new SceneObject(Cube, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall = new SceneObject(Cube, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall2 = new SceneObject(Cube, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall3 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall4 = new SceneObject(Cube, "wall3", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    int cube_id = find_mesh("cube");
+    int sphere_id = find_mesh("sphere");
+    if (cube_id < 0 || sphere_id < 0) {
+        fprintf(stderr, "Required models missing from ../models\n");
+        return;
+    }
+
+
+    SceneObject* sphereObject = new SceneObject(sphere_id, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* floor = new SceneObject(cube_id, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall = new SceneObject(cube_id, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall2 = new SceneObject(cube_id, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall3 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* wall4 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
 }
 
 

@@ -34,39 +34,6 @@ void draw_color_object(GLuint obj, GLuint color) {
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
-
-void draw_solid_hud_quad(vec4 color) {
-    //setup dynamic buffer
-    if (dynamicHUDColorBuffer == 0){
-        glGenBuffers(1, &dynamicHUDColorBuffer);
-        // allocate once to the size of the HUD quad
-        vector<vec4> tmp(numVertices[HUDQuad], color);
-        glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
-        glBufferData(GL_ARRAY_BUFFER, tmp.size() * sizeof(vec4), tmp.data(), GL_DYNAMIC_DRAW);
-    }
-
-    vector<vec4> cols(numVertices[HUDQuad], color);
-    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, cols.size() * sizeof(vec4), cols.data());
-
-    //draw color object
-    glUseProgram(color_program);
-    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
-
-    glBindVertexArray(VAOs[HUDQuad]);
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDQuad][PosBuffer]);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
-
-    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
-
-    glDrawArrays(GL_TRIANGLES, 0, numVertices[HUDQuad]);
-}
-
 void draw_mat_object(GLuint obj, GLuint material){
     // Select shader program
     glUseProgram(lighting_program);
@@ -153,6 +120,40 @@ void draw_tex_object(GLuint obj, GLuint textureID){
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
+//UI related draw functions should at some point be migrated to kitUI
+void draw_solid_hud_quad(vec4 color) {
+    //setup dynamic buffer
+    if (dynamicHUDColorBuffer == 0){
+        glGenBuffers(1, &dynamicHUDColorBuffer);
+        // allocate once to the size of the HUD quad
+        vector<vec4> tmp(HUD_numVertices[HUDQuad], color);
+        glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, tmp.size() * sizeof(vec4), tmp.data(), GL_DYNAMIC_DRAW);
+    }
+
+    vector<vec4> cols(HUD_numVertices[HUDQuad], color);
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, cols.size() * sizeof(vec4), cols.data());
+
+    //draw color object
+    glUseProgram(color_program);
+    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    glBindVertexArray(HUD_VAOs[HUDQuad]);
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][PosBuffer]);
+    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(color_vCol);
+
+    glDrawArrays(GL_TRIANGLES, 0, HUD_numVertices[HUDQuad]);
+}
+
+
 void draw_text_quad() {
     glUseProgram(hud_program);
 
@@ -163,13 +164,13 @@ void draw_text_quad() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fontTextureID);
 
-    glBindVertexArray(VAOs[HUDTextQuad]);
+    glBindVertexArray(HUD_VAOs[HUDTextQuad]);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][PosBuffer]);
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
     glVertexAttribPointer(hud_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(hud_vPos);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][TexBuffer]);
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
     glVertexAttribPointer(hud_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(hud_vTex);
 
