@@ -4,6 +4,7 @@
 
 #include "widget.h"       // base + globals
 #include "text.h"
+#include "canvas.h"
 #include "panel.h"
 #include "button.h"
 #include "textfield.h"

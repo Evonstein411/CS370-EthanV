@@ -1,5 +1,6 @@
 #ifndef CS370_FA26_DROPDOWN_H
 #define CS370_FA26_DROPDOWN_H
+#include "widget.h"
 
 
 struct Dropdown : Widget {
@@ -11,7 +12,7 @@ struct Dropdown : Widget {
     bool enabled = true;
     float textSize = HUD_FONT;
     float labelW = 0.0f;
-    vec4 color = HUD_GRAY;
+    vec4 color = HUD_DROPFIELD;
     vec4 highlightedColor = HUD_HIGHLIGHTED;
     vec4 selectedColor = HUD_FIELD;
     vec4 disabledColor = HUD_DISABLED;
@@ -130,14 +131,13 @@ struct Dropdown : Widget {
         model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
         draw_solid_hud_quad(enabled ? selectedColor: disabledColor);
-        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, ALT_TEXT_COLOR);
-        draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize, ALT_TEXT_COLOR);
+        draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, enabled ? ALT_TEXT_COLOR: DISABLED_TEXT_COLOR);
+        draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize, enabled? ALT_TEXT_COLOR: DISABLED_TEXT_COLOR);
     }
 
     void openPopup() {
         if (!popup) {
             popup = new Panel(x + labelW, y + h);
-            popup->color = vec4(0.3f, 0.3f, 0.3f, 1.0f);
             popup->setPriority(1);
             buildOptions();
         }

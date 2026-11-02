@@ -19,6 +19,9 @@ Section* material_section = nullptr;
 Section* object_section = nullptr;
 Section* solid_color_section = nullptr;
 Section* texture_section = nullptr;
+Section* transform_section = nullptr;
+//canvas
+Canvas* topbar = nullptr;
 
 //panels
 Panel* topbar_panel = nullptr;
@@ -28,6 +31,7 @@ Panel* settings_panel = nullptr;
 Panel* material_panel = nullptr;
 Panel* solid_color_panel = nullptr;
 Panel* texture_panel = nullptr;
+Panel* transform_panel = nullptr;
 
 //dropdowns
 Dropdown* type_dropdown = nullptr;
@@ -39,6 +43,9 @@ Label* ambient_label = nullptr;
 Label* diffuse_label = nullptr;
 Label* specular_label = nullptr;
 Label* shininess_label = nullptr;
+Label* translation_label = nullptr;
+Label* rotation_label = nullptr;
+Label* scale_label = nullptr;
 
 //buttons
 Button* light_button = nullptr;
@@ -75,6 +82,35 @@ TextField<float>* color_g_field = nullptr;
 TextField<float>* color_b_field = nullptr;
 TextField<float>* color_a_field = nullptr;
 
+TextField<float>* trans_x_field = nullptr;
+TextField<float>* trans_y_field = nullptr;
+TextField<float>* trans_z_field = nullptr;
+
+TextField<float>* rot_x_field = nullptr;
+TextField<float>* rot_y_field = nullptr;
+TextField<float>* rot_z_field = nullptr;
+
+TextField<float>* scale_x_field = nullptr;
+TextField<float>* scale_y_field = nullptr;
+TextField<float>* scale_z_field = nullptr;
+
+//field variables
+float trans_x = 0.0f;
+float trans_y = 0.0f;
+float trans_z = 0.0f;
+
+float rot_x = 0.0f;
+float rot_y = 0.0f;
+float rot_z = 0.0f;
+
+float scale_x = 0.0f;
+float scale_y = 0.0f;
+float scale_z = 0.0f;
+
+
+
+
+
 //forward decs
 void update_fields();
 
@@ -84,18 +120,22 @@ void render_hud() {
 }
 
 void init_hud() {
-    light_button = new Button(ww - 360.0f, 90.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+
+    Canvas* topbar = new Canvas(0, 0, (float)ww, 64);
+
+    light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    topbar->add(light_button, ww-240.0f, 4.0f);
+
 
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
-    object_panel->color = vec4(0.2f, 0.2f, 0.25f, 0.85f);
 
     //object settings section (name, type, etc.)
-    object_section = new Section(0.0f, 0.0f, "Object Settings");
+    object_section = new Section(0.0f, 0.0f, "Object");
     object_panel->add(object_section, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //material section
-    material_section = new Section(0.0f, 0.0f, "Material Details");
+    material_section = new Section(0.0f, 0.0f, "Material");
     object_panel->add(material_section, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //color section
@@ -105,6 +145,10 @@ void init_hud() {
     //texture section
     texture_section = new Section(0.0f, 0.0f, "Texture");
     object_panel->add(texture_section, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
+
+    //transform section
+    transform_section = new Section(0.0f, 0.0f, "Transformation");
+    object_panel->add(transform_section, 0, 4, 1, 1, Alignment::STRETCH, Alignment::START);
 
 
     //setting panel
@@ -243,6 +287,49 @@ void init_hud() {
             selectedObject->texture = TextureIDs[tex_index];
         }
     };
+
+    transform_panel = new Panel(0.0f, 0.0f);
+    transform_section->add(transform_panel);
+
+    translation_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "translation");
+    transform_panel->add(translation_label, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
+
+    trans_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &trans_x);
+    transform_panel->add(trans_x_field, 1, 0);
+
+    trans_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &trans_y);
+    transform_panel->add(trans_y_field, 2, 0);
+
+    trans_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &trans_z);
+    transform_panel->add(trans_z_field, 3, 0);
+
+    rotation_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "rotation");
+    transform_panel->add(rotation_label, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
+
+    rot_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &rot_x);
+    transform_panel->add(rot_x_field, 1, 1);
+
+    rot_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &rot_y);
+    transform_panel->add(rot_y_field, 2, 1);
+
+    rot_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &rot_z);
+    transform_panel->add(rot_z_field, 3, 1);
+
+    scale_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "scale");
+    transform_panel->add(scale_label, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
+
+    scale_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &scale_x);
+    transform_panel->add(scale_x_field, 1, 2);
+
+    scale_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &scale_y);
+    transform_panel->add(scale_y_field, 2, 2);
+
+    scale_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &scale_z);
+    transform_panel->add(scale_z_field, 3, 2);
+
+
+
+
     update_fields();
 
 }//end init hud
@@ -297,6 +384,31 @@ void sync_color_from_fields(vec4& color) {
     color = vec4(color_r, color_g, color_b, color_a);
 }
 
+void sync_transform_to_fields(vec3 translate, vec3 rotate, vec3 scale) {
+    trans_x = translation[0]; trans_y = translation[1]; trans_z = translation[2];
+    rot_x = rotation[0]; rot_y = rotation[1]; rot_z = rotation[2];
+    scale_x = scale[0]; scale_y = scale[1]; scale_z = scale[2];
+
+    if (trans_x_field) trans_x_field->setText(to_string(trans_x));
+    if (trans_y_field) trans_y_field->setText(to_string(trans_y));
+    if (trans_z_field) trans_z_field->setText(to_string(trans_z));
+
+    if (rot_x_field) rot_x_field->setText(to_string(rot_x));
+    if (rot_y_field) rot_y_field->setText(to_string(rot_y));
+    if (rot_z_field) rot_z_field->setText(to_string(rot_z));
+
+    if (scale_x_field) scale_x_field->setText(to_string(scale_x));
+    if (scale_y_field) scale_y_field->setText(to_string(scale_y));
+    if (scale_z_field) scale_z_field->setText(to_string(scale_z));
+
+}
+
+void sync_transform_from_fields(vec3 translate, vec3 rotate, vec3 scale) {
+    selectedObject->position = translate;
+    selectedObject->rotation = rotate;
+    selectedObject->scale = scale;
+}
+
 int find_texture_index(GLuint texID) {
     for (int i = 0; i < (int)TextureIDs.size(); ++i)
         if (TextureIDs[i] == texID) return i;
@@ -329,6 +441,8 @@ void update_fields() {
     selectedType = selectedObject->drawType;
     set_section_visibility(selectedObject->drawType);
 
+    sync_transform_to_fields(selectedObject->position, selectedObject->rotation, selectedObject->scale);
+
     // Refresh texture list only when the texture section is relevant
     if (texture_dropdown && selectedObject->drawType == TEXTURE) {
         texture_dropdown->setOptions(textureNames);
@@ -347,6 +461,8 @@ void update_fields() {
 
 void update_from_fields() {
     if (!selectedObject) return;
+
+    sync_transform_from_fields({trans_x, trans_y, trans_z}, {rot_x, rot_y, rot_z}, {scale_x, scale_y, scale_z});
 
     // Name always
     if (name_field)

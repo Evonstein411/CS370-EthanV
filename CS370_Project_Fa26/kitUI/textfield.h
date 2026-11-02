@@ -27,7 +27,7 @@ struct TextFieldBase : Widget {
 //Text field for user input
 template<typename T>
 struct TextField : TextFieldBase {
-    vec4 color = HUD_GRAY;
+    vec4 color = HUD_DROPFIELD;
     vec4 fieldColor = HUD_FIELD;
     vec4 textColor = ALT_TEXT_COLOR;
     vec4 disabledColor = HUD_DISABLED;
@@ -118,7 +118,7 @@ struct TextField : TextFieldBase {
         scale_matrix = scale(boxW, boxH, 1.0f);
         model_matrix =  trans_matrix * scale_matrix;
         draw_solid_hud_quad(editable ? fieldColor : disabledColor);
-        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, textColor);
+        draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, editable? textColor: DISABLED_TEXT_COLOR);
 
         if (focused){
             float textW = text_width(text, textSize);

@@ -7,7 +7,7 @@ struct Label;
 struct Label : Widget {
     string label;
     float textSize = HUD_FONT;
-    vec4 color = HUD_GRAY;
+    vec4 color = HUD_LABEL;
 
     Label(float x, float y, float w, float h, const string& label)
     : Widget(x, y, w, h), label(label) {

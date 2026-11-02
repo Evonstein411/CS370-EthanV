@@ -13,7 +13,7 @@ struct Button : Widget {
     string label;
     float textSize = HUD_FONT;
     std::function<void()> onPress;
-    vec4 color = HUD_GRAY;
+    vec4 color = HUD_BUTTON;
     vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     //constructor (no label specified)

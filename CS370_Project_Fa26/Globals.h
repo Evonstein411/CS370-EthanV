@@ -40,7 +40,7 @@ vec3 axis = {0.0f, 1.0f, 0.0f};
 GLboolean animate = true;
 GLboolean dirty = false;
 
-vec4 backgroundColor = {0.1f, 0.1f, 0.15f, 1.0f};
+vec4 backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
 
 // Global screen dimensions
 GLint ww = 1980;

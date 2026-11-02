@@ -12,16 +12,28 @@ inline vector<Widget*> trash;
 inline bool handlingEvent = false;
 inline int eventDepth = 0;
 //HUD globals
-const vec4 HUD_GRAY = vec4(0.4f, 0.4f, 0.4f, 0.85f);
-const vec4 HUD_PANEL = vec4(0.3f, 0.3f, 0.3f, 0.85);
-const vec4 HUD_HIGHLIGHTED = vec4(0.8f, 0.8f, 0.8f, 0.85f);
-const vec4 HUD_FIELD = vec4(0.9f, 0.9f, 0.9f, 0.85f);
-const vec4 HUD_DISABLED = vec4(0.6f, 0.6f, 0.6f, 0.85f);
+
+//colors
+const vec4 HUD_PANEL       = vec4(0.28f, 0.22f, 0.16f, 0.92f);  // dark sand / panel bg
+const vec4 HUD_FIELD       = vec4(0.38f, 0.30f, 0.22f, 0.95f);  // text fields, dropdowns
+const vec4 HUD_CANVAS        = vec4(0.22f, 0.17f, 0.12f, 0.95f);  // top bar, slightly darker
+const vec4 HUD_BUTTON      = vec4(0.55f, 0.38f, 0.22f, 0.95f);  // terracotta buttons
+const vec4 HUD_DROPFIELD    = vec4(0.45f, 0.34f, 0.22f, 0.95f);  // dropdown label + closed box
+const vec4 HUD_SECTION     = vec4(0.36f, 0.27f, 0.18f, 0.95f);  // section bar (normal)
+const vec4 HUD_LABEL     = vec4(0.50f, 0.34f, 0.20f, 0.95f);  // section bar (normal)
+
+
+const vec4 HUD_ACCENT      = vec4(0.85f, 0.55f, 0.25f, 1.00f);  // selected, focus ring
+const vec4 HUD_HIGHLIGHTED = vec4(0.75f, 0.55f, 0.30f, 0.95f);  // hover / active
+const vec4 HUD_DISABLED    = vec4(0.22f, 0.20f, 0.18f, 0.65f);  // muted
+
+
 const float HUD_FONT = 32.0f;
 const float HUD_PAD_X = 8.0f;
 const float HUD_PAD_Y = 8.0f;
-const vec4 TEXT_COLOR = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-const vec4 ALT_TEXT_COLOR = vec4(0.2f, 0.2f, 0.2f, 1.0f);
+const vec4 TEXT_COLOR = vec4(0.95f, 0.90f, 0.82f, 1.00f);
+const vec4 ALT_TEXT_COLOR = vec4(0.78f, 0.66f, 0.54f, 1.00f);
+const vec4 DISABLED_TEXT_COLOR = vec4(0.24, 0.22f, 0.20f, 1.0f);
 
 enum class Alignment {START, CENTER, END, STRETCH};
 //parent HUD element struct

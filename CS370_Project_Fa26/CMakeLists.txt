@@ -100,6 +100,7 @@ set(COMMON_FILES
         kitUI/dropdown.h
         kitUI/scrollpanel.h
         kitUI/filebrowser.h
+        kitUI/canvas.h
 )
 
 #-------------------------------------------------------------

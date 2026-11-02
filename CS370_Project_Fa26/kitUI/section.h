@@ -1,19 +1,19 @@
 #ifndef CS370_FA26_SECTION_H
 #define CS370_FA26_SECTION_H
 
-
 struct Section : Widget {
     string label;
-    bool collapsed = false;
+    bool collapsed = true;
     Panel* content;
     float headerH = 0.0f;
-    vec4 color = HUD_GRAY;
+    vec4 color = HUD_SECTION;
     vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     Section(float x, float y, const string& label)
         : Widget(x, y, 0, 0), label(label) {
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
         content = new Panel(x, y);
+        content->setHidden(collapsed);
         addChild(content);
     }
 
