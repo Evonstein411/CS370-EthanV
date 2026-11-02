@@ -62,7 +62,11 @@ MaterialProperties greenGlass = {
 /******************************************/
 // TODO: Create coffeeBlack (translucent) material
 MaterialProperties coffeeBlack = {
-
+    vec4(0.01f, 0.01f, 0.01f, 0.75f), //ambient
+    vec4(0.05f, 0.05f, 0.05f, 1.0f), //diffuse
+    vec4(0.05f, 0.05f, 0.05f, 1.0f), //specular
+    15.0f, //shininess
+    {0.0f, 0.0f, 0.0f}  //pad
 };
 
 void build_materials( ) {

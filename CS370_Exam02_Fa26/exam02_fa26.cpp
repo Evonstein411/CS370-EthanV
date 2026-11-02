@@ -100,17 +100,23 @@ int main(int argc, char**argv)
             }
             // TODO: Time-based animation for pouring teapot
             lightOn[CyanSpotLight] = 0;
-            if (tipping) {
+            if (tipping && !pouring) {
                 /******************************************/
                 /*       INSERT (m/n) CODE HERE           */
                 /******************************************/
-                pot_theta += ppm * dT;
+                pot_theta += ppm * dT * pour_dir;
                 lightOn[CyanSpotLight] = 1;
-                if (pot_theta < pour_ang || pot_theta > 0) {
-
+                if (pot_theta > 0) {
+					pour_dir *= -1;
+                }
+				if (pot_theta < pour_ang)  {
+                    pouring = true;
                 }
 
             }
+			if(pouring){
+				cofee_y += coffee_fill / dt
+			}
         }
         elTime = curTime;
         // Swap buffer onto screen
@@ -363,7 +369,65 @@ void render_scene( ) {
         /******************************************/
         /*       INSERT (m) CODE HERE             */
         /******************************************/
+// TODO: Render copper plate
+        trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
+        scale_matrix = scale(2.0f, 0.1f, 2.0f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * scale_matrix * rot_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Plate, Copper);
 
+        // TODO: Render donut stack
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.5f, 0.0f, 0.75f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.5f, 0.0f, -0.75f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.0f, 0.5f, 0.0f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        // TODO: Render teapot
+        trans_matrix = translate(MUG_X - 1.4f, 1.2f, MUG_Z + 1.4f);
+        scale_matrix = scale(1.0f, 1.0f, 1.0f);
+        rot_matrix = rotate(45.0f, vec3(0.0f, 1.0f, 0.0f));
+		rot2_matrix = rotate(pot_theta, vec3(0.0f, 0.0f, 1.0f));
+        model_matrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Teapot, BlueAcrylic);
+
+
+        // TODO: Render mug
+        trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Mug, GreenGlass);
 
 
     }
@@ -371,19 +435,73 @@ void render_scene( ) {
     // filling with coffee
     else if (mode==9)
     {
-        /******************************************/
-        /*       INSERT (n) CODE HERE             */
-        /******************************************/
-        // TODO: Render copper plate
+// TODO: Render copper plate
+        trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
+        scale_matrix = scale(2.0f, 0.1f, 2.0f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * scale_matrix * rot_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Plate, Copper);
 
         // TODO: Render donut stack
 
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.5f, 0.0f, 0.75f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.5f, 0.0f, -0.75f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
+        trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
+        trans2_matrix = translate(0.0f, 0.5f, 0.0f);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Donut, Dough);
+
         // TODO: Render teapot
+        trans_matrix = translate(MUG_X - 1.4f, 1.2f, MUG_Z + 1.4f);
+        scale_matrix = scale(1.0f, 1.0f, 1.0f);
+        rot_matrix = rotate(45.0f, vec3(0.0f, 1.0f, 0.0f));
+		rot2_matrix = rotate(pot_theta, vec3(0.0f, 0.0f, 1.0f));
+        model_matrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Teapot, BlueAcrylic);
+
 
         // TODO: Render mug
+        trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
+        scale_matrix = scale(0.5f, 0.5f, 0.5f);
+        rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Mug, GreenGlass);
 
-        // TODO: Render coffee
-
+		// TODO: Render Coffee
+        trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
+        scale_matrix = scale(0.5f, coffee_y, 0.5f);
+        rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
+        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
+        normal_matrix = model_matrix.inverse().transpose();
+        draw_mat_object(Coffee, CoffeeBlack);
     }
 
 }
