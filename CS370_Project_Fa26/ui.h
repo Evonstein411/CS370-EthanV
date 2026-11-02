@@ -313,6 +313,7 @@ void update_fields() {
         model_dropdown->setEnabled(false);
         selectedType = -1;
         selectedTexture = -1;
+        selectedMesh = -1;
         set_section_visibility(static_cast<DrawType>(-1)); // hides all
         return;
     }

@@ -90,6 +90,16 @@ set(COMMON_FILES
         ui.h
         kitUI/widgets.h
         kitUI/hud.h
+        kitUI/widget.h
+        kitUI/text.h
+        kitUI/panel.h
+        kitUI/button.h
+        kitUI/textfield.h
+        kitUI/label.h
+        kitUI/section.h
+        kitUI/dropdown.h
+        kitUI/scrollpanel.h
+        kitUI/filebrowser.h
 )
 
 #-------------------------------------------------------------
