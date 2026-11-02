@@ -1022,10 +1022,7 @@ struct ScrollPanel : Panel {
         }
 
         h = viewportHeight;
-        float needed = w;
-        if (maxScroll > 0.0f)
-            needed += scrollbarWidth;
-        w = std::max(needed, assignedW);   // parent stretch wins; bar is not re-added
+        w = assignedW;   // scrollbar stays inside the assigned width
 
         placeThumb();
     }
@@ -1136,8 +1133,8 @@ struct FileBrowser : Widget {
     // Optional: callback when a file is chosen
     std::function<void(const string& path)> onFileSelected;
 
-    FileBrowser(float x, float y)
-            : Widget(x, y, 0, 0) {
+    FileBrowser()
+            : Widget(0, 0, 0, 0) {
         content = new Panel(x, y);
         addChild(content);
 
@@ -1215,6 +1212,7 @@ struct FileBrowser : Widget {
     void closeBrowser() {
         open = false;
         content->hide();
+        this->hide();
     }
 
     void centerOnScreen() {
@@ -1286,19 +1284,15 @@ struct FileBrowser : Widget {
                         }, name + "/");
                     listPanel->add(b, 0, row++);
                 } else if (passesFilter(entry.path())) {
-                    string ext = entry.path().extension().string();
-                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-                        Button* b = new Button(0, 0, 280, 32,
-                            [this, full]() {
-                                selectedPath = full;
-                                selectedLabel->setText(fs::path(full).filename().string());
-                                if (onFileSelected)
-                                    onFileSelected(full);
-                                closeBrowser();
-                            }, name);
-                        listPanel->add(b, 0, row++);
-                    }
+                    Button* b = new Button(0, 0, 280, 32,
+                        [this, full]() {
+                            selectedPath = full;
+                            selectedLabel->setText(fs::path(full).filename().string());
+                            if (onFileSelected)
+                                onFileSelected(full);
+                            closeBrowser();
+                        }, name);
+                    listPanel->add(b, 0, row++);
                 }
             }
         }
@@ -1307,6 +1301,7 @@ struct FileBrowser : Widget {
         content->layout();
         w = content->w;
         h = content->h;
+        centerOnScreen();
     }// rebuild the list of entries
 
     void drawSelf() override {
@@ -1367,9 +1362,9 @@ void draw_string(const string& text, float x, float y, float size, vec4 color) {
             vec2(q.s0, q.t0), vec2(q.s1, q.t1), vec2(q.s0, q.t1)
         };
 
-        glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][PosBuffer]);
+        glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
-        glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[HUDTextQuad][TexBuffer]);
+        glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
         model_matrix = mat4().identity();

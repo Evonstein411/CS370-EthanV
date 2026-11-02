@@ -21,6 +21,8 @@ Section* solid_color_section = nullptr;
 Section* texture_section = nullptr;
 
 //panels
+Panel* topbar_panel = nullptr;
+
 Panel* object_panel = nullptr;
 Panel* settings_panel = nullptr;
 Panel* material_panel = nullptr;
@@ -82,7 +84,7 @@ void render_hud() {
 }
 
 void init_hud() {
-    light_button = new Button(20.0f, 20.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    light_button = new Button(ww - 360.0f, 90.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
 
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
@@ -121,7 +123,7 @@ void init_hud() {
     add_model_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
     settings_panel->add(add_model_button, 1, 2);
 
-    mesh_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
+    mesh_file_browser = new FileBrowser();
     mesh_file_browser->setPriority(2);
     mesh_file_browser->setFilter({".obj"});
     mesh_file_browser->onFileSelected = [](const string& path) {
@@ -225,7 +227,7 @@ void init_hud() {
     add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
     texture_panel->add(add_texture_button, 1, 0, 1, 1, Alignment::START, Alignment::START);
 
-    texture_file_browser = new FileBrowser(ww/2.0f, hh/2.0f);
+    texture_file_browser = new FileBrowser();
     texture_file_browser->setPriority(2);
     texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
     texture_file_browser->onFileSelected = [](const string& texturePath) {

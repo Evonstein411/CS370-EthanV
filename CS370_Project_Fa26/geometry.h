@@ -40,7 +40,7 @@ int add_model_file(const string& path);
 int find_mesh(const string& name) {
     for (int i = 0; i < (int)meshNames.size(); ++i)
         if (meshNames[i] == name) return i;
-    return 0;
+    return -1;
 }
 
 void build_geometry() {
@@ -173,7 +173,7 @@ void build_hud_quad(GLuint obj) {
 
 
     int numFaces = indices.size();
-    numVertices[obj] = numFaces * 3;
+    HUD_numVertices[obj] = numFaces * 3;
 
     vector<vec4> obj_vertices;
     for (int i = 0; i < numFaces; i++) {
