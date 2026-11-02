@@ -101,6 +101,7 @@ void build_materials( ) {
         /******************************************/
         /*       INSERT (n) CODE HERE             */
         /******************************************/
+		Materials[CoffeeBlack] = coffeeBlack;
        
     }
 

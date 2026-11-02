@@ -108,6 +108,7 @@ int main(int argc, char**argv)
                 lightOn[CyanSpotLight] = 1;
                 if (pot_theta > 0) {
 					pour_dir *= -1;
+					coffee_y = 0.0f;
                 }
 				if (pot_theta < pour_ang)  {
                     pouring = true;
@@ -115,7 +116,13 @@ int main(int argc, char**argv)
 
             }
 			if(pouring){
-				cofee_y += coffee_fill / dt
+                lightOn[CyanSpotLight] = 1;
+				coffee_y += (1.0f / coffee_fill) * dT;
+				if(coffee_y >= 1.0f){
+					pouring = false;
+					pour_dir *= -1;
+				}
+
 			}
         }
         elTime = curTime;
@@ -433,9 +440,8 @@ void render_scene( ) {
     }
     // Extra Credit Mode 9: Copper plate and stack of donuts with animated teapot and mug
     // filling with coffee
-    else if (mode==9)
-    {
-// TODO: Render copper plate
+    else if (mode==9){
+		// TODO: Render copper plate
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
@@ -496,9 +502,8 @@ void render_scene( ) {
         draw_mat_object(Mug, GreenGlass);
 
 		// TODO: Render Coffee
-        trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
-        scale_matrix = scale(0.5f, coffee_y, 0.5f);
-        rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
+        trans_matrix = translate(MUG_X, coffee_y*0.5f, MUG_Z);
+        scale_matrix = scale(0.4f, coffee_y * 0.5f, 0.4f);
         model_matrix =   trans_matrix * rot_matrix * scale_matrix;
         normal_matrix = model_matrix.inverse().transpose();
         draw_mat_object(Coffee, CoffeeBlack);
