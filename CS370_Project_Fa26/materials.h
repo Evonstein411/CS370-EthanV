@@ -21,10 +21,10 @@ float specular_a = 1.0f;
 float shininess = 27.8f;
 
 MaterialProperties baseMaterial = {
-	vec4(1.0f, 1.0f, 1.0f, 1.0f), //ambient
+	vec4(0.5f, 0.5f, 0.5f, 1.0f), //ambient
 	vec4(0.5f, 0.5f, 0.5f, 1.0f), //diffuse
 	vec4(0.5f, 0.5f, 0.5f, 1.0f), //specular
-	10.0f, //shininess
+	25.0f, //shininess
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 

@@ -14,6 +14,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         return;
     }
 
+    //deselect with escape
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        selectedObject = nullptr;
+        update_fields();
+    }
+
+    //delete with delete key
+    if (key == GLFW_KEY_DELETE && action == GLFW_PRESS) {
+        delete_selected_object();
+        return;
+    }
     
     // A/D Adjust azimuth
     if (key == GLFW_KEY_A) {

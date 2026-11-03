@@ -25,13 +25,14 @@ Canvas* topbar = nullptr;
 
 //panels
 Panel* topbar_panel = nullptr;
-
 Panel* object_panel = nullptr;
 Panel* settings_panel = nullptr;
 Panel* material_panel = nullptr;
 Panel* solid_color_panel = nullptr;
 Panel* texture_panel = nullptr;
 Panel* transform_panel = nullptr;
+
+Panel* scene_graph = nullptr;
 
 //dropdowns
 Dropdown* type_dropdown = nullptr;
@@ -56,6 +57,8 @@ Button* add_model_button = nullptr;
 void toggle_lights();
 void add_texture();
 void add_model();
+void rebuild_scene_graph();
+void select_object(SceneObject* obj);
 
 //text fields
 TextField<string>* name_field = nullptr;
@@ -125,6 +128,11 @@ void init_hud() {
 
     light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
     topbar->add(light_button, ww-240.0f, 4.0f);
+
+
+
+    scene_graph = new Panel(ww - 200.0f, 80.0f);
+    rebuild_scene_graph();
 
 
     //main panel owns all object detail related widgets
@@ -426,6 +434,7 @@ void update_fields() {
         selectedType = -1;
         selectedTexture = -1;
         selectedMesh = -1;
+        transform_section->hide();
         set_section_visibility(static_cast<DrawType>(-1)); // hides all
         return;
     }
@@ -441,6 +450,7 @@ void update_fields() {
     selectedType = selectedObject->drawType;
     set_section_visibility(selectedObject->drawType);
 
+    transform_section->show();
     sync_transform_to_fields(selectedObject->position, selectedObject->rotation, selectedObject->scale);
 
     // Refresh texture list only when the texture section is relevant
@@ -462,13 +472,16 @@ void update_fields() {
 void update_from_fields() {
     if (!selectedObject) return;
 
+
     sync_transform_from_fields({trans_x, trans_y, trans_z}, {rot_x, rot_y, rot_z}, {scale_x, scale_y, scale_z});
 
-    // Name always
-    if (name_field)
+    // Name
+    if (name_field && selectedObject->name != name_string) {
         selectedObject->name = name_string;
+        rebuild_scene_graph();
+    }
 
-    // Type change (do this first)
+    // Type change
     if (selectedType >= 0 && selectedObject->drawType != static_cast<DrawType>(selectedType)) {
         selectedObject->initializeType(static_cast<DrawType>(selectedType));
         selectedObject->drawType = static_cast<DrawType>(selectedType);
@@ -499,6 +512,46 @@ void update_from_fields() {
     }
 }
 
+void select_object(SceneObject* obj) {
+    selectedObject = obj;
+    update_fields();
+}
+
+void delete_selected_object() {
+    if (!selectedObject) return;
+
+    // remove from the scene list
+    auto it = std::find(objects.begin(), objects.end(), selectedObject);
+    if (it != objects.end())
+        objects.erase(it);
+
+    delete selectedObject;
+    selectedObject = nullptr;
+
+    update_fields();          // clear the detail panel
+    rebuild_scene_graph();    // refresh the list
+}
+
+void rebuild_scene_graph() {
+    if (!scene_graph) return;
+
+    for (auto& cell : scene_graph->cells) {
+        if (cell.widget)
+            destroy_widget(cell.widget);
+    }
+    scene_graph->cells.clear();
+
+    Label* title = new Label(0, 0, 240.0f, 32.0f, "Scene Graph");
+    scene_graph->add(title, 0, 0);
+
+    for (int i = 0; i < (int)objects.size(); ++i) {
+        SceneObject* obj = objects[i];
+        Button* b = new Button(0, 0, 240.0f, 36.0f,
+            [obj]() { select_object(obj); },
+            obj->name);
+        scene_graph->add(b, 0, i + 1);
+    }
+}
 
 //-----------------------------------Button Functions--------------------------------------
 //----------------------all function used by buttons defined below-------------------------

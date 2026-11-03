@@ -37,6 +37,7 @@ void build_hud_quad(GLuint hudObj);
 void scan_models(const string& folder = "../models");
 int add_model_file(const string& path);
 
+
 int find_mesh(const string& name) {
     for (int i = 0; i < (int)meshNames.size(); ++i)
         if (meshNames[i] == name) return i;

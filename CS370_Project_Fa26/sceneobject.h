@@ -8,7 +8,6 @@ static const vector<string> drawTypeNames={
 struct SceneObject;
 extern vector<SceneObject*> objects;
 
-
 struct SceneObject {
     GLuint mesh;
     DrawType drawType;
@@ -112,6 +111,24 @@ struct SceneObject {
             draw_tex_object(mesh, texture);
         }
     }//end draw
+
+
+    void drawOutline() {
+        float outline = 0.08f;
+        vec3 bigScale = scale + vec3(outline);
+
+        mat4 trans = translate(position);
+        mat4 rotX  = vmath::rotate(rotation[0], vec3(1, 0, 0));
+        mat4 rotY  = vmath::rotate(rotation[1], vec3(0, 1, 0));
+        mat4 rotZ  = vmath::rotate(rotation[2], vec3(0, 0, 1));
+
+        model_matrix = trans * rotX * rotY * rotZ * vmath::scale(bigScale);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        draw_highlight_object(mesh, vec4(0.85f, 0.55f, 0.25f, 1.0f));
+        glCullFace(GL_BACK);
+    }
 
 
 };//end scene object

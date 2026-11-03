@@ -160,6 +160,10 @@ void render_scene( ) {
         objects[i]->draw();
     }
 
+    if (selectedObject) {
+        selectedObject->drawOutline();
+    }
+
 
 }
 
@@ -173,11 +177,11 @@ void init_scene() {
 
 
     SceneObject* sphereObject = new SceneObject(sphere_id, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* floor = new SceneObject(cube_id, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall = new SceneObject(cube_id, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall2 = new SceneObject(cube_id, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall3 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
-    SceneObject* wall4 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, floormat);
+    SceneObject* floor = new SceneObject(cube_id, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall = new SceneObject(cube_id, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall2 = new SceneObject(cube_id, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall3 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall4 = new SceneObject(cube_id, "wall4", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
 }
 
 
