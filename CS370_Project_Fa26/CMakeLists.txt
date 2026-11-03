@@ -101,6 +101,7 @@ set(COMMON_FILES
         kitUI/scrollpanel.h
         kitUI/filebrowser.h
         kitUI/canvas.h
+        scene.h
 )
 
 #-------------------------------------------------------------

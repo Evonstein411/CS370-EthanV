@@ -188,7 +188,10 @@ void init_hud() {
 
     scene_file_browser = new FileBrowser();
     scene_file_browser->setFilter({".df"}); //need to come up with extension for a scene using .df for now
-    scene_file_browser->onFileSelected = [](const string& path){};
+    scene_file_browser->onFileSelected = [](const string& path) {
+        load_scene_file(path);
+        rebuild_scene_graph();
+    };
 
 
     mesh_file_browser = new FileBrowser();
@@ -609,5 +612,6 @@ void load_scene() {
 }
 
 void save_scene() {
-    //TODO
+    save_scene_file("test_scene");
+
 }

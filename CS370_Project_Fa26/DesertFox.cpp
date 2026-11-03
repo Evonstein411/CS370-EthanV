@@ -18,6 +18,7 @@
 #include "drawObjects.h"
 #include "shaders.h"
 #include "sceneobject.h"
+#include "scene.h"
 #include "hitdetection.h"
 #include "ui.h"
 #include "callbacks.h"
