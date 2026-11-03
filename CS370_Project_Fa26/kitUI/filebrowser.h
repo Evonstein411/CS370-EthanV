@@ -20,6 +20,7 @@ struct FileBrowser : Widget {
 
     FileBrowser()
             : Widget(0, 0, 0, 0) {
+        priority = 2;
         content = new Panel(x, y);
         addChild(content);
 

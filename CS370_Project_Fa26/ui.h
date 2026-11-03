@@ -13,6 +13,7 @@ string name_string = "";
 //file browsers
 FileBrowser* texture_file_browser = nullptr;
 FileBrowser* mesh_file_browser = nullptr;
+FileBrowser* scene_file_browser = nullptr;
 
 //sections
 Section* material_section = nullptr;
@@ -52,13 +53,17 @@ Label* scale_label = nullptr;
 Button* light_button = nullptr;
 Button* add_texture_button = nullptr;
 Button* add_model_button = nullptr;
+Button* add_object_button = nullptr;
+Button* load_scene_button = nullptr;
+Button* save_scene_button = nullptr;
 
 //button functions
 void toggle_lights();
 void add_texture();
 void add_model();
-void rebuild_scene_graph();
-void select_object(SceneObject* obj);
+void add_object();
+void load_scene();
+void save_scene();
 
 //text fields
 TextField<string>* name_field = nullptr;
@@ -112,11 +117,10 @@ float scale_z = 0.0f;
 
 
 
-
-
 //forward decs
 void update_fields();
-
+void rebuild_scene_graph();
+void select_object(SceneObject* obj);
 
 void render_hud() {
     draw_widgets();
@@ -129,7 +133,14 @@ void init_hud() {
     light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
     topbar->add(light_button, ww-240.0f, 4.0f);
 
+    add_object_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, add_object, "Add Object");
+    topbar->add(add_object_button, 8.0f, 4.0f);
 
+    load_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, load_scene, "Load Scene");
+    topbar->add(load_scene_button, 168.0f, 4.0f);
+
+    save_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, save_scene, "Save Scene");
+    topbar->add(save_scene_button, 336.0f, 4.0f);
 
     scene_graph = new Panel(ww - 200.0f, 80.0f);
     rebuild_scene_graph();
@@ -166,17 +177,21 @@ void init_hud() {
     name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
     settings_panel->add(name_field, 0, 0);
 
-    type_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
-    settings_panel->add(type_dropdown, 0, 1);
-
     model_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Mesh:", meshNames, selectedMesh);
-    settings_panel->add(model_dropdown, 0, 2);
+    settings_panel->add(model_dropdown, 0, 1);
 
     add_model_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
-    settings_panel->add(add_model_button, 1, 2);
+    settings_panel->add(add_model_button, 1, 1);
+
+    type_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
+    settings_panel->add(type_dropdown, 0, 2);
+
+    scene_file_browser = new FileBrowser();
+    scene_file_browser->setFilter({".df"}); //need to come up with extension for a scene using .df for now
+    scene_file_browser->onFileSelected = [](const string& path){};
+
 
     mesh_file_browser = new FileBrowser();
-    mesh_file_browser->setPriority(2);
     mesh_file_browser->setFilter({".obj"});
     mesh_file_browser->onFileSelected = [](const string& path) {
         int index = add_model_file(path);
@@ -280,7 +295,6 @@ void init_hud() {
     texture_panel->add(add_texture_button, 1, 0, 1, 1, Alignment::START, Alignment::START);
 
     texture_file_browser = new FileBrowser();
-    texture_file_browser->setPriority(2);
     texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
     texture_file_browser->onFileSelected = [](const string& texturePath) {
         int tex_index = add_texture_file(texturePath);
@@ -439,7 +453,13 @@ void update_fields() {
         return;
     }
 
-    type_dropdown->setEnabled(true);
+    if (selectedObject->mesh == -1) {
+        type_dropdown->setEnabled(false);
+    }else {
+        type_dropdown->setEnabled(true);
+    }
+
+
     name_field->setEditable(true);
     name_string = selectedObject->name;
     name_field->setText(name_string);
@@ -475,6 +495,22 @@ void update_from_fields() {
 
     sync_transform_from_fields({trans_x, trans_y, trans_z}, {rot_x, rot_y, rot_z}, {scale_x, scale_y, scale_z});
 
+    //mesh
+    if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() && selectedObject->mesh != selectedMesh) {
+        selectedObject->mesh = selectedMesh;
+        if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor) {
+            build_solid_color_buffer(numVertices[selectedObject->mesh],
+                                     selectedObject->color,
+                                     selectedObject->colorBuffer);
+        }
+    }
+
+    if (selectedObject->mesh == -1) {
+        type_dropdown->setEnabled(false);
+    }else {
+        type_dropdown->setEnabled(true);
+    }
+
     // Name
     if (name_field && selectedObject->name != name_string) {
         selectedObject->name = name_string;
@@ -489,15 +525,7 @@ void update_from_fields() {
         return;                   // avoid writing stale field values this frame
     }
 
-    //mesh
-    if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() && selectedObject->mesh != selectedMesh) {
-        selectedObject->mesh = selectedMesh;
-        if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor) {
-            build_solid_color_buffer(numVertices[selectedObject->mesh],
-                                     selectedObject->color,
-                                     selectedObject->colorBuffer);
-        }
-    }
+
 
     // Per-type writes
     if (selectedObject->drawType == MATERIAL) {
@@ -566,4 +594,20 @@ void add_texture(){
 
 void add_model() {
     mesh_file_browser->openBrowser();
+}
+
+void add_object() {
+    string name = "object" + std::to_string(objects.size() + 1);
+    SceneObject* obj = new SceneObject(name);   // empty
+    select_object(obj);
+    rebuild_scene_graph();
+    update_fields();
+}
+
+void load_scene() {
+    scene_file_browser->openBrowser();
+}
+
+void save_scene() {
+    //TODO
 }

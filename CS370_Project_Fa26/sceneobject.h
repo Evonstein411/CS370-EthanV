@@ -1,6 +1,7 @@
 
-enum DrawType {SOLID_COLOR, MATERIAL, TEXTURE};
+enum DrawType {NONE, SOLID_COLOR, MATERIAL, TEXTURE};
 static const vector<string> drawTypeNames={
+    "None",
     "Solid Color",
     "Material",
     "Texture"
@@ -59,6 +60,18 @@ struct SceneObject {
 
     }
 
+    //empty object
+    SceneObject(string name)
+    : mesh((GLuint)-1), name(name),
+      position(0.0f, 0.0f, 0.0f),
+      rotation(0.0f, 0.0f, 0.0f),
+      scale(1.0f, 1.0f, 1.0f) {
+        objects.push_back(this);
+        drawType = NONE;   // placeholder until the user picks one
+        hasMaterial = false;
+        hasColor = false;
+    }
+
     void initializeType(DrawType newType) {
         //solid color add color if none and build buffer
         if (newType == SOLID_COLOR) {
@@ -94,6 +107,7 @@ struct SceneObject {
     }
 
     void draw() {
+        if (mesh == -1 || drawType == NONE) return;
         mat4 trans_matrix = translate(position);
         mat4 rotate_x_matrix = vmath::rotate(rotation[0], vec3(1, 0, 0));
         mat4 rotate_y_matrix = vmath::rotate(rotation[1], vec3(0, 1, 0));
@@ -114,6 +128,7 @@ struct SceneObject {
 
 
     void drawOutline() {
+        if (mesh == -1 || drawType == NONE) return;
         float outline = 0.08f;
         vec3 bigScale = scale + vec3(outline);
 

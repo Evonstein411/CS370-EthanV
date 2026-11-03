@@ -57,6 +57,9 @@ SceneObject* pick_scene_object(float mx, float my) {
     for (size_t i = 0; i < objects.size(); ++i) {
         SceneObject* obj = objects[i];
 
+        if (obj->mesh == (GLuint)-1)
+            continue;
+
         // Build model matrix the same way SceneObject::draw does
         mat4 trans  = translate(obj->position);
         mat4 rotX   = vmath::rotate(obj->rotation[0], vec3(1,0,0));
