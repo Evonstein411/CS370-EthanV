@@ -1,11 +1,11 @@
 DESERTFOX_SCENE 1
-objects 6
+objects 7
 
 OBJECT
 name sphere
 mesh sphere
 drawType Material
-position 0 0 0
+position 7 0 0
 rotation 0 0 0
 scale 2 2 2
 material
@@ -83,5 +83,15 @@ ambient 0.5 0.5 0.5 1
 diffuse 0.5 0.5 0.5 1
 specular 0.5 0.5 0.5 1
 shininess 25
+END
+
+OBJECT
+name object7
+mesh cone
+drawType Texture
+position -10 2.5 0
+rotation 0 0 0
+scale 5 5 5
+texture brick
 END
 

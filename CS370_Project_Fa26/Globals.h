@@ -43,7 +43,7 @@ GLboolean dirty = false;
 vec4 backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
 
 // Global screen dimensions
-GLint ww = 1980;
-GLint hh = 1080;
+GLint ww = 1640;
+GLint hh = 960;
 
 

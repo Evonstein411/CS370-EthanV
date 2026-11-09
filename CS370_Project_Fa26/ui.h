@@ -21,6 +21,7 @@ Section* object_section = nullptr;
 Section* solid_color_section = nullptr;
 Section* texture_section = nullptr;
 Section* transform_section = nullptr;
+Section* scene_graph_section = nullptr;
 //canvas
 Canvas* topbar = nullptr;
 
@@ -32,8 +33,8 @@ Panel* material_panel = nullptr;
 Panel* solid_color_panel = nullptr;
 Panel* texture_panel = nullptr;
 Panel* transform_panel = nullptr;
-
-Panel* scene_graph = nullptr;
+Panel* save_dialog_panel = nullptr;
+Panel* scene_graph_panel = nullptr;
 
 //dropdowns
 Dropdown* type_dropdown = nullptr;
@@ -48,6 +49,7 @@ Label* shininess_label = nullptr;
 Label* translation_label = nullptr;
 Label* rotation_label = nullptr;
 Label* scale_label = nullptr;
+Label* save_scene_label = nullptr;
 
 //buttons
 Button* light_button = nullptr;
@@ -56,6 +58,8 @@ Button* add_model_button = nullptr;
 Button* add_object_button = nullptr;
 Button* load_scene_button = nullptr;
 Button* save_scene_button = nullptr;
+Button* save_name_button = nullptr;
+Button* cancel_save_button = nullptr;
 
 //button functions
 void toggle_lights();
@@ -64,9 +68,12 @@ void add_model();
 void add_object();
 void load_scene();
 void save_scene();
+void confirm_save_scene();
+void hide_save_dialog();
 
 //text fields
-TextField<string>* name_field = nullptr;
+TextField<string>* object_name_field = nullptr;
+TextField<string>* save_name_field = nullptr;
 
 TextField<float>* ambient_r_field = nullptr;
 TextField<float>* ambient_g_field = nullptr;
@@ -115,7 +122,7 @@ float scale_x = 0.0f;
 float scale_y = 0.0f;
 float scale_z = 0.0f;
 
-
+string save_name_string = "";
 
 //forward decs
 void update_fields();
@@ -128,6 +135,7 @@ void render_hud() {
 
 void init_hud() {
 
+    //TOPBAR
     Canvas* topbar = new Canvas(0, 0, (float)ww, 64);
 
     light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
@@ -142,9 +150,29 @@ void init_hud() {
     save_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, save_scene, "Save Scene");
     topbar->add(save_scene_button, 336.0f, 4.0f);
 
-    scene_graph = new Panel(ww - 200.0f, 80.0f);
+    scene_graph_section = new Section(ww - 200.0f, 80.0f, "Scene Graph");
+    scene_graph_panel = new Panel(ww - 200.0f, 80.0f);
+    scene_graph_section->add(scene_graph_panel);
+
     rebuild_scene_graph();
 
+    //save scene dialog
+    save_dialog_panel = new Panel(0.0f, 0.0f);
+    save_dialog_panel->setPriority(10);
+
+    save_scene_label = new Label(0, 0, 220, 32, "Save Scene As:");
+    save_dialog_panel->add(save_scene_label, 0, 0, 2, 1);
+
+    save_name_field = new TextField<string>(0, 0, 220, 40, "Name:",  32, false, &save_name_string);
+    save_dialog_panel->add(save_name_field, 0, 1, 2, 1);
+
+    save_name_button = new Button(0, 0, 100, 36, confirm_save_scene, "Save");
+    save_dialog_panel->add(save_name_button, 0, 2);
+
+    cancel_save_button = new Button(0, 0, 100, 36, hide_save_dialog, "Cancel");
+    save_dialog_panel->add(cancel_save_button, 1, 2);
+
+    save_dialog_panel->hide();
 
     //main panel owns all object detail related widgets
     object_panel = new Panel(20.0f, 90.0f);
@@ -174,8 +202,8 @@ void init_hud() {
     settings_panel = new Panel(20.0f, 90.0f);
     object_section->add(settings_panel);
 
-    name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
-    settings_panel->add(name_field, 0, 0);
+    object_name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
+    settings_panel->add(object_name_field, 0, 0);
 
     model_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Mesh:", meshNames, selectedMesh);
     settings_panel->add(model_dropdown, 0, 1);
@@ -444,8 +472,8 @@ int find_texture_index(GLuint texID) {
 
 void update_fields() {
     if (!selectedObject) {
-        name_field->setText("NONE");
-        name_field->setEditable(false);
+        object_name_field->setText("NONE");
+        object_name_field->setEditable(false);
         type_dropdown->setEnabled(false);
         model_dropdown->setEnabled(false);
         selectedType = -1;
@@ -463,9 +491,9 @@ void update_fields() {
     }
 
 
-    name_field->setEditable(true);
+    object_name_field->setEditable(true);
     name_string = selectedObject->name;
-    name_field->setText(name_string);
+    object_name_field->setText(name_string);
 
     model_dropdown->setEnabled(true);
     selectedMesh = (int)selectedObject->mesh;
@@ -515,7 +543,7 @@ void update_from_fields() {
     }
 
     // Name
-    if (name_field && selectedObject->name != name_string) {
+    if (object_name_field && selectedObject->name != name_string) {
         selectedObject->name = name_string;
         rebuild_scene_graph();
     }
@@ -564,23 +592,33 @@ void delete_selected_object() {
 }
 
 void rebuild_scene_graph() {
-    if (!scene_graph) return;
+    if (!scene_graph_panel) return;
 
-    for (auto& cell : scene_graph->cells) {
+    for (auto& cell : scene_graph_panel->cells) {
         if (cell.widget)
             destroy_widget(cell.widget);
     }
-    scene_graph->cells.clear();
-
-    Label* title = new Label(0, 0, 240.0f, 32.0f, "Scene Graph");
-    scene_graph->add(title, 0, 0);
+    scene_graph_panel->cells.clear();
 
     for (int i = 0; i < (int)objects.size(); ++i) {
         SceneObject* obj = objects[i];
         Button* b = new Button(0, 0, 240.0f, 36.0f,
             [obj]() { select_object(obj); },
             obj->name);
-        scene_graph->add(b, 0, i + 1);
+        scene_graph_panel->add(b, 0, i);
+    }
+}
+
+void show_save_dialog() {
+    save_name_string = "untitled";
+    if (save_name_field) {
+        save_name_field->setText(save_name_string);
+        save_name_field->focused = true;   // ready to type immediately
+    }
+    if (save_dialog_panel) {
+        save_dialog_panel->show();
+        save_dialog_panel->x = (ww - save_dialog_panel->w) * 0.5f;
+        save_dialog_panel->y = (hh - save_dialog_panel->h) * 0.5f;
     }
 }
 
@@ -612,6 +650,22 @@ void load_scene() {
 }
 
 void save_scene() {
-    save_scene_file("test_scene");
+    show_save_dialog();
 
+}
+
+void hide_save_dialog() {
+    if (save_dialog_panel) save_dialog_panel->hide();
+    if (save_name_field) save_name_field->focused = false;
+}
+
+void confirm_save_scene() {
+    string name = save_name_field ? save_name_field->getText() : save_name_string;
+
+    // basic cleanup
+    if (name.empty() || name.find_first_not_of(" \t") == string::npos)
+        name = "untitled";
+
+    save_scene_file(name);
+    hide_save_dialog();
 }

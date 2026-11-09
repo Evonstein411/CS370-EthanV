@@ -77,12 +77,12 @@ struct SceneObject {
         if (newType == SOLID_COLOR) {
             if(!hasColor) {
                 color = {1.0f, 1.0f, 1.0f, 1.0f,}; //set to white if no color set
-                GLuint buf;
-                glGenBuffers(1, &buf);
-                ColorBuffers.push_back(buf);
-                colorBuffer = (GLuint)ColorBuffers.size() - 1;
                 hasColor = true;
             }
+            GLuint buf;
+            glGenBuffers(1, &buf);
+            ColorBuffers.push_back(buf);
+            colorBuffer = (GLuint)ColorBuffers.size() - 1;
             build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
         //material add material properties if none
         } else if (newType == MATERIAL) {

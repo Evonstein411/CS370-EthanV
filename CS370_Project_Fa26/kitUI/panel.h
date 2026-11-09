@@ -79,15 +79,54 @@ virtual void layout() {
     vector<vector<float>> rowColW(nRows, vector<float>(nCols, 0.0f));
     vector<float> rowH(nRows, 0.0f);
 
+    // 1. Single-span cells drive the base preferred sizes
     for (size_t i = 0; i < cells.size(); i++) {
         Cell& c = cells[i];
         if (!c.widget || c.widget->hidden) continue;
         float pw = c.widget->prefW > 0.0f ? c.widget->prefW : c.widget->w;
         float ph = c.widget->prefH > 0.0f ? c.widget->prefH : c.widget->h;
+
         if (c.colSpan == 1 && c.rowSpan == 1 && pw > rowColW[c.row][c.col])
             rowColW[c.row][c.col] = pw;
         if (c.rowSpan == 1 && ph > rowH[c.row])
             rowH[c.row] = ph;
+    }
+
+    // 2. Multi-span cells expand the columns/rows they cover if their
+    //    preferred size is larger than the current sum
+    for (size_t i = 0; i < cells.size(); i++) {
+        Cell& c = cells[i];
+        if (!c.widget || c.widget->hidden) continue;
+        float pw = c.widget->prefW > 0.0f ? c.widget->prefW : c.widget->w;
+        float ph = c.widget->prefH > 0.0f ? c.widget->prefH : c.widget->h;
+
+        if (c.colSpan > 1) {
+            float current = 0.0f;
+            for (int k = 0; k < c.colSpan; k++) {
+                current += rowColW[c.row][c.col + k];
+                if (k + 1 < c.colSpan) current += gapX;
+            }
+            if (pw > current) {
+                float extra = pw - current;
+                float add = extra / (float)c.colSpan;
+                for (int k = 0; k < c.colSpan; k++)
+                    rowColW[c.row][c.col + k] += add;
+            }
+        }
+
+        if (c.rowSpan > 1) {
+            float current = 0.0f;
+            for (int k = 0; k < c.rowSpan; k++) {
+                current += rowH[c.row + k];
+                if (k + 1 < c.rowSpan) current += gapY;
+            }
+            if (ph > current) {
+                float extra = ph - current;
+                float add = extra / (float)c.rowSpan;
+                for (int k = 0; k < c.rowSpan; k++)
+                    rowH[c.row + k] += add;
+            }
+        }
     }
 
     auto rowWidth = [&](int r) {

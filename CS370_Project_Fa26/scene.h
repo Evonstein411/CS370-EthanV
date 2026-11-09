@@ -149,6 +149,7 @@ void load_scene_file(const string& path) {
             obj->drawType = dt;
             if (dt == SOLID_COLOR) {
                 obj->color = color;
+                obj->hasColor = true;
                 obj->initializeType(SOLID_COLOR);
             }
             else if (dt == MATERIAL) {
