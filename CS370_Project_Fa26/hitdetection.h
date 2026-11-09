@@ -1,7 +1,10 @@
-
 //houseproject refs
 void render_scene();
 void render_hud();
+enum GizmoAxis {GIZMO_NONE = 0, GIZMO_X = 1001, GIZMO_Y = 1002, GIZMO_Z = 1003 };
+GizmoAxis activeGizmo = GIZMO_NONE;
+int rawIndex = -1;
+
 
 vec4 index_to_color(int i) {
     return vec4(
@@ -10,6 +13,10 @@ vec4 index_to_color(int i) {
         ((i >> 16) & 0xFF) / 255.0f,
         1.0f
     );
+}
+
+int get_raw_index() {
+    return rawIndex;
 }
 
 int color_to_index(unsigned char r, unsigned char g, unsigned char b) {
@@ -80,13 +87,67 @@ SceneObject* pick_scene_object(float mx, float my) {
         draw_picking_object(obj->mesh, pickColorBuf);
     }
 
-    glDeleteBuffers(1, &pickColorBuf);
+
+
+    if (selectedObject && gizmoArrowVAO != 0) {
+        glDisable(GL_DEPTH_TEST);
+
+        float size = 0.75f;
+        float length = 1.0f;
+        float offset = length * 2.0f;
+
+        mat4 trans = translate(selectedObject->position);
+        mat4 trans_offset = translate(0.0f, offset, 0.0f);
+        mat4 scale = vmath::scale(size, length, size);
+
+        auto drawPickArrow = [&](const mat4& model, int id) {
+            model_matrix = model;
+            vec4 col = index_to_color(id);
+
+            vector<vec4> colors(gizmoArrowNumVerts, col);
+            glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+            glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec4), colors.data(), GL_DYNAMIC_DRAW);
+
+            glUseProgram(color_program);
+            glUniformMatrix4fv(color_proj_mat_loc,  1, GL_FALSE, proj_matrix);
+            glUniformMatrix4fv(color_cam_mat_loc,   1, GL_FALSE, camera_matrix);
+            glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+            glBindVertexArray(gizmoArrowVAO);
+            glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
+            glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(color_vPos);
+
+            glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+            glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(color_vCol);
+
+            glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
+        };
+
+        // X
+        mat4 rotate = vmath::rotate(90.0f, vec3(0,0,1));
+        drawPickArrow(trans * rotate * trans_offset * scale, GIZMO_X);
+
+        // Y
+        drawPickArrow(trans * trans_offset * scale, GIZMO_Y);
+
+        // Z
+        rotate = vmath::rotate(-90.0f, vec3(1,0,0));
+        drawPickArrow(trans * rotate * trans_offset * scale, GIZMO_Z);
+
+        glEnable(GL_DEPTH_TEST);
+    }
 
     // Read the pixel (y is already bottom-origin from your mouse code)
     unsigned char pixel[4];
     glReadPixels((GLint)mx, (GLint)my, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
     int index = color_to_index(pixel[0], pixel[1], pixel[2]);
+    rawIndex = index;
+
+    glDeleteBuffers(1, &pickColorBuf);
+
     // IMPORTANT: immediately redraw the real scene so the next swap is correct
     // (this prevents the colored ID pass from appearing on screen)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

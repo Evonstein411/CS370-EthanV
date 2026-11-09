@@ -64,6 +64,7 @@ void build_geometry() {
     build_hud_quad(HUDQuad);
     build_hud_quad(HUDTextQuad);
     build_fullscreen_quad();
+    loadGizmoArrow();
     // Selectable models from folder
     scan_models();
 }

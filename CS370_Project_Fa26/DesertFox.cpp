@@ -272,24 +272,39 @@ void drawSelectionOutline() {
 void drawTranslationGizmo() {
     if (!selectedObject || gizmoArrowVAO == 0) return;
 
+    float size = 0.35f;
+    float length = 1.0f;
+    float offset = length*2.0f;
+
     mat4 trans = translate(selectedObject->position);
+    mat4 trans_offset = translate(0.0f, offset, 0.0f);
+    mat4 scale = vmath::scale(size, length, size);
+    mat4 rotate;
 
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    model_matrix = trans * vmath::rotate(90.0f, vec3(0,0,1));   // X
-    drawGizmoArrow(vec4(1.0f, 0.15f, 0.15f, 1.0f));
+    vec4 xColor = (activeGizmo == GIZMO_X) ? vec4(1.0f, 0.6f, 0.6f, 1.0f) : vec4(1.0f, 0.15f, 0.15f, 1.0f);
+    vec4 yColor = (activeGizmo == GIZMO_Y) ? vec4(0.6f, 1.0f, 0.6f, 1.0f) : vec4(0.15f, 1.0f, 0.15f, 1.0f);
+    vec4 zColor = (activeGizmo == GIZMO_Z) ? vec4(0.6f, 0.7f, 1.0f, 1.0f) : vec4(0.2f, 0.4f, 1.0f, 1.0f);
 
-    model_matrix = trans;                                         // Y
-    drawGizmoArrow(vec4(0.15f, 1.0f, 0.15f, 1.0f));
+    // X (red) — rotate +Y onto +X, then scale
+    rotate = vmath::rotate(90.0f, vec3(0,0,1));
+    model_matrix = trans * rotate * trans_offset * scale;
+    drawGizmoArrow(xColor);
 
-    model_matrix = trans * vmath::rotate(-90.0f, vec3(1,0,0));   // Z
-    drawGizmoArrow(vec4(0.2f, 0.4f, 1.0f, 1.0f));
+    // Y (green)
+    model_matrix = trans * trans_offset * scale;
+    drawGizmoArrow(yColor);
+
+    // Z (blue) — rotate +Y onto +Z
+    rotate = vmath::rotate(-90.0f, vec3(1,0,0));
+    model_matrix = trans * rotate * trans_offset * scale;
+    drawGizmoArrow(zColor);
 
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
 }
-
 
 
 

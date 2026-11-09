@@ -3,6 +3,8 @@
 extern SceneObject* selectedObject;
 extern void createOutlineFBO(int width, int height);
 
+vec3 dragStartPos;
+vec2 dragStartMouse;
 
 //functions
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
@@ -92,12 +94,25 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     if (hud_mouse_button(mx, my, button, action))
         return;   // UI ate it
 
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        SceneObject* clicked = pick_scene_object(mx, my);
+        int raw = get_raw_index();   // or rawIndex if it’s global
 
+        if ((raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selectedObject) {
+            activeGizmo = (GizmoAxis)raw;
+            dragStartPos = selectedObject->position;
+            dragStartMouse = vec2(mx, my);
+            return;
+        }
 
-    //check if clicked on object
-    SceneObject* clicked = pick_scene_object(mx, my);
-    selectedObject = clicked;
-    update_fields();
+        selectedObject = clicked;
+        activeGizmo = GIZMO_NONE;
+        update_fields();
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        activeGizmo = GIZMO_NONE;
+    }
 
 
 }
@@ -112,6 +127,35 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     float mx, my;
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
     hud_cursor(mx, my);
+
+
+    if (activeGizmo == GIZMO_NONE || !selectedObject) return;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+        activeGizmo = GIZMO_NONE;
+        return;
+    }
+
+    vec2 delta = vec2(mx, my) - dragStartMouse;
+    float sensitivity = 0.0025f * radius;   // tune
+
+    float amount = 0.0f;
+    vec3 axis(0.0f);
+
+    if (activeGizmo == GIZMO_X) {
+        amount =  delta[0] * sensitivity;
+        axis   = vec3(1, 0, 0);
+    }
+    else if (activeGizmo == GIZMO_Y) {
+        amount = delta[1] * sensitivity;
+        axis   = vec3(0, 1, 0);
+    }
+    else if (activeGizmo == GIZMO_Z) {
+        amount =  delta[0] * sensitivity;
+        axis   = vec3(0, 0, 1);
+    }
+
+    selectedObject->position = dragStartPos + axis * amount;
+    update_fields();
 }
 
 
