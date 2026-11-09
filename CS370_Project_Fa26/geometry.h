@@ -17,6 +17,12 @@ GLuint fullscreenPosBuffer = 0;
 GLuint fullscreenTexBuffer = 0;
 GLint  fullscreenNumVertices = 6;
 
+//Gizmo
+GLuint gizmoArrowVAO = 0;
+GLuint gizmoArrowPosBuffer = 0;
+GLuint gizmoArrowNormBuffer = 0;
+GLint  gizmoArrowNumVerts = 0;
+
 //HUD should be migrated at some point to kitUI
 enum HUD_IDs { HUDQuad = 0, HUDTextQuad, NumHUD };
 GLuint HUD_VAOs[NumHUD];
@@ -39,6 +45,7 @@ const char * sphereFile = "../../common/models/sphere.obj";
 
 
 int load_model(const char* filename, const string& displayName);
+void loadGizmoArrow();
 void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer);
 void build_hud_quad(GLuint hudObj);
 void scan_models(const string& folder = "../models");
@@ -256,5 +263,31 @@ void build_fullscreen_quad() {
     glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), uvs.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void loadGizmoArrow() {
+    vector<vec4> vertices;
+    vector<vec2> uvs;
+    vector<vec3> normals;
+
+    if (!loadOBJ("../models/arrow.obj", vertices, uvs, normals) || vertices.empty()) {
+        fprintf(stderr, "Failed to load gizmo arrow.obj\n");
+        return;
+    }
+
+    gizmoArrowNumVerts = (GLint)vertices.size();
+
+    glGenVertexArrays(1, &gizmoArrowVAO);
+    glBindVertexArray(gizmoArrowVAO);
+
+    glGenBuffers(1, &gizmoArrowPosBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec4), vertices.data(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &gizmoArrowNormBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowNormBuffer);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), normals.data(), GL_STATIC_DRAW);
+
     glBindVertexArray(0);
 }

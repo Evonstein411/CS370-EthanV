@@ -37,85 +37,10 @@ void render_scene();
 void init_scene();
 void render_hud();
 void createOutlineFBO(int width, int height);
+void drawTranslationGizmo();
+void drawSelectionOutline();
 
 
-void createOutlineFBO(int width, int height) {
-    if (outlineFBO) {
-        glDeleteFramebuffers(1, &outlineFBO);
-        glDeleteTextures(1, &outlineMaskTex);
-    }
-    glGenFramebuffers(1, &outlineFBO);
-    glGenTextures(1, &outlineMaskTex);
-
-    glBindTexture(GL_TEXTURE_2D, outlineMaskTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outlineMaskTex, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void drawSelectionOutline() {
-    if (!selectedObject || selectedObject->mesh == (GLuint)-1) return;
-
-    // Build model matrix the same way SceneObject::draw does
-    mat4 trans = translate(selectedObject->position);
-    mat4 rotX  = vmath::rotate(selectedObject->rotation[0], vec3(1,0,0));
-    mat4 rotY  = vmath::rotate(selectedObject->rotation[1], vec3(0,1,0));
-    mat4 rotZ  = vmath::rotate(selectedObject->rotation[2], vec3(0,0,1));
-    mat4 scale_matrix = vmath::scale(selectedObject->scale);
-    model_matrix = trans * rotX * rotY * rotZ * scale_matrix;
-
-    // --- Mask pass ---
-    glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
-    glViewport(0, 0, ww, hh);
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-
-    glUseProgram(mask_program);
-    glUniformMatrix4fv(mask_proj_mat_loc,  1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(mask_cam_mat_loc,   1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(mask_model_mat_loc, 1, GL_FALSE, model_matrix);
-
-    glBindVertexArray(VAOs[selectedObject->mesh]);
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[selectedObject->mesh][PosBuffer]);
-    glVertexAttribPointer(mask_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(mask_vPos);
-    glDrawArrays(GL_TRIANGLES, 0, numVertices[selectedObject->mesh]);
-
-    // --- Edge pass (back to window) ---
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, ww, hh);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-
-    glUseProgram(outline_program);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, outlineMaskTex);
-    glUniform2f(outline_texel_size_loc, 1.0f / ww, 1.0f / hh);
-    glUniform4f(outline_color_loc, 0.85f, 0.55f, 0.25f, 1.0f);
-    glUniform1f(outline_thickness_loc, 1.0f);
-
-    // Draw fullscreen quad
-    glBindVertexArray(fullscreenVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
-    glVertexAttribPointer(outline_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(outline_vPos);
-
-    glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
-    glVertexAttribPointer(outline_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(outline_vTex);
-
-    glDrawArrays(GL_TRIANGLES, 0, fullscreenNumVertices);
-
-    glEnable(GL_DEPTH_TEST);
-}
 
 
 int main(int argc, char**argv)
@@ -243,6 +168,7 @@ void render_scene( ) {
     }
 
     drawSelectionOutline();
+    drawTranslationGizmo();
 
 
 }
@@ -265,7 +191,104 @@ void init_scene() {
 }
 
 
+void createOutlineFBO(int width, int height) {
+    if (outlineFBO) {
+        glDeleteFramebuffers(1, &outlineFBO);
+        glDeleteTextures(1, &outlineMaskTex);
+    }
+    glGenFramebuffers(1, &outlineFBO);
+    glGenTextures(1, &outlineMaskTex);
 
+    glBindTexture(GL_TEXTURE_2D, outlineMaskTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outlineMaskTex, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void drawSelectionOutline() {
+    if (!selectedObject || selectedObject->mesh == (GLuint)-1) return;
+
+    // Build model matrix the same way SceneObject::draw does
+    mat4 trans = translate(selectedObject->position);
+    mat4 rotX  = vmath::rotate(selectedObject->rotation[0], vec3(1,0,0));
+    mat4 rotY  = vmath::rotate(selectedObject->rotation[1], vec3(0,1,0));
+    mat4 rotZ  = vmath::rotate(selectedObject->rotation[2], vec3(0,0,1));
+    mat4 scale_matrix = vmath::scale(selectedObject->scale);
+    model_matrix = trans * rotX * rotY * rotZ * scale_matrix;
+
+    // --- Mask pass ---
+    glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
+    glViewport(0, 0, ww, hh);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+
+    glUseProgram(mask_program);
+    glUniformMatrix4fv(mask_proj_mat_loc,  1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(mask_cam_mat_loc,   1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(mask_model_mat_loc, 1, GL_FALSE, model_matrix);
+
+    glBindVertexArray(VAOs[selectedObject->mesh]);
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[selectedObject->mesh][PosBuffer]);
+    glVertexAttribPointer(mask_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(mask_vPos);
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[selectedObject->mesh]);
+
+    // --- Edge pass (back to window) ---
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, ww, hh);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+
+    glUseProgram(outline_program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, outlineMaskTex);
+    glUniform2f(outline_texel_size_loc, 1.0f / ww, 1.0f / hh);
+    glUniform4f(outline_color_loc, 0.85f, 0.55f, 0.25f, 1.0f);
+    glUniform1f(outline_thickness_loc, 1.0f);
+
+    // Draw fullscreen quad
+    glBindVertexArray(fullscreenVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
+    glVertexAttribPointer(outline_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(outline_vPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
+    glVertexAttribPointer(outline_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(outline_vTex);
+
+    glDrawArrays(GL_TRIANGLES, 0, fullscreenNumVertices);
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+void drawTranslationGizmo() {
+    if (!selectedObject || gizmoArrowVAO == 0) return;
+
+    mat4 trans = translate(selectedObject->position);
+
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    model_matrix = trans * vmath::rotate(90.0f, vec3(0,0,1));   // X
+    drawGizmoArrow(vec4(1.0f, 0.15f, 0.15f, 1.0f));
+
+    model_matrix = trans;                                         // Y
+    drawGizmoArrow(vec4(0.15f, 1.0f, 0.15f, 1.0f));
+
+    model_matrix = trans * vmath::rotate(-90.0f, vec3(1,0,0));   // Z
+    drawGizmoArrow(vec4(0.2f, 0.4f, 1.0f, 1.0f));
+
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+}
 
 
 
