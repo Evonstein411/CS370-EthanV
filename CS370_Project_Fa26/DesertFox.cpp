@@ -101,17 +101,18 @@ void drawSelectionOutline() {
     glUniform4f(outline_color_loc, 0.85f, 0.55f, 0.25f, 1.0f);
     glUniform1f(outline_thickness_loc, 1.0f);
 
-    // Draw existing HUD quad (assumes it covers the screen in NDC)
-    glBindVertexArray(HUD_VAOs[HUDQuad]);
-    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][PosBuffer]);
+    // Draw fullscreen quad
+    glBindVertexArray(fullscreenVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
     glVertexAttribPointer(outline_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(outline_vPos);
 
-    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][TexBuffer]);
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
     glVertexAttribPointer(outline_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(outline_vTex);
 
-    glDrawArrays(GL_TRIANGLES, 0, HUD_numVertices[HUDQuad]);
+    glDrawArrays(GL_TRIANGLES, 0, fullscreenNumVertices);
 
     glEnable(GL_DEPTH_TEST);
 }

@@ -10,6 +10,13 @@ vector<GLuint> VAOs;
 vector<array<GLuint, NumObjBuffers>> ObjBuffers;
 vector<GLint> numVertices;
 
+//Mask
+// Dedicated NDC full-screen quad for post-process passes (outline, etc.)
+GLuint fullscreenVAO = 0;
+GLuint fullscreenPosBuffer = 0;
+GLuint fullscreenTexBuffer = 0;
+GLint  fullscreenNumVertices = 6;
+
 //HUD should be migrated at some point to kitUI
 enum HUD_IDs { HUDQuad = 0, HUDTextQuad, NumHUD };
 GLuint HUD_VAOs[NumHUD];
@@ -36,7 +43,7 @@ void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer);
 void build_hud_quad(GLuint hudObj);
 void scan_models(const string& folder = "../models");
 int add_model_file(const string& path);
-
+void build_fullscreen_quad();
 
 int find_mesh(const string& name) {
     for (int i = 0; i < (int)meshNames.size(); ++i)
@@ -49,7 +56,7 @@ void build_geometry() {
     glGenVertexArrays(NumHUD, HUD_VAOs);
     build_hud_quad(HUDQuad);
     build_hud_quad(HUDTextQuad);
-
+    build_fullscreen_quad();
     // Selectable models from folder
     scan_models();
 }
@@ -211,4 +218,43 @@ void build_hud_quad(GLuint obj) {
                  uvs.data(),
                  GL_STATIC_DRAW);
 
+}
+
+
+void build_fullscreen_quad() {
+    // NDC positions (x, y, z, w) + UVs
+    // Two triangles covering the entire clip space
+    vector<vec4> positions = {
+        vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+        vec4( 1.0f, -1.0f, 0.0f, 1.0f),
+        vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+
+        vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+        vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+        vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+    };
+
+    vector<vec2> uvs = {
+        vec2(0.0f, 0.0f),
+        vec2(1.0f, 0.0f),
+        vec2(1.0f, 1.0f),
+
+        vec2(0.0f, 0.0f),
+        vec2(1.0f, 1.0f),
+        vec2(0.0f, 1.0f)
+    };
+
+    glGenVertexArrays(1, &fullscreenVAO);
+    glBindVertexArray(fullscreenVAO);
+
+    glGenBuffers(1, &fullscreenPosBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(vec4), positions.data(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &fullscreenTexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), uvs.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
