@@ -1,3 +1,6 @@
+#ifndef SHADERS_H
+#define SHADERS_H
+
 #include "../common/shaderutils.h"
 
 // Shader variables
@@ -44,6 +47,22 @@ GLuint hud_model_mat_loc;
 GLuint hud_uv_scale_loc;
 GLuint hud_uv_offset_loc;
 
+//Mask shader program
+GLuint mask_program;
+GLuint mask_vPos;
+GLuint mask_proj_mat_loc;
+GLuint mask_cam_mat_loc;
+GLuint mask_model_mat_loc;
+
+//Outline shader refs
+GLuint outline_program;
+GLuint outline_vPos;
+GLuint outline_vTex;
+GLuint outline_mask_tex_loc;
+GLuint outline_texel_size_loc;
+GLuint outline_color_loc;
+GLuint outline_thickness_loc;
+
 // Color shader files
 const char *color_vertex_shader = "../../common/shaders/color.vert";
 const char *color_frag_shader = "../../common/shaders/color.frag";
@@ -59,6 +78,14 @@ const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/objectTextur
 //HUD shader files
 const char *hud_vertex_shader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
 const char *hud_frag_shader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
+
+//Outline shader files
+const char *outline_vertex_shader = "../../CS370_Project_Fa26/shaders/outline.vert";
+const char *outline_frag_shader   = "../../CS370_Project_Fa26/shaders/outline.frag";
+
+//Mask shader files
+const char *mask_vertex_shader = "../../CS370_Project_Fa26/shaders/mask.vert";
+const char *mask_frag_shader   = "../../CS370_Project_Fa26/shaders/mask.frag";
 
 
 void build_shaders() {
@@ -109,6 +136,36 @@ void build_shaders() {
 	hud_uv_scale_loc = glGetUniformLocation(hud_program, "uvScale");
 	hud_uv_offset_loc = glGetUniformLocation(hud_program, "uvOffset");
 
+	// Load mask shaders
+	ShaderInfo mask_shaders[] = {
+		{GL_VERTEX_SHADER, mask_vertex_shader},
+		{GL_FRAGMENT_SHADER, mask_frag_shader},
+		{GL_NONE, NULL}
+	};
+	mask_program = LoadShaders(mask_shaders);
+	mask_vPos         = glGetAttribLocation(mask_program, "vPosition");
+	mask_proj_mat_loc = glGetUniformLocation(mask_program, "proj_matrix");
+	mask_cam_mat_loc  = glGetUniformLocation(mask_program, "camera_matrix");
+	mask_model_mat_loc= glGetUniformLocation(mask_program, "model_matrix");
+
+	// Load outline (edge) shaders
+	ShaderInfo outline_shaders[] = {
+		{GL_VERTEX_SHADER, outline_vertex_shader},
+		{GL_FRAGMENT_SHADER, outline_frag_shader},
+		{GL_NONE, NULL}
+	};
+	outline_program = LoadShaders(outline_shaders);
+	outline_vPos            = glGetAttribLocation(outline_program, "vPosition");
+	outline_vTex            = glGetAttribLocation(outline_program, "vTexCoord");
+	outline_mask_tex_loc    = glGetUniformLocation(outline_program, "maskTex");
+	outline_texel_size_loc  = glGetUniformLocation(outline_program, "texelSize");
+	outline_color_loc       = glGetUniformLocation(outline_program, "outlineColor");
+	outline_thickness_loc   = glGetUniformLocation(outline_program, "thickness");
+
+	// Set texture unit for the mask sampler
+	glUseProgram(outline_program);
+	glUniform1i(outline_mask_tex_loc, 0);
+
 	glUseProgram(hud_program);
 	glUniform1i(glGetUniformLocation(hud_program, "tex"), 0);
 
@@ -116,3 +173,5 @@ void build_shaders() {
 	glUniform1i(glGetUniformLocation(texture_program, "tex"), 0);
 
 }
+
+#endif //SHADERS_H

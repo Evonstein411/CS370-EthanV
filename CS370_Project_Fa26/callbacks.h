@@ -1,6 +1,7 @@
 #include "kitUI/hud.h"
 
 extern SceneObject* selectedObject;
+extern void createOutlineFBO(int width, int height);
 
 
 //functions
@@ -119,6 +120,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
     ww = width;
     hh = height;
+    createOutlineFBO(ww, hh);
 }
 
 //ensure cursor matching size of window and proper scaling

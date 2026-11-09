@@ -194,7 +194,7 @@ void init_hud() {
     object_panel->add(texture_section, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
 
     //transform section
-    transform_section = new Section(0.0f, 0.0f, "Transformation");
+    transform_section = new Section(0.0f, 0.0f, "Transform");
     object_panel->add(transform_section, 0, 4, 1, 1, Alignment::STRETCH, Alignment::START);
 
 

@@ -1,9 +1,10 @@
 #ifndef DRAW_OBJECTS_H
 #define DRAW_OBJECTS_H
-#include "shadervars.h"
+#include "shaders.h"
 
 GLuint dynamicHUDColorBuffer = 0;
 GLuint highlightColorBuffer = 0;
+
 
 void draw_color_object(GLuint obj, GLuint color) {
     // Select shader program
@@ -122,32 +123,6 @@ void draw_tex_object(GLuint obj, GLuint textureID){
 }
 
 
-void draw_highlight_object(GLuint obj, const vec4& color) {
-    // make / update a color buffer filled with `color`
-    if (highlightColorBuffer == 0)
-        glGenBuffers(1, &highlightColorBuffer);
-
-    vector<vec4> cols(numVertices[obj], color);
-    glBindBuffer(GL_ARRAY_BUFFER, highlightColorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, cols.size() * sizeof(vec4), cols.data(), GL_DYNAMIC_DRAW);
-
-    glUseProgram(color_program);
-    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
-
-    glBindVertexArray(VAOs[obj]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
-
-    glBindBuffer(GL_ARRAY_BUFFER, highlightColorBuffer);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
-
-    glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
-}
 
 //UI related draw functions should at some point be migrated to kitUI
 void draw_solid_hud_quad(vec4 color) {
@@ -205,5 +180,7 @@ void draw_text_quad() {
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+
 
 #endif // DRAW_OBJECTS_H
