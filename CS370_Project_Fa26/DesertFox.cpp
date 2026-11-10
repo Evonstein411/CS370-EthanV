@@ -98,6 +98,11 @@ int main(int argc, char**argv)
     z = (GLfloat)(radius*cos(deg2rad(azimuth))*sin(deg2rad(elevation)));
     eye = vec3(x,y,z);
 
+    if (camera_mode == PERSPECTIVE) {
+        float yaw = deg2rad(fpsAzimuth);
+        center = eye + vec3(cos(yaw), 0.0f, sin(yaw));  // level at start
+    }
+
     // Start loop
     while ( !glfwWindowShouldClose( window ) ) {
         //update selected
@@ -142,11 +147,27 @@ void display( )
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
 
-    // DEFAULT ORTHOGRAPHIC PROJECTION
-    proj_matrix = ortho(-radius*xratio, radius*xratio, -radius*yratio, radius*yratio, -100.0, 100.0);
+    if (camera_mode == PERSPECTIVE) {
+        float aspect = (float)ww / (float)hh;
+        proj_matrix = perspective(60.0f, aspect, 0.1f, 200.0f);
 
-    // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+        // Recompute center from current eye + angles (course method)
+        float yaw   = deg2rad(fpsAzimuth);
+        float pitch = deg2rad(fpsElevation);
+        vec3 dir = normalize(vec3(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        ));
+        center = eye + dir;
+
+        camera_matrix = lookat(eye, center, up);
+    } else {
+        // existing orbit + ortho
+        proj_matrix = ortho(-radius * xratio, radius * xratio,
+                            -radius * yratio, radius * yratio, -100.0f, 100.0f);
+        camera_matrix = lookat(eye, center, up);
+    }
 
     // Render objects
 	render_scene();

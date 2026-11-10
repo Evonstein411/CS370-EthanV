@@ -4,6 +4,7 @@
 //selected object (exists in DesertFox.cpp)
 extern SceneObject* selectedObject;
 
+
 //globals
 int selectedMesh = -1;
 int selectedType = -1;
@@ -60,6 +61,7 @@ Button* load_scene_button = nullptr;
 Button* save_scene_button = nullptr;
 Button* save_name_button = nullptr;
 Button* cancel_save_button = nullptr;
+Button* camera_mode_button = nullptr;
 
 //button functions
 void toggle_lights();
@@ -70,6 +72,7 @@ void load_scene();
 void save_scene();
 void confirm_save_scene();
 void hide_save_dialog();
+void toggle_camera_mode();
 
 //text fields
 TextField<string>* object_name_field = nullptr;
@@ -149,6 +152,9 @@ void init_hud() {
 
     save_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, save_scene, "Save Scene");
     topbar->add(save_scene_button, 336.0f, 4.0f);
+
+    camera_mode_button = new Button(0.0f, 0.0f, 200.0f, 40.0f, toggle_camera_mode, "ORTHO");
+    topbar->add(camera_mode_button, 504.0f, 4.0f);   // adjust X as needed
 
     scene_graph_section = new Section(ww - 200.0f, 80.0f, "Scene Graph");
     scene_graph_panel = new Panel(ww - 200.0f, 80.0f);
@@ -574,6 +580,7 @@ void update_from_fields() {
 void select_object(SceneObject* obj) {
     selectedObject = obj;
     update_fields();
+    rebuild_scene_graph();
 }
 
 void delete_selected_object() {
@@ -605,7 +612,14 @@ void rebuild_scene_graph() {
         Button* b = new Button(0, 0, 240.0f, 36.0f,
             [obj]() { select_object(obj); },
             obj->name);
+
+        if (obj == selectedObject) {
+            b->color = HUD_ACCENT;
+        }
+
         scene_graph_panel->add(b, 0, i);
+
+
     }
 }
 
@@ -668,4 +682,16 @@ void confirm_save_scene() {
 
     save_scene_file(name);
     hide_save_dialog();
+}
+
+void toggle_camera_mode() {
+    if (camera_mode == ORTHO) {
+        camera_mode = PERSPECTIVE;
+        camera_mode_button->setLabel("PERSPECTIVE");
+    }else {
+        camera_mode = ORTHO;
+        camera_mode_button->setLabel("ORTHO");
+
+    }
+
 }

@@ -24,6 +24,11 @@ struct Button : Widget {
         if (prefH <= 0.0f) prefH = h;
     }
 
+    void setLabel(string newLabel) {
+        label = newLabel;
+        fit();
+    }
+
     void fit() {
         if (label != "") {
             w = text_width(label, textSize) + HUD_PAD_X * 2.0f;

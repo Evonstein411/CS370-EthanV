@@ -8,7 +8,8 @@ vec2 dragStartMouse;
 
 //functions
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
-
+void handle_key_ortho(int key, int action);
+void handle_key_perspective(int key, int action);
 
 //keyboard callback
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -28,59 +29,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         delete_selected_object();
         return;
     }
-    
-    // A/D Adjust azimuth
-    if (key == GLFW_KEY_A) {
-        azimuth += daz;
-        if (azimuth > 360.0) {
-            azimuth -= 360.0;
-        }
-    } else if (key == GLFW_KEY_D) {
-        azimuth -= daz;
-        if (azimuth < 0.0)
-        {
-            azimuth += 360.0;
-        }
+
+
+    if (camera_mode == ORTHO) {
+        handle_key_ortho(key, action);
+    }else {
+        handle_key_perspective(key, action);
     }
 
-    // W/S Adjust elevation angle
-    if (key == GLFW_KEY_W)
-    {
-        elevation += del;
-        if (elevation > 180.0)
-        {
-            elevation = 179.0;
-        }
-    }
-    else if (key == GLFW_KEY_S)
-    {
-        elevation -= del;
-        if (elevation < 0.0)
-        {
-            elevation = 1.0;
-        }
-    }
-
-    // X/Z Adjust radius (zoom)
-    if (key == GLFW_KEY_X)
-    {
-        radius += dr;
-    }
-    else if (key == GLFW_KEY_Z)
-    {
-        radius -= dr;
-        if (radius < min_radius)
-        {
-            radius = min_radius;
-        }
-    }
-
-    // Compute updated camera position
-    GLfloat x, y, z;
-    x = (GLfloat)(radius*sin(deg2rad(azimuth))*sin(deg2rad(elevation)));
-    y = (GLfloat)(radius*cos(deg2rad(elevation)));
-    z = (GLfloat)(radius*cos(deg2rad(azimuth))*sin(deg2rad(elevation)));
-    eye = vec3(x,y,z);
 }
 
 //mouse callback
@@ -105,9 +61,9 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
             return;
         }
 
-        selectedObject = clicked;
+
+        select_object(clicked);
         activeGizmo = GIZMO_NONE;
-        update_fields();
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
@@ -180,4 +136,90 @@ void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& 
     float yscale = (float)hh / (float)win_h;
     mx = (float)xpos * xscale;
     my = (float)hh - (float)ypos * yscale;
+}
+
+void handle_key_ortho(int key, int action) {
+    // A/D Adjust azimuth
+    if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) {
+        azimuth += daz;
+        if (azimuth > 360.0) {
+            azimuth -= 360.0;
+        }
+    } else if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) {
+        azimuth -= daz;
+        if (azimuth < 0.0)
+        {
+            azimuth += 360.0;
+        }
+    }
+
+    // W/S Adjust elevation angle
+    if (key == GLFW_KEY_W || key == GLFW_KEY_UP)
+    {
+        elevation += del;
+        if (elevation > 180.0)
+        {
+            elevation = 179.0;
+        }
+    }
+    else if (key == GLFW_KEY_S || key == GLFW_KEY_DOWN)
+    {
+        elevation -= del;
+        if (elevation < 0.0)
+        {
+            elevation = 1.0;
+        }
+    }
+
+    // X/Z Adjust radius (zoom)
+    if (key == GLFW_KEY_X)
+    {
+        radius += dr;
+    }
+    else if (key == GLFW_KEY_Z)
+    {
+        radius -= dr;
+        if (radius < min_radius)
+        {
+            radius = min_radius;
+        }
+    }
+
+    GLfloat x, y, z;
+    x = (GLfloat)(radius*sin(deg2rad(azimuth))*sin(deg2rad(elevation)));
+    y = (GLfloat)(radius*cos(deg2rad(elevation)));
+    z = (GLfloat)(radius*cos(deg2rad(azimuth))*sin(deg2rad(elevation)));
+    eye = vec3(x,y,z);
+}
+
+void handle_key_perspective(int key, int action) {
+    if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) {
+        fpsAzimuth -= fpsTurn;
+        if (fpsAzimuth > 360.0f) fpsAzimuth -= 360.0f;
+    } else if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) {
+        fpsAzimuth += fpsTurn;
+        if (fpsAzimuth < 0.0f) fpsAzimuth += 360.0f;
+    }
+
+    // Z/X – look up/down (elevation)
+    if (key == GLFW_KEY_Z || key == GLFW_KEY_UP) {
+        fpsElevation += fpsTurn;
+        if (fpsElevation > 89.0f) fpsElevation = 89.0f;
+    } else if (key == GLFW_KEY_X || key == GLFW_KEY_DOWN) {
+        fpsElevation -= fpsTurn;
+        if (fpsElevation < -89.0f) fpsElevation = -89.0f;
+    }
+
+    // W/S – move forward/backward in current direction
+    if (key == GLFW_KEY_W || key == GLFW_KEY_S) {
+        float yaw   = deg2rad(fpsAzimuth);
+        float pitch = deg2rad(fpsElevation);
+        vec3 dir = normalize(vec3(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        ));
+        float sign = (key == GLFW_KEY_W) ? 1.0f : -1.0f;
+        eye += dir * fpsStep * sign;
+    }
 }
