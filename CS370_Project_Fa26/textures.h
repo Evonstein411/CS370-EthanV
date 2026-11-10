@@ -78,8 +78,6 @@ void scan_textures(const std::string& folder) {
             continue;
         }
 
-        printf("  entry: %s  (regular=%d)\n");
-
         fs::path p = entry.path();
         std::string ext = p.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);

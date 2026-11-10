@@ -5,6 +5,10 @@ extern void createOutlineFBO(int width, int height);
 
 vec3 dragStartPos;
 vec2 dragStartMouse;
+bool rightMouseDown = false;
+double lastMouseX = 0.0;
+double lastMouseY = 0.0;
+const float mouseLookSensitivity = 0.2f;
 
 //functions
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
@@ -50,6 +54,15 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     if (hud_mouse_button(mx, my, button, action))
         return;   // UI ate it
 
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            rightMouseDown = true;
+            glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
+        } else if (action == GLFW_RELEASE) {
+            rightMouseDown = false;
+        }
+    }
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         SceneObject* clicked = pick_scene_object(mx, my);
         int raw = get_raw_index();   // or rawIndex if it’s global
@@ -84,6 +97,43 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
     hud_cursor(mx, my);
 
+    if (rightMouseDown) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        float dx = (float)(xpos - lastMouseX);
+        float dy = (float)(ypos - lastMouseY);
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+
+        if (camera_mode == ORTHO) {
+            azimuth   -= dx * mouseLookSensitivity;
+            elevation -= dy * mouseLookSensitivity;
+
+            // clamp / wrap the same way the keyboard does
+            if (azimuth > 360.0f) azimuth -= 360.0f;
+            if (azimuth < 0.0f)   azimuth += 360.0f;
+            if (elevation > 179.0f) elevation = 179.0f;
+            if (elevation < 1.0f)   elevation = 1.0f;
+
+            // recompute eye from spherical coords (same as handle_key_ortho)
+            float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
+            float y = radius * cos(deg2rad(elevation));
+            float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
+            eye = vec3(x, y, z);
+        } else {
+            fpsAzimuth   += dx * mouseLookSensitivity;
+            fpsElevation -= dy * mouseLookSensitivity;
+
+            if (fpsAzimuth > 360.0f) fpsAzimuth -= 360.0f;
+            if (fpsAzimuth < 0.0f)   fpsAzimuth += 360.0f;
+            if (fpsElevation > 89.0f)  fpsElevation = 89.0f;
+            if (fpsElevation < -89.0f) fpsElevation = -89.0f;
+            // center is recomputed from these angles in display()
+        }
+
+        return;   // skip gizmo logic while looking
+    }
 
     if (activeGizmo == GIZMO_NONE || !selectedObject) return;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
@@ -193,33 +243,43 @@ void handle_key_ortho(int key, int action) {
 }
 
 void handle_key_perspective(int key, int action) {
-    if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) {
+    // Arrow keys – look only
+    if (key == GLFW_KEY_LEFT) {
         fpsAzimuth -= fpsTurn;
         if (fpsAzimuth > 360.0f) fpsAzimuth -= 360.0f;
-    } else if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) {
+    } else if (key == GLFW_KEY_RIGHT) {
         fpsAzimuth += fpsTurn;
         if (fpsAzimuth < 0.0f) fpsAzimuth += 360.0f;
     }
 
-    // Z/X – look up/down (elevation)
-    if (key == GLFW_KEY_Z || key == GLFW_KEY_UP) {
+    if (key == GLFW_KEY_UP) {
         fpsElevation += fpsTurn;
         if (fpsElevation > 89.0f) fpsElevation = 89.0f;
-    } else if (key == GLFW_KEY_X || key == GLFW_KEY_DOWN) {
+    } else if (key == GLFW_KEY_DOWN) {
         fpsElevation -= fpsTurn;
         if (fpsElevation < -89.0f) fpsElevation = -89.0f;
     }
 
-    // W/S – move forward/backward in current direction
-    if (key == GLFW_KEY_W || key == GLFW_KEY_S) {
+    // W/S – move forward/backward
+    // A/D – strafe left/right
+    if (key == GLFW_KEY_W || key == GLFW_KEY_S ||
+    key == GLFW_KEY_A || key == GLFW_KEY_D||
+    key == GLFW_KEY_SPACE || key == GLFW_KEY_LEFT_CONTROL) {
+
         float yaw   = deg2rad(fpsAzimuth);
         float pitch = deg2rad(fpsElevation);
-        vec3 dir = normalize(vec3(
+        vec3 forward = normalize(vec3(
             cos(yaw) * cos(pitch),
             sin(pitch),
             sin(yaw) * cos(pitch)
         ));
-        float sign = (key == GLFW_KEY_W) ? 1.0f : -1.0f;
-        eye += dir * fpsStep * sign;
-    }
+        vec3 right = normalize(cross(forward, up));
+
+        if (key == GLFW_KEY_W) eye += forward * fpsStep;
+        if (key == GLFW_KEY_S) eye -= forward * fpsStep;
+        if (key == GLFW_KEY_A) eye -= right   * fpsStep;
+        if (key == GLFW_KEY_D) eye += right   * fpsStep;
+        if (key == GLFW_KEY_SPACE)          eye[1] += fpsStep;
+        if (key == GLFW_KEY_LEFT_CONTROL)   eye[1] -= fpsStep;
+        }
 }

@@ -686,11 +686,23 @@ void confirm_save_scene() {
 
 void toggle_camera_mode() {
     if (camera_mode == ORTHO) {
+        orthoEye = eye;
+        orthoCenter = center;
+        orthoAzimuth = azimuth;
+        orthoElevation = elevation;
+        orthoRadius = radius;
         camera_mode = PERSPECTIVE;
         camera_mode_button->setLabel("PERSPECTIVE");
+        eye = fpsEye;
     }else {
+        fpsEye = eye;
         camera_mode = ORTHO;
         camera_mode_button->setLabel("ORTHO");
+        eye = orthoEye;
+        center = orthoCenter;
+        azimuth = orthoAzimuth;
+        elevation = orthoElevation;
+        radius = orthoRadius;
 
     }
 

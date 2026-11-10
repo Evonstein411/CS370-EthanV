@@ -31,6 +31,7 @@ GLuint outlineFBO = 0;
 GLuint outlineMaskTex = 0;
 
 
+
 //functions
 void display();
 void render_scene();
