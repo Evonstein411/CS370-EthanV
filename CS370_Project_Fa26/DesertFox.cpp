@@ -40,7 +40,7 @@ void render_hud();
 void createOutlineFBO(int width, int height);
 void drawTranslationGizmo();
 void drawSelectionOutline();
-
+void update_camera_matrices();
 
 
 
@@ -66,6 +66,7 @@ int main(int argc, char**argv)
     glfwSetMouseButtonCallback(window, mouse_callback);
     glfwSetCursorPosCallback(window, cursor_callback);
     glfwSetCharCallback(window, char_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     // Create geometry buffers
     build_geometry();
@@ -148,27 +149,7 @@ void display( )
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
 
-    if (camera_mode == PERSPECTIVE) {
-        float aspect = (float)ww / (float)hh;
-        proj_matrix = perspective(60.0f, aspect, 0.1f, 200.0f);
-
-        // Recompute center from current eye + angles (course method)
-        float yaw   = deg2rad(fpsAzimuth);
-        float pitch = deg2rad(fpsElevation);
-        vec3 dir = normalize(vec3(
-            cos(yaw) * cos(pitch),
-            sin(pitch),
-            sin(yaw) * cos(pitch)
-        ));
-        center = eye + dir;
-
-        camera_matrix = lookat(eye, center, up);
-    } else {
-        // existing orbit + ortho
-        proj_matrix = ortho(-radius * xratio, radius * xratio,
-                            -radius * yratio, radius * yratio, -100.0f, 100.0f);
-        camera_matrix = lookat(eye, center, up);
-    }
+    update_camera_matrices();
 
     // Render objects
 	render_scene();
@@ -326,6 +307,34 @@ void drawTranslationGizmo() {
 
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
+}
+
+void update_camera_matrices() {
+    GLfloat xratio = 1.0f;
+    GLfloat yratio = 1.0f;
+    if (ww <= hh)
+        yratio = (GLfloat)hh / (GLfloat)ww;
+    else if (hh <= ww)
+        xratio = (GLfloat)ww / (GLfloat)hh;
+
+    if (camera_mode == PERSPECTIVE) {
+        float aspect = (float)ww / (float)hh;
+        proj_matrix = perspective(60.0f, aspect, 0.1f, 200.0f);
+
+        float yaw   = deg2rad(fpsAzimuth);
+        float pitch = deg2rad(fpsElevation);
+        vec3 dir = normalize(vec3(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        ));
+        center = eye + dir;
+        camera_matrix = lookat(eye, center, up);
+    } else {
+        proj_matrix = ortho(-radius * xratio, radius * xratio,
+                            -radius * yratio, radius * yratio, -100.0f, 100.0f);
+        camera_matrix = lookat(eye, center, up);
+    }
 }
 
 

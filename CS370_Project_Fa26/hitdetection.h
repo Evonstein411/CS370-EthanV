@@ -1,6 +1,8 @@
 //houseproject refs
-void render_scene();
-void render_hud();
+extern void render_scene();
+extern void render_hud();
+extern void update_camera_matrices();
+
 enum GizmoAxis {GIZMO_NONE = 0, GIZMO_X = 1001, GIZMO_Y = 1002, GIZMO_Z = 1003 };
 GizmoAxis activeGizmo = GIZMO_NONE;
 int rawIndex = -1;
@@ -46,14 +48,7 @@ void draw_picking_object(GLuint mesh, GLuint colorBuffer) {
 
 //function returns clicked scene object
 SceneObject* pick_scene_object(float mx, float my) {
-    // Make sure we have the same projection/camera the scene used
-    // (recompute them here so the callback doesn't depend on leftover state)
-    GLfloat xratio = 1.0f, yratio = 1.0f;
-    if (ww <= hh) yratio = (GLfloat)hh / (GLfloat)ww;
-    else if (hh <= ww) xratio = (GLfloat)ww / (GLfloat)hh;
-
-    proj_matrix = ortho(-radius*xratio, radius*xratio, -radius*yratio, radius*yratio, -100.0, 100.0);
-    camera_matrix = lookat(eye, center, up);
+    update_camera_matrices();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -67,13 +62,7 @@ SceneObject* pick_scene_object(float mx, float my) {
         if (obj->mesh == (GLuint)-1)
             continue;
 
-        // Build model matrix the same way SceneObject::draw does
-        mat4 trans  = translate(obj->position);
-        mat4 rotX   = vmath::rotate(obj->rotation[0], vec3(1,0,0));
-        mat4 rotY   = vmath::rotate(obj->rotation[1], vec3(0,1,0));
-        mat4 rotZ   = vmath::rotate(obj->rotation[2], vec3(0,0,1));
-        mat4 scaleM = vmath::scale(obj->scale);
-        model_matrix = trans * rotX * rotY * rotZ * scaleM;
+        model_matrix = obj->getModelMatrix();
 
         // Fill the color buffer with the index color
         vec4 col = index_to_color((int)i + 1);

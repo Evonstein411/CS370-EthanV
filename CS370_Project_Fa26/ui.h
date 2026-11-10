@@ -154,7 +154,7 @@ void init_hud() {
     topbar->add(save_scene_button, 336.0f, 4.0f);
 
     camera_mode_button = new Button(0.0f, 0.0f, 200.0f, 40.0f, toggle_camera_mode, "ORTHO");
-    topbar->add(camera_mode_button, 504.0f, 4.0f);   // adjust X as needed
+    topbar->add(camera_mode_button, ww-480.0f, 4.0f);   // adjust X as needed
 
     scene_graph_section = new Section(ww - 200.0f, 80.0f, "Scene Graph");
     scene_graph_panel = new Panel(ww - 200.0f, 80.0f);

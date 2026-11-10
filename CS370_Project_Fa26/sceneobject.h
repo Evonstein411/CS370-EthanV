@@ -74,6 +74,15 @@ struct SceneObject {
         hasColor = false;
     }
 
+    mat4 getModelMatrix() const {
+        mat4 T = translate(position);
+        mat4 Rx = vmath::rotate(rotation[0], vec3(1,0,0));
+        mat4 Ry = vmath::rotate(rotation[1], vec3(0,1,0));
+        mat4 Rz = vmath::rotate(rotation[2], vec3(0,0,1));
+        mat4 S = vmath::scale(scale);
+        return T * Rx * Ry * Rz * S;
+    }
+
     void initializeType(DrawType newType) {
         //solid color add color if none and build buffer
         if (newType == SOLID_COLOR) {
@@ -110,13 +119,9 @@ struct SceneObject {
 
     void draw() {
         if (mesh == -1 || drawType == NONE) return;
-        mat4 trans_matrix = translate(position);
-        mat4 rotate_x_matrix = vmath::rotate(rotation[0], vec3(1, 0, 0));
-        mat4 rotate_y_matrix = vmath::rotate(rotation[1], vec3(0, 1, 0));
-        mat4 rotate_z_matrix = vmath::rotate(rotation[2], vec3(0, 0, 1));
-        mat4 scale_matrix = vmath::scale(scale);
 
-        model_matrix = trans_matrix*rotate_x_matrix*rotate_y_matrix*rotate_z_matrix*scale_matrix;
+
+        model_matrix = getModelMatrix();
         if (drawType == SOLID_COLOR) {
             draw_color_object(mesh, colorBuffer);
         }else if(drawType == MATERIAL) {

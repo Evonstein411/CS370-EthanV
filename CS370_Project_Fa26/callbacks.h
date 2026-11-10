@@ -14,6 +14,7 @@ const float mouseLookSensitivity = 0.2f;
 void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
 void handle_key_ortho(int key, int action);
 void handle_key_perspective(int key, int action);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 //keyboard callback
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -142,28 +143,55 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     }
 
     vec2 delta = vec2(mx, my) - dragStartMouse;
-    float sensitivity = 0.0025f * radius;   // tune
 
-    float amount = 0.0f;
     vec3 axis(0.0f);
+    if (activeGizmo == GIZMO_X) axis = vec3(1, 0, 0);
+    else if (activeGizmo == GIZMO_Y) axis = vec3(0, 1, 0);
+    else if (activeGizmo == GIZMO_Z) axis = vec3(0, 0, 1);
 
-    if (activeGizmo == GIZMO_X) {
-        amount =  delta[0] * sensitivity;
-        axis   = vec3(1, 0, 0);
-    }
-    else if (activeGizmo == GIZMO_Y) {
-        amount = delta[1] * sensitivity;
-        axis   = vec3(0, 1, 0);
-    }
-    else if (activeGizmo == GIZMO_Z) {
-        amount =  delta[0] * sensitivity;
-        axis   = vec3(0, 0, 1);
-    }
+    // column-vector: viewAxis = camera_matrix * axis (w = 0)
+    vec3 viewAxis;
+    viewAxis[0] = camera_matrix[0][0]*axis[0] + camera_matrix[1][0]*axis[1] + camera_matrix[2][0]*axis[2];
+    viewAxis[1] = camera_matrix[0][1]*axis[0] + camera_matrix[1][1]*axis[1] + camera_matrix[2][1]*axis[2];
+    viewAxis[2] = camera_matrix[0][2]*axis[0] + camera_matrix[1][2]*axis[1] + camera_matrix[2][2]*axis[2];
+
+    vec2 screenDir(viewAxis[0], viewAxis[1]);
+    float len = length(screenDir);
+    if (len < 0.001f) len = 1.0f;
+    screenDir = screenDir * (1.0f / len);
+
+    // distance-based sensitivity so it feels the same in both modes
+    float dist = length(eye - selectedObject->position);
+    float sensitivity = 0.0015f * dist;
+
+    float amount = dot(delta, screenDir) * sensitivity;
 
     selectedObject->position = dragStartPos + axis * amount;
     update_fields();
 }
 
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (camera_mode != ORTHO) return;
+
+    // yoffset > 0 means scroll up (zoom in), < 0 means scroll down (zoom out)
+    float zoom = (float)yoffset * dr * 4.0f;   // scale factor, tune as needed
+
+    radius -= zoom;
+    if (radius < min_radius)
+        radius = min_radius;
+
+    // recompute eye from spherical coords (same as handle_key_ortho)
+    float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
+    float y = radius * cos(deg2rad(elevation));
+    float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
+    eye = vec3(x, y, z);
+}
+
+
+
+
+//-----------------------------------------HELPERS----------------------------------------------
+//----------------------------------------------------------------------------------------------
 
 //update on window resize
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
