@@ -1,0 +1,81 @@
+DESERTFOX_SCENE 1
+objects 7
+
+OBJECT
+name sphere
+mesh sphere
+drawType Material
+position 4.27946 0 3.28203
+rotation 0 0 0
+scale 2 2 2
+material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+END
+
+OBJECT
+name floor
+mesh cube
+drawType Texture
+position 0 -3 0
+rotation 0 0 0
+scale 50 2 50
+texture carpet
+END
+
+OBJECT
+name wall1
+mesh cube
+drawType Texture
+position 25 3 0
+rotation 0 0 0
+scale 1 10 50
+texture brick
+END
+
+OBJECT
+name wall2
+mesh cube
+drawType Texture
+position -25 3 0
+rotation 0 0 0
+scale 1 10 50
+texture brick
+END
+
+OBJECT
+name wall3
+mesh cube
+drawType Texture
+position 0 3 25
+rotation 0 0 0
+scale 50 10 1
+texture brick
+END
+
+OBJECT
+name wall4
+mesh cube
+drawType Texture
+position 0 3 -25
+rotation 0 0 0
+scale 50 10 1
+texture brick
+END
+
+OBJECT
+name Roof
+mesh cube
+drawType Material
+position 0 8.5498 0
+rotation 0 0 0
+scale 50 1 50
+material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+END
+
