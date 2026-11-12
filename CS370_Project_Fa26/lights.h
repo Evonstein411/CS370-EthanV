@@ -1,6 +1,6 @@
 enum LightNames {WhitePointLight, FillLight, NumLights};
 GLuint LightBuffers[NumLightBuffers];
-vector<LightProperties> Lights;
+vector<LightProperties> lights;
 GLint lightOn[NumLights] = {0, 0};
 
 // White point light
@@ -37,16 +37,16 @@ LightProperties fillLight = {
 
 void build_lights( ) {
 	// Allocate Lights vector
-	Lights.resize(NumLights);
+	lights.resize(NumLights);
 	// Add lights to Lights vector
-	Lights[WhitePointLight] = whitePointLight;
+	lights[WhitePointLight] = whitePointLight;
 	lightOn[WhitePointLight] = 1;
 
-	Lights[FillLight] = fillLight;
+	lights[FillLight] = fillLight;
 	lightOn[FillLight] = 1;
 
 	// Create uniform buffer for lights
 	glGenBuffers(NumLightBuffers, LightBuffers);
 	glBindBuffer(GL_UNIFORM_BUFFER, LightBuffers[LightBuffer]);
-	glBufferData(GL_UNIFORM_BUFFER, Lights.size()*sizeof(LightProperties), Lights.data(), GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, lights.size()*sizeof(LightProperties), lights.data(), GL_STATIC_DRAW);
 }

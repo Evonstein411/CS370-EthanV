@@ -4,13 +4,13 @@ void draw_fog_color_object(GLuint obj, GLuint color) {
     // Select shader program
     glUseProgram(fog_program);
     // Pass projection matrix to shader
-    glUniformMatrix4fv(fog_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(fog_proj_mat_loc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(fog_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(fog_cam_mat_loc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(fog_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(fog_model_mat_loc, 1, GL_FALSE, modelMatrix);
 
     // Pass fog values to shader
     glUniform4fv(fog_fog_col_loc, 1, fogColor);

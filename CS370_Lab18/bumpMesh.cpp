@@ -72,7 +72,7 @@ int main(int argc, char**argv)
         glfwPollEvents();
         GLdouble curTime = glfwGetTime();
         if (animate) {
-            sphere_angle += (curTime - elTime) * (rpm / 60.0) * 360.0;
+            sphereAngle += (curTime - elTime) * (rpm / 60.0) * 360.0;
         }
         elTime = curTime;
         // Swap buffer onto screen
@@ -86,8 +86,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
     // Reset default viewport
     glViewport(0, 0, ww, hh);
@@ -109,10 +109,10 @@ void display( )
     {
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
-    proj_matrix = frustum(-0.5f*xratio, 0.5f*xratio, -0.5f*yratio, 0.5f*yratio, 0.5f, 100.0f);
+    projMatrix = frustum(-0.5f*xratio, 0.5f*xratio, -0.5f*yratio, 0.5f*yratio, 0.5f, 100.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
     render_scene( );
@@ -121,7 +121,7 @@ void display( )
 }
 
 void render_scene( ) {
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -130,16 +130,16 @@ void render_scene( ) {
     trans_matrix = translation(0.0f, 1.0f, 0.0f);
     rot_matrix = rotation(0.0f, 0.0f, 0.0f, 1.0f);
     scale_matrix = scale(1.5f, 0.5f, 1.5f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // Draw object
     draw_mat_object(Torus, RedPlastic);
 
     // Set cube transformation matrix
     trans_matrix = translate(0.0f, -0.1f, 0.0f);
     scale_matrix = scale(10.0f, 0.2f, 10.0f);
-    model_matrix = trans_matrix*scale_matrix;
+    modelMatrix = trans_matrix*scale_matrix;
     GLint multiTexID = Blank;
     if (dirty) {
         // Use Dirt multi texture
@@ -150,9 +150,9 @@ void render_scene( ) {
 
     // Set sphere transformation matrix
     trans_matrix = translate(1.0f, 2.0f, 1.0f);
-    rot_matrix = rotate(sphere_angle, vec3(0.0f, 1.0f, 0.0f));
+    rot_matrix = rotate(sphereAngle, vec3(0.0f, 1.0f, 0.0f));
     scale_matrix = scale(0.5f, 0.5f, 0.5f);
-    model_matrix = rot_matrix*trans_matrix*scale_matrix;
+    modelMatrix = rot_matrix*trans_matrix*scale_matrix;
     if(!bump) {
         // Render sphere with multitexturing
         // Use Blank multi texture by default
@@ -166,7 +166,7 @@ void render_scene( ) {
     } else {
         // Render sphere with bump mapping
         // Compute normal matrix from model matrix
-        normal_matrix = model_matrix.inverse().transpose();
+        normalMatrix = modelMatrix.inverse().transpose();
         // Use Flat normal map by default
         GLint normalMapID = GolfNormFlat;
         if (golf == OUT) {

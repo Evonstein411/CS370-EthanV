@@ -45,32 +45,32 @@ struct Dropdown : Widget {
         delete popup;
     }
 
-    void setEnabled(bool on) {
+    void set_enabled(bool on) {
         enabled = on;
         if (!enabled)
-            closePopup();
+            close_popup();
     }
 
-    void setOptions(const vector<string>& newOptions) {
+    void set_options(const vector<string>& newOptions) {
         options = newOptions;
         //guard if no popup
         if (popup) {
             // delete the old option buttons
             for (auto& cell : popup->cells) {
                 if (cell.widget) {
-                    popup->removeChild(cell.widget);
+                    popup->remove_child(cell.widget);
                     delete cell.widget;
                 }
             }
             popup->cells.clear();
-            buildOptions();
+            build_options();
             if (open) popup->show(); else popup->hide();
         }
 
         resize();
     }
 
-    void buildOptions() {
+    void build_options() {
         if (!popup) return;
 
         float maxOpt = 0.0f;
@@ -83,7 +83,7 @@ struct Dropdown : Widget {
             Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
                 [this, i]() {
                     if (selected) *selected = i;
-                    closePopup();
+                    close_popup();
                 },
                 options[i]);
             b->w = boxW;
@@ -121,25 +121,25 @@ struct Dropdown : Widget {
         return options[*selected];
     }
 
-    void drawSelf() override {
-        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
+    void draw_self() override {
+        modelMatrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
         draw_solid_hud_quad(color);
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
 
         float boxX = x + labelW;
         float boxW = w - labelW - HUD_PAD_X;
-        model_matrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
+        modelMatrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
         draw_solid_hud_quad(enabled ? selectedColor: disabledColor);
         draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, enabled ? ALT_TEXT_COLOR: DISABLED_TEXT_COLOR);
         draw_string(open ? "^" : "v", boxX + boxW - 22.0f, y + 6.0f, textSize, enabled? ALT_TEXT_COLOR: DISABLED_TEXT_COLOR);
     }
 
-    void openPopup() {
+    void open_popup() {
         if (!popup) {
             popup = new Panel(x + labelW, y + h);
-            popup->setPriority(1);
-            buildOptions();
+            popup->set_priority(1);
+            build_options();
         }
 
         float boxW = w - labelW - HUD_PAD_X;
@@ -154,7 +154,7 @@ struct Dropdown : Widget {
 
 
 
-    void closePopup() {
+    void close_popup() {
         if (popup) popup->hide();
         open = false;
     }
@@ -163,9 +163,9 @@ struct Dropdown : Widget {
         if (!enabled) return;
         if (!open) {
             open = true;
-            openPopup();
+            open_popup();
         } else {
-            closePopup();
+            close_popup();
         }
     }
 

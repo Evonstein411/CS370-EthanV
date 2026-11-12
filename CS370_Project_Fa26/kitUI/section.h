@@ -13,8 +13,8 @@ struct Section : Widget {
         : Widget(x, y, 0, 0), label(label) {
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
         content = new Panel(x, y);
-        content->setHidden(collapsed);
-        addChild(content);
+        content->set_hidden(collapsed);
+        add_child(content);
     }
 
     ~Section() {
@@ -22,7 +22,7 @@ struct Section : Widget {
     }
 
     bool hit(float mx, float my) const override {
-        if (hidden || isEffectivelyHidden()) return false;
+        if (hidden || is_effectively_hidden()) return false;
         // only the header bar is interactive
         float bottom = (float)hh - headerH - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + headerH;
@@ -57,13 +57,13 @@ struct Section : Widget {
         content->stretched = true;   // body layout must not shrink this
     }
 
-    void drawSelf() override {
+    void draw_self() override {
         layout();
 
         // header bar
-        mat4 trans_matrix = translate(x, (float)hh - headerH - y, 0.0f);
-        mat4 scale_matrix   = scale(w, headerH, 1.0f);
-        model_matrix = trans_matrix * scale_matrix;
+        mat4 transMatrix = translate(x, (float)hh - headerH - y, 0.0f);
+        mat4 scaleMatrix   = scale(w, headerH, 1.0f);
+        modelMatrix = transMatrix * scaleMatrix;
         draw_solid_hud_quad(hovered ? highlightedColor : color);
 
         string arrow = collapsed ? ">" : "v";
@@ -76,7 +76,7 @@ struct Section : Widget {
     void on_click(float mx, float my) override {
         // mouse callback already confirmed we were the top-most hit
         collapsed = !collapsed;
-        content->setHidden(collapsed);
+        content->set_hidden(collapsed);
         layout();
     }
 

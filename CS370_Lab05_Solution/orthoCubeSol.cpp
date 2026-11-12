@@ -68,8 +68,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection matrix
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();  // Default camera matrix for now
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();  // Default camera matrix for now
 
 	// TODO: Clear window and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -91,7 +91,7 @@ void display( )
     }
 
     // TODO: Set projection matrix
-    proj_matrix = ortho(-2.0f*xratio, 2.0f*xratio, -2.0f*yratio, 2.0f*yratio, -2.0f, 2.0f);
+    projMatrix = ortho(-2.0f*xratio, 2.0f*xratio, -2.0f*yratio, 2.0f*yratio, -2.0f, 2.0f);
     //proj_matrix = ortho(-2.0f, 2.0f, -2.0f, 2.0f, -2.0f, 2.0f);
 
     // Render objects
@@ -103,7 +103,7 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -112,7 +112,7 @@ void render_scene( ) {
     trans_matrix = translate(vec3(0.0f, 0.0f, 0.0f));
     rot_matrix = rotate(cube_angle, normalize(axis));
     scale_matrix = scale(vec3(1.0f, 1.0f, 1.0f));
-	model_matrix = trans_matrix*rot_matrix*scale_matrix;
+	modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     draw_color_object(Cube, CubeGradient);
 }
 

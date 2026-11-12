@@ -2,46 +2,46 @@
 
 void draw_mat_object(GLuint obj, GLuint material){
     // Select shader program
-    glUseProgram(lighting_program);
+    glUseProgram(lightingProgram);
 
     // Pass projection and camera matrices to shader
-    glUniformMatrix4fv(lighting_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(lighting_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(lightingProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(lightingCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Bind lights
-    glUniformBlockBinding(lighting_program, lighting_lights_block_idx, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size()*sizeof(LightProperties));
+    glUniformBlockBinding(lightingProgram, lightingLightsBlockIdx, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size()*sizeof(LightProperties));
 
     // Bind materials
-    glUniformBlockBinding(lighting_program, lighting_materials_block_idx, 1);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, Materials.size()*sizeof(MaterialProperties));
+    glUniformBlockBinding(lightingProgram, lightingMaterialsBlockIdx, 1);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, materials.size()*sizeof(MaterialProperties));
 
     // Set camera position
-    glUniform3fv(lighting_eye_loc, 1, eye);
+    glUniform3fv(lightingEyeLoc, 1, eye);
 
     // Set num lights and lightOn
-    glUniform1i(lighting_num_lights_loc, Lights.size());
-    glUniform1iv(lighting_light_on_loc, NumLights, lightOn);
+    glUniform1i(lightingNumLightsLoc, lights.size());
+    glUniform1iv(lightingLightOnLoc, NumLights, lightOn);
 
     // Pass model matrix and normal matrix to shader
-    glUniformMatrix4fv(lighting_model_mat_loc, 1, GL_FALSE, model_matrix);
-    glUniformMatrix4fv(lighting_norm_mat_loc, 1, GL_FALSE, normal_matrix);
+    glUniformMatrix4fv(lightingModelMatLoc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(lightingNormMatLoc, 1, GL_FALSE, normalMatrix);
 
     // Pass material index to shader
-    glUniform1i(lighting_material_loc, material);
+    glUniform1i(lightingMaterialLoc, material);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(lighting_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vPos);
+    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVPos);
 
     // Bind normal object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][NormBuffer]);
-    glVertexAttribPointer(lighting_vNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vNorm);
+    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVNorm);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
@@ -49,16 +49,16 @@ void draw_mat_object(GLuint obj, GLuint material){
 
 void draw_tex_object(GLuint obj, GLuint texture){
     // Select shader program
-    glUseProgram(texture_program);
+    glUseProgram(textureProgram);
 
     // Pass projection matrix to shader
-    glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(textureProjMatLoc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(texture_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(textureCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(texture_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(textureModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     // Bind texture
     glActiveTexture(GL_TEXTURE0);
@@ -69,13 +69,13 @@ void draw_tex_object(GLuint obj, GLuint texture){
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(texture_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vPos);
+    glVertexAttribPointer(textureVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVPos);
 
     // Bind texture object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][TexBuffer]);
-    glVertexAttribPointer(texture_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vTex);
+    glVertexAttribPointer(textureVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVTex);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
@@ -83,43 +83,43 @@ void draw_tex_object(GLuint obj, GLuint texture){
 
 void draw_frame(GLuint obj){
     // Draw frame using lines at mirror location
-    glUseProgram(lighting_program);
+    glUseProgram(lightingProgram);
     // Pass projection and camera matrices to shader
-    glUniformMatrix4fv(lighting_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(lighting_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(lightingProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(lightingCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Bind lights
-    glUniformBlockBinding(lighting_program, lighting_lights_block_idx, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size()*sizeof(LightProperties));
+    glUniformBlockBinding(lightingProgram, lightingLightsBlockIdx, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size()*sizeof(LightProperties));
     // Bind materials
-    glUniformBlockBinding(lighting_program, lighting_materials_block_idx, 1);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, Materials.size()*sizeof(MaterialProperties));
+    glUniformBlockBinding(lightingProgram, lightingMaterialsBlockIdx, 1);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, materials.size()*sizeof(MaterialProperties));
     // Set camera position
-    glUniform3fv(lighting_eye_loc, 1, eye);
+    glUniform3fv(lightingEyeLoc, 1, eye);
     // Set num lights and lightOn
-    glUniform1i(lighting_num_lights_loc, Lights.size());
-    glUniform1iv(lighting_light_on_loc, NumLights, lightOn);
+    glUniform1i(lightingNumLightsLoc, lights.size());
+    glUniform1iv(lightingLightOnLoc, NumLights, lightOn);
 
     // Set frame transformation matrix
     mat4 trans_matrix = translate(mirror_eye);
     mat4 rot_matrix = rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
     mat4 scale_matrix = scale(2.0f, 1.0f, 2.0f);
-    model_matrix = trans_matrix * rot_matrix * scale_matrix;
+    modelMatrix = trans_matrix * rot_matrix * scale_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // Pass model matrix and normal matrix to shader
-    glUniformMatrix4fv(lighting_model_mat_loc, 1, GL_FALSE, model_matrix);
-    glUniformMatrix4fv(lighting_norm_mat_loc, 1, GL_FALSE, normal_matrix);
-    glUniform1i(lighting_material_loc, RedPlastic);
+    glUniformMatrix4fv(lightingModelMatLoc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(lightingNormMatLoc, 1, GL_FALSE, normalMatrix);
+    glUniform1i(lightingMaterialLoc, RedPlastic);
 
     // Draw object using line loop
     glBindVertexArray(VAOs[obj]);
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(lighting_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vPos);
+    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVPos);
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][NormBuffer]);
-    glVertexAttribPointer(lighting_vNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vNorm);
+    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVNorm);
     // Draw as line loop
     glDrawArrays(GL_LINE_LOOP, 0, numVertices[obj]);
 }

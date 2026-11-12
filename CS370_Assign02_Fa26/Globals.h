@@ -17,9 +17,9 @@ GLint texCoords = 2;
 GLint colCoords = 4;
 
 // Global state
-mat4 proj_matrix;
-mat4 camera_matrix;
-mat4 model_matrix;
+mat4 projMatrix;
+mat4 cameraMatrix;
+mat4 modelMatrix;
 
 // Initial Camera
 vec3 eye = {3.0f, 3.0f, 3.0f};
@@ -40,7 +40,7 @@ GLfloat elevation = 53.5f;
 GLfloat del = 1.0f;
 GLfloat radius = 7.5f;
 GLfloat dr = 0.1f;
-GLfloat min_radius = 2.0f;
+GLfloat minRadius = 2.0f;
 
 // Global object variables
 GLdouble speed = (RAIL_LENGTH/4.0f);

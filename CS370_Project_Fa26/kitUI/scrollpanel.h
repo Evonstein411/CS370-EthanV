@@ -17,10 +17,10 @@ struct ScrollPanel : Panel {
         thumb = new Button(0, 0, scrollbarWidth - 2.0f, 20.0f, []() {}, "");
         thumb->color = vec4(0.55f, 0.55f, 0.55f, 1.0f);
         thumb->highlightedColor = vec4(0.85f, 0.85f, 0.85f, 1.0f);
-        addChild(thumb);   // hit-test + hide with parent; not a layout cell
+        add_child(thumb);   // hit-test + hide with parent; not a layout cell
 
-        thumb->onPress = [this]() { thumb->grab(); };
-        thumb->onDragCallback = [this](float mx, float my) { dragThumbTo(my); };
+        thumb->on_press = [this]() { thumb->grab(); };
+        thumb->on_drag_callback = [this](float mx, float my) { drag_thumb_to(my); };
     }
 
 
@@ -43,10 +43,10 @@ struct ScrollPanel : Panel {
         h = viewportHeight;
         w = assignedW;   // scrollbar stays inside the assigned width
 
-        placeThumb();
+        place_thumb();
     }
 
-    void placeThumb() {
+    void place_thumb() {
         if (!thumb) return;
         if (maxScroll <= 0.0f) { thumb->hide(); return; }
         thumb->show();
@@ -61,7 +61,7 @@ struct ScrollPanel : Panel {
         thumb->y = y + thumbY;
     }
 
-    void dragThumbTo(float my) {
+    void drag_thumb_to(float my) {
         if (!thumb || !thumb->grabbed || maxScroll <= 0.0f) return;
         float bottom = (float)hh - h - y;
         float travel = h - thumb->h;
@@ -69,11 +69,11 @@ struct ScrollPanel : Panel {
 
         float rel = 1.0f - (my - bottom - thumb->h * 0.5f) / travel;
         scrollOffset = std::clamp(rel * maxScroll, 0.0f, maxScroll);
-        placeThumb();
+        place_thumb();
     }
 
     bool hit(float mx, float my) const override {
-        if (hidden || isEffectivelyHidden()) return false;
+        if (hidden || is_effectively_hidden()) return false;
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w &&
                my >= bottom && my <= bottom + h;
@@ -87,15 +87,15 @@ struct ScrollPanel : Panel {
         if (mx >= trackX && maxScroll > 0.0f) {
             float rel =1.0f - (my - bottom) / h;
             scrollOffset = std::clamp(rel * maxScroll, 0.0f, maxScroll);
-            placeThumb();
+            place_thumb();
         }
     }
 
 
-    void drawSelf() override {
+    void draw_self() override {
         layout();
         float contentW = w - (maxScroll > 0.0f ? scrollbarWidth : 0.0f);
-        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(contentW, h, 1.0f);
+        modelMatrix = translate(x, (float)hh - h - y, 0.0f) * scale(contentW, h, 1.0f);
         draw_solid_hud_quad(color);
 
         int sx = (int)x;
@@ -104,28 +104,28 @@ struct ScrollPanel : Panel {
         glScissor(sx, sy, (int)contentW, (int)h);
     }
 
-    void drawChildren() override {
+    void draw_children() override {
         for (Widget* c : children)
             if (c != thumb)
                 c->draw();
     }
 
 
-    void drawAfter() override {
+    void draw_after() override {
         glDisable(GL_SCISSOR_TEST);
         if (maxScroll > 0.0f) {
             float bottom = (float)hh - h - y;
             float trackX = x + w - scrollbarWidth;
-            model_matrix = translate(trackX, bottom, 0.0f) * scale(scrollbarWidth, h, 1.0f);
+            modelMatrix = translate(trackX, bottom, 0.0f) * scale(scrollbarWidth, h, 1.0f);
             draw_solid_hud_quad(vec4(0.2f, 0.2f, 0.2f, 0.9f));
         }
         if (thumb && !thumb->hidden)
             thumb->draw();
     }
 
-    void scrollBy(float delta) {
+    void scroll_by(float delta) {
         scrollOffset = std::clamp(scrollOffset - delta, 0.0f, maxScroll);
-        placeThumb();
+        place_thumb();
     }
 };
 

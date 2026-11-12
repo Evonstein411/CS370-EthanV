@@ -90,8 +90,30 @@ int main(int argc, char**argv)
         // Update other events like input handling
         glfwPollEvents();
         GLdouble curTime = glfwGetTime();
+        GLdouble dt = curTime - elTime;
         if (animate) {
         	// TODO: Update scene graph nodes for animation
+            head_theta += (GLfloat)(dt * 45.0);
+            if (head_theta > 360.0f) head_theta -= 360.0f;
+            head.set_update_transform(
+               translate(0.0f, TORSO_HEIGHT * 0.5f + HEAD_HEIGHT, 0.0f)*
+               rotate(180.0f, vec3(1.0f, 0.0f, 0.0f)) *
+               rotate(head_theta, vec3(0.0f, 1.0f, 0.0f))
+            );
+
+            upper_left_arm_phi  += (GLfloat)(dt * 60.0);
+            upper_right_arm_phi -= (GLfloat)(dt * 60.0);
+            if (upper_left_arm_phi  > 360.0f) upper_left_arm_phi  -= 360.0f;
+            if (upper_right_arm_phi < 0.0f)   upper_right_arm_phi += 360.0f;
+
+            left_upper_arm.set_update_transform(
+                translate(TORSO_WIDTH * 0.5f + UPPER_ARM_WIDTH * 0.5f, TORSO_HEIGHT * 0.4f, 0.0f)
+                * rotate(upper_left_arm_phi, vec3(1.0f, 0.0f, 0.0f))
+            );
+            right_upper_arm.set_update_transform(
+                translate(-(TORSO_WIDTH * 0.5f + UPPER_ARM_WIDTH * 0.5f), TORSO_HEIGHT * 0.4f, 0.0f)
+                * rotate(upper_right_arm_phi, vec3(1.0f, 0.0f, 0.0f))
+            );
 
 
         }
@@ -142,10 +164,16 @@ void display( )
 
 void render_scene( ) {
     // TODO: Render scene graph
-    traverse_scene_graph(&base, mat4().identity());
+    traverse_scene_graph(&torso, mat4().identity());
 }
 
 void draw_background(GLuint b_obj, GLuint b_texid){
     // TODO: Draw background image
+    mat4 scale_m = scale(1.0f, 1.0f, 1.0f);
+    mat4 trans_m = translate(0.0f, 0.0f, 1.0f);
+    model_matrix = trans_m * scale_m;
 
+    glDisable(GL_DEPTH_TEST);
+    draw_tex_object(b_obj, b_texid);
+    glEnable(GL_DEPTH_TEST);
 }

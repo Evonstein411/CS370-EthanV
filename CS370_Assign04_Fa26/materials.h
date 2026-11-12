@@ -1,4 +1,4 @@
-enum MaterialNames {Skin, NumMaterials};
+enum MaterialNames {Skin, ArmMaterial, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
 vector<MaterialProperties> Materials;
 
@@ -12,13 +12,20 @@ MaterialProperties skin = {
 };
 
 // TODO: Add additional materials
+MaterialProperties armMat = {
+	vec4(0.15, 0.25, 0.10f, 1.0f),
+	vec4(0.20f, 0.70, 0.30f, 1.0f),
+	vec4(0.70f, 0.90f, 0.70f, 1.0f),
+	15.0f,
+	{0.0f, 0.0f, 0.0f}
+};
 
 void build_materials( ) {
     // Allocate Materials vector
     Materials.resize(NumMaterials);
     // TODO: Add materials to Materials vector
     Materials[Skin] = skin;
-
+	Materials[ArmMaterial] = armMat;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);

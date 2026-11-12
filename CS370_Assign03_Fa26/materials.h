@@ -1,7 +1,7 @@
 // TODO: Add RedAcrylic constant
 enum MaterialNames {Wood, SphereMaterial, CubeMaterial, OctMaterial, TorusMaterial, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
-vector<MaterialProperties> Materials;
+vector<MaterialProperties> materials;
 
 // Create wood material
 MaterialProperties wood = {
@@ -51,16 +51,16 @@ MaterialProperties torus_material = {
 
 void build_materials( ) {
     // Allocate Materials vector
-    Materials.resize(NumMaterials);
+    materials.resize(NumMaterials);
     // TODO: Add materials to Materials vector
-    Materials[Wood] = wood;
-	Materials[SphereMaterial] = sphere_material;
-	Materials[CubeMaterial] = cube_material;
-	Materials[OctMaterial] = oct_material;
-	Materials[TorusMaterial] = torus_material;
+    materials[Wood] = wood;
+	materials[SphereMaterial] = sphere_material;
+	materials[CubeMaterial] = cube_material;
+	materials[OctMaterial] = oct_material;
+	materials[TorusMaterial] = torus_material;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, Materials.size()*sizeof(MaterialProperties), Materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
 }

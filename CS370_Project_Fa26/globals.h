@@ -13,14 +13,14 @@ GLint texCoords = 2;
 GLint colCoords = 4;
 
 // Global state
-mat4 proj_matrix;
-mat4 camera_matrix;
-mat4 normal_matrix;
-mat4 model_matrix;
+mat4 projMatrix;
+mat4 cameraMatrix;
+mat4 normalMatrix;
+mat4 modelMatrix;
 
 // Initial Camera
 enum CameraMode {ORTHO, PERSPECTIVE};
-CameraMode camera_mode = ORTHO;
+CameraMode cameraMode = ORTHO;
 
 //Global camera state
 vec3 eye = {3.0f, 3.0f, 3.0f};
@@ -32,7 +32,7 @@ GLfloat radius = 17.5f;
 GLfloat del = 2.0f;
 GLfloat daz = 2.0f;
 GLfloat dr = 0.1f;
-GLfloat min_radius = 0.5f;
+GLfloat minRadius = 0.5f;
 
 //Ortho camera
 vec3 orthoEye = {3.0f, 3.0f, 3.0f};
@@ -49,7 +49,7 @@ GLfloat fpsStep = 0.25f;
 GLfloat fpsTurn = 2.0f;
 
 // Global object variables
-GLfloat sphere_angle = 0.0;
+GLfloat sphereAngle = 0.0;
 GLdouble elTime = 0.0;
 GLdouble rpm = 10.0;
 vec3 axis = {0.0f, 1.0f, 0.0f};

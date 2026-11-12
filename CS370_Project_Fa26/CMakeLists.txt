@@ -102,7 +102,7 @@ set(COMMON_FILES
         kitUI/filebrowser.h
         kitUI/canvas.h
         scene.h
-        SceneNodes.h
+        scenenode.h
 )
 
 #-------------------------------------------------------------

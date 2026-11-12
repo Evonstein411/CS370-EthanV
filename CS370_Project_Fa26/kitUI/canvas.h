@@ -17,16 +17,16 @@ struct Canvas : Widget {
         if (!item) return;
         item->x = x + localX;
         item->y = y + localY;
-        addChild(item);
+        add_child(item);
     }
 
-    void setBounds(float nx, float ny, float nw, float nh) {
+    void set_bounds(float nx, float ny, float nw, float nh) {
         x = nx; y = ny; w = nw; h = nh;
     }
 
-    void drawSelf() override {
+    void draw_self() override {
         if (!drawBackground) return;
-        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
+        modelMatrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
         draw_solid_hud_quad(color);
     }
 };

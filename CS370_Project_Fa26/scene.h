@@ -150,11 +150,11 @@ void load_scene_file(const string& path) {
             if (dt == SOLID_COLOR) {
                 obj->color = color;
                 obj->hasColor = true;
-                obj->initializeType(SOLID_COLOR);
+                obj->initialize_type(SOLID_COLOR);
             }
             else if (dt == MATERIAL) {
                 obj->materialProperties = mat;
-                obj->initializeType(MATERIAL);
+                obj->initialize_type(MATERIAL);
             }
             else if (dt == TEXTURE) {
                 // resolve texture name → GLuint
@@ -166,10 +166,10 @@ void load_scene_file(const string& path) {
                     }
                 }
                 obj->texture = tex;
-                obj->initializeType(TEXTURE);
+                obj->initialize_type(TEXTURE);
             }
             else {
-                obj->initializeType(NONE);
+                obj->initialize_type(NONE);
             }
 
             inObject = false;

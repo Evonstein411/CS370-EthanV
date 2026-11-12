@@ -137,8 +137,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
     // Clear window and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -159,10 +159,10 @@ void display( )
     }
 
     // Set projection matrix
-    proj_matrix = ortho(-8.0f*xratio, 8.0f*xratio, -8.0f*yratio, 8.0f*yratio, -8.0f, 8.0f);
+    projMatrix = ortho(-8.0f*xratio, 8.0f*xratio, -8.0f*yratio, 8.0f*yratio, -8.0f, 8.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
 	render_scene();
@@ -173,7 +173,7 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 scale2_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
@@ -193,8 +193,8 @@ void render_scene( ) {
         // TODO: Render copper plate
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
     }
     // Mode 3: Copper plate and donut
@@ -206,15 +206,15 @@ void render_scene( ) {
         // TODO: Render copper plate
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
 
         // TODO: Render donut
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
     }
@@ -227,33 +227,33 @@ void render_scene( ) {
         // TODO: Render copper plate
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
         // TODO: Render donut stack
 
         trans_matrix = translate(PLATE_X + 0.5f, 0.4f, PLATE_Z + 0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X + 0.5f, 0.4f, PLATE_Z - 0.75f );
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X - 0.75f, 0.4f, PLATE_Z - 0.0f );
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.9f, PLATE_Z);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
-        model_matrix = trans_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
     }
@@ -266,8 +266,8 @@ void render_scene( ) {
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * scale_matrix * rot_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix * rot_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
 
         // TODO: Render donut stack
@@ -276,32 +276,32 @@ void render_scene( ) {
         trans2_matrix = translate(0.5f, 0.0f, 0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.5f, 0.0f, -0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.0f, 0.5f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
     }
@@ -315,8 +315,8 @@ void render_scene( ) {
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * scale_matrix * rot_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix * rot_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
 
         // TODO: Render donut stack
@@ -325,40 +325,40 @@ void render_scene( ) {
         trans2_matrix = translate(0.5f, 0.0f, 0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.5f, 0.0f, -0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.0f, 0.5f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         // TODO: Render teapot
         trans_matrix = translate(MUG_X - 1.4f, 1.2f, MUG_Z + 1.4f);
         scale_matrix = scale(1.0f, 1.0f, 1.0f);
         rot_matrix = rotate(45.0f, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix =  trans_matrix * rot_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =  trans_matrix * rot_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Teapot, BlueAcrylic);
 
 
@@ -366,8 +366,8 @@ void render_scene( ) {
         trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =   trans_matrix * rot_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Mug, GreenGlass);
     }
     // Mode 8: Copper plate and stack of donuts with animated teapot and mug
@@ -380,8 +380,8 @@ void render_scene( ) {
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * scale_matrix * rot_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix * rot_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
 
         // TODO: Render donut stack
@@ -390,32 +390,32 @@ void render_scene( ) {
         trans2_matrix = translate(0.5f, 0.0f, 0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.5f, 0.0f, -0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.0f, 0.5f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         // TODO: Render teapot
@@ -423,8 +423,8 @@ void render_scene( ) {
         scale_matrix = scale(1.0f, 1.0f, 1.0f);
         rot_matrix = rotate(45.0f, vec3(0.0f, 1.0f, 0.0f));
 		rot2_matrix = rotate(pot_theta, vec3(0.0f, 0.0f, 1.0f));
-        model_matrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Teapot, BlueAcrylic);
 
 
@@ -432,8 +432,8 @@ void render_scene( ) {
         trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =   trans_matrix * rot_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Mug, GreenGlass);
 
 
@@ -445,8 +445,8 @@ void render_scene( ) {
         trans_matrix = translate(PLATE_X, 0.0f, PLATE_Z);
         scale_matrix = scale(2.0f, 0.1f, 2.0f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * scale_matrix * rot_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * scale_matrix * rot_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Plate, Copper);
 
         // TODO: Render donut stack
@@ -455,32 +455,32 @@ void render_scene( ) {
         trans2_matrix = translate(0.5f, 0.0f, 0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.5f, 0.0f, -0.75f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(-0.75f, 0.0f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         trans_matrix = translate(PLATE_X, 0.4f, PLATE_Z);
         trans2_matrix = translate(0.0f, 0.5f, 0.0f);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(plate_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix = trans_matrix * rot_matrix * trans2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Donut, Dough);
 
         // TODO: Render teapot
@@ -488,8 +488,8 @@ void render_scene( ) {
         scale_matrix = scale(1.0f, 1.0f, 1.0f);
         rot_matrix = rotate(45.0f, vec3(0.0f, 1.0f, 0.0f));
 		rot2_matrix = rotate(pot_theta, vec3(0.0f, 0.0f, 1.0f));
-        model_matrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =  trans_matrix* rot_matrix * rot2_matrix *  scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Teapot, BlueAcrylic);
 
 
@@ -497,15 +497,15 @@ void render_scene( ) {
         trans_matrix = translate(MUG_X, 0.0f, MUG_Z);
         scale_matrix = scale(0.5f, 0.5f, 0.5f);
         rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =   trans_matrix * rot_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Mug, GreenGlass);
 
 		// TODO: Render Coffee
         trans_matrix = translate(MUG_X, coffee_y*0.5f, MUG_Z);
         scale_matrix = scale(0.4f, coffee_y * 0.5f, 0.4f);
-        model_matrix =   trans_matrix * rot_matrix * scale_matrix;
-        normal_matrix = model_matrix.inverse().transpose();
+        modelMatrix =   trans_matrix * rot_matrix * scale_matrix;
+        normalMatrix = modelMatrix.inverse().transpose();
         draw_mat_object(Coffee, CoffeeBlack);
     }
 
@@ -515,10 +515,10 @@ void draw_table(){
     // Draw cube
     mat4 trans_matrix = translate(0.0f, -0.1f, 0.0f);
     mat4 scale_matrix = scale(TABLE_SIZE, 0.2f, TABLE_SIZE);
-    model_matrix = trans_matrix*scale_matrix;
-    normal_matrix = model_matrix.inverse().transpose();
+    modelMatrix = trans_matrix*scale_matrix;
+    normalMatrix = modelMatrix.inverse().transpose();
     draw_mat_object(Cube, Steel);
 
-    model_matrix = translate(0.0f, 0.12f, 0.0f);
+    modelMatrix = translate(0.0f, 0.12f, 0.0f);
     draw_axes(Axes, AxesColor);
 }

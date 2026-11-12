@@ -108,8 +108,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection and camera matrices
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
     // Clear window and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -132,9 +132,9 @@ void display( )
     /*       INSERT (b) CODE HERE             */
     /******************************************/
     // TODO: Set projection matrix
-    proj_matrix = ortho(-6.0f*xratio, 6.0f*xratio, -6.0f*yratio, 6.0f*yratio, -10.0, 10.0);
+    projMatrix = ortho(-6.0f*xratio, 6.0f*xratio, -6.0f*yratio, 6.0f*yratio, -10.0, 10.0);
     // TODO: Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
 
     // Render objects
@@ -148,7 +148,7 @@ void render_scene( ) {
     /*********************************************************/
     /* TODO: Declare additional transformation matrices here */
     /*********************************************************/
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 rot2_matrix = mat4().identity();
@@ -170,7 +170,7 @@ void render_scene( ) {
         /******************************************/
         // TODO: Add pyramid transformations
         trans_matrix = translate(-0.5f, 0.0f, -0.5f);
-        model_matrix = trans_matrix;
+        modelMatrix = trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
     }
     // (e) Two scaled pyramids and sphere located on circle
@@ -183,14 +183,14 @@ void render_scene( ) {
         trans_matrix = translate(-0.5f, 0.0f, -0.5f);
         scale_matrix = scale(1.0f, 2.0f, 1.0f);
         trans2_matrix = translate(-CIRCLE_RAD, 0.0f, 0.0f);
-        model_matrix = trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
         // TODO: Add second pyramid transformations       
         trans_matrix = translate(-0.5f, 0.0f, -0.5f);
         scale_matrix = scale(1.0f, 2.0f, 1.0f);
         trans2_matrix = translate(CIRCLE_RAD, 0.0f, 0.0f);
-        model_matrix = trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
 
@@ -198,7 +198,7 @@ void render_scene( ) {
         radius = sqrt(1/M_PI);
         trans_matrix = translate(0.0f, radius, 0.0f);
         scale_matrix = scale(radius, radius, radius);
-        model_matrix = trans_matrix*scale_matrix;
+        modelMatrix = trans_matrix*scale_matrix;
         draw_color_object(Sphere, SphereMagenta);
        
     }
@@ -213,7 +213,7 @@ void render_scene( ) {
         scale_matrix = scale(1.0f, 2.0f, 1.0f);
         trans2_matrix = translate(-CIRCLE_RAD, 0.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
-        model_matrix = trans3_matrix*trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
         // TODO: Add second pyramid transformations
@@ -221,7 +221,7 @@ void render_scene( ) {
         scale_matrix = scale(1.0f, 2.0f, 1.0f);
         trans2_matrix = translate(CIRCLE_RAD, 0.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
-        model_matrix = trans3_matrix*trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
 
@@ -230,7 +230,7 @@ void render_scene( ) {
         trans_matrix = translate(0.0f, radius, 0.0f);
         scale_matrix = scale(radius, radius, radius);
         trans2_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
-        model_matrix = trans2_matrix*trans_matrix*scale_matrix;
+        modelMatrix = trans2_matrix*trans_matrix*scale_matrix;
         draw_color_object(Sphere, SphereMagenta);
 
 
@@ -247,7 +247,7 @@ void render_scene( ) {
         trans2_matrix = translate(-CIRCLE_RAD, 0.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(spin_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
         // TODO: Add second pyramid transformations
@@ -256,7 +256,7 @@ void render_scene( ) {
         trans2_matrix = translate(CIRCLE_RAD, 0.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(-spin_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
 
@@ -265,7 +265,7 @@ void render_scene( ) {
         trans_matrix = translate(0.0f, radius, 0.0f);
         scale_matrix = scale(radius, radius, radius);
         trans2_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
-        model_matrix = trans2_matrix*trans_matrix*scale_matrix;
+        modelMatrix = trans2_matrix*trans_matrix*scale_matrix;
         draw_color_object(Sphere, SphereMagenta);
 
     }
@@ -282,7 +282,7 @@ void render_scene( ) {
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(spin_theta, vec3(0.0f, 1.0f, 0.0f));
         rot2_matrix = rotate(rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
         // TODO: Add second pyramid transformations
@@ -292,7 +292,7 @@ void render_scene( ) {
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(-spin_theta, vec3(0.0f, 1.0f, 0.0f));
         rot2_matrix = rotate(-rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
 
@@ -301,7 +301,7 @@ void render_scene( ) {
         trans_matrix = translate(0.0f, radius, 0.0f);
         scale_matrix = scale(radius, radius, radius);
         trans2_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
-        model_matrix = trans2_matrix*trans_matrix*scale_matrix;
+        modelMatrix = trans2_matrix*trans_matrix*scale_matrix;
         draw_color_object(Sphere, SphereMagenta);
 
     }
@@ -318,7 +318,7 @@ void render_scene( ) {
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(spin_theta, vec3(0.0f, 1.0f, 0.0f));
         rot2_matrix = rotate(rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
         // TODO: Add second pyramid transformations
@@ -328,7 +328,7 @@ void render_scene( ) {
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot_matrix = rotate(-spin_theta, vec3(0.0f, 1.0f, 0.0f));
         rot2_matrix = rotate(-rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
         draw_color_object(Pyramid, PyramidGrad);
 
 
@@ -339,7 +339,7 @@ void render_scene( ) {
         trans2_matrix = translate(-CIRCLE_RAD, 2.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot2_matrix = rotate(rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Sphere, SphereMagenta);
 
 
@@ -349,7 +349,7 @@ void render_scene( ) {
         trans2_matrix = translate(CIRCLE_RAD, 2.0f, 0.0f);
         trans3_matrix = translate(TARGET_X, TARGET_Y, TARGET_Z);
         rot2_matrix = rotate(-rev_theta, vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = trans3_matrix*rot2_matrix*trans2_matrix*scale_matrix*trans_matrix;
+        modelMatrix = trans3_matrix*rot2_matrix*trans2_matrix*scale_matrix*trans_matrix;
         draw_color_object(Sphere, SphereMagenta);
 
     }

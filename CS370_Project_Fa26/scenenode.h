@@ -5,4 +5,22 @@
 #ifndef CS370_FA26_SCENENODES_H
 #define CS370_FA26_SCENENODES_H
 
+
+
+
+struct SceneNode {
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
 #endif //CS370_FA26_SCENENODES_H

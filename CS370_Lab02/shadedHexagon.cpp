@@ -45,9 +45,9 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection matrix
-    proj_matrix = mat4().identity();    // Default projection matrix for now
-    camera_matrix = mat4().identity();  // Default camera matrix for now
-    model_matrix = mat4().identity();  // Default model matrix for now
+    projMatrix = mat4().identity();    // Default projection matrix for now
+    cameraMatrix = mat4().identity();  // Default camera matrix for now
+    modelMatrix = mat4().identity();  // Default model matrix for now
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT);

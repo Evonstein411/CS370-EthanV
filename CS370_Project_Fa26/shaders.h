@@ -5,172 +5,172 @@
 
 // Shader variables
 // Color shader program references
-GLuint color_program;
-GLuint color_vPos;
-GLuint color_vCol;
-GLuint color_proj_mat_loc;
-GLuint color_cam_mat_loc;
-GLuint color_model_mat_loc;
+GLuint colorProgram;
+GLuint colorVPos;
+GLuint colorVCol;
+GLuint colorProjMatLoc;
+GLuint colorCamMatLoc;
+GLuint colorModelMatLoc;
 
 // Light shader program references
-GLuint lighting_program;
-GLuint lighting_vPos;
-GLuint lighting_vNorm;
-GLuint lighting_camera_mat_loc;
-GLuint lighting_model_mat_loc;
-GLuint lighting_proj_mat_loc;
-GLuint lighting_norm_mat_loc;
-GLuint lighting_lights_block_idx;
-GLuint lighting_materials_block_idx;
-GLuint lighting_material_loc;
-GLuint lighting_num_lights_loc;
-GLuint lighting_light_on_loc;
-GLuint lighting_eye_loc;
+GLuint lightingProgram;
+GLuint lightingVPos;
+GLuint lightingVNorm;
+GLuint lightingCameraMatLoc;
+GLuint lightingModelMatLoc;
+GLuint lightingProjMatLoc;
+GLuint lightingNormMatLoc;
+GLuint lightingLightsBlockIdx;
+GLuint lightingMaterialsBlockIdx;
+GLuint lightingMaterialLoc;
+GLuint lightingNumLightsLoc;
+GLuint lightingLightOnLoc;
+GLuint lightingEyeLoc;
 
 // Object Texture shader program references
-GLuint texture_program;
-GLuint texture_vPos;
-GLuint texture_vTex;
-GLuint texture_proj_mat_loc;
-GLuint texture_camera_mat_loc;
-GLuint texture_model_mat_loc;
-GLuint texture_uv_scale_loc;
-GLuint texture_uv_offset_loc;
+GLuint textureProgram;
+GLuint textureVPos;
+GLuint textureVTex;
+GLuint textureProjMatLoc;
+GLuint textureCameraMatLoc;
+GLuint textureModelMatLoc;
+GLuint textureUvScaleLoc;
+GLuint textureUvOffsetLoc;
 
 //HUD Texture shader program
-GLuint hud_program;
-GLuint hud_vPos;
-GLuint hud_vTex;
-GLuint hud_proj_mat_loc;
-GLuint hud_camera_mat_loc;
-GLuint hud_model_mat_loc;
-GLuint hud_uv_scale_loc;
-GLuint hud_uv_offset_loc;
+GLuint hudProgram;
+GLuint hudVPos;
+GLuint hudVTex;
+GLuint hudProjMatLoc;
+GLuint hudCameraMatLoc;
+GLuint hudModelMatLoc;
+GLuint hudUvScaleLoc;
+GLuint hudUvOffsetLoc;
 
 //Mask shader program
-GLuint mask_program;
-GLuint mask_vPos;
-GLuint mask_proj_mat_loc;
-GLuint mask_cam_mat_loc;
-GLuint mask_model_mat_loc;
+GLuint maskProgram;
+GLuint maskVPos;
+GLuint maskProjMatLoc;
+GLuint maskCamMatLoc;
+GLuint maskModelMatLoc;
 
 //Outline shader refs
-GLuint outline_program;
-GLuint outline_vPos;
-GLuint outline_vTex;
-GLuint outline_mask_tex_loc;
-GLuint outline_texel_size_loc;
-GLuint outline_color_loc;
-GLuint outline_thickness_loc;
+GLuint outlineProgram;
+GLuint outlineVPos;
+GLuint outlineVTex;
+GLuint outlineMaskTexLoc;
+GLuint outlineTexelSizeLoc;
+GLuint outlineColorLoc;
+GLuint outlineThicknessLoc;
 
 // Color shader files
-const char *color_vertex_shader = "../../common/shaders/color.vert";
-const char *color_frag_shader = "../../common/shaders/color.frag";
+const char *colorVertexShader = "../../common/shaders/color.vert";
+const char *colorFragShader = "../../common/shaders/color.frag";
 
 // Lighting shader files
-const char *lighting_vertex_shader = "../../common/shaders/Phonglighting.vert";
-const char *lighting_frag_shader = "../../common/shaders/Phonglighting.frag";
+const char *lightingVertexShader = "../../common/shaders/Phonglighting.vert";
+const char *lightingFragShader = "../../common/shaders/Phonglighting.frag";
 
 // Texture shader files
-const char *texture_vertex_shader = "../../CS370_Project_Fa26/shaders/objectTexture.vert";
-const char *texture_frag_shader = "../../CS370_Project_Fa26/shaders/objectTexture.frag";
+const char *textureVertexShader = "../../CS370_Project_Fa26/shaders/objectTexture.vert";
+const char *textureFragShader = "../../CS370_Project_Fa26/shaders/objectTexture.frag";
 
 //HUD shader files
-const char *hud_vertex_shader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
-const char *hud_frag_shader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
+const char *hudVertexShader = "../../CS370_Project_Fa26/shaders/hudTexture.vert";
+const char *hudFragShader = "../../CS370_Project_Fa26/shaders/hudTexture.frag";
 
 //Outline shader files
-const char *outline_vertex_shader = "../../CS370_Project_Fa26/shaders/outline.vert";
-const char *outline_frag_shader   = "../../CS370_Project_Fa26/shaders/outline.frag";
+const char *outlineVertexShader = "../../CS370_Project_Fa26/shaders/outline.vert";
+const char *outlineFragShader   = "../../CS370_Project_Fa26/shaders/outline.frag";
 
 //Mask shader files
-const char *mask_vertex_shader = "../../CS370_Project_Fa26/shaders/mask.vert";
-const char *mask_frag_shader   = "../../CS370_Project_Fa26/shaders/mask.frag";
+const char *maskVertexShader = "../../CS370_Project_Fa26/shaders/mask.vert";
+const char *maskFragShader   = "../../CS370_Project_Fa26/shaders/mask.frag";
 
 
 void build_shaders() {
      // Load color shader
-	ShaderInfo color_shaders[] = { {GL_VERTEX_SHADER, color_vertex_shader},{GL_FRAGMENT_SHADER, color_frag_shader},{GL_NONE, NULL} };
-	color_program = LoadShaders(color_shaders);
-    color_vPos = glGetAttribLocation(color_program, "vPosition");
-    color_vCol = glGetAttribLocation(color_program, "vColor");
-    color_proj_mat_loc = glGetUniformLocation(color_program, "proj_matrix");
-    color_cam_mat_loc = glGetUniformLocation(color_program, "camera_matrix");
-    color_model_mat_loc = glGetUniformLocation(color_program, "model_matrix");
+	ShaderInfo color_shaders[] = { {GL_VERTEX_SHADER, colorVertexShader},{GL_FRAGMENT_SHADER, colorFragShader},{GL_NONE, NULL} };
+	colorProgram = LoadShaders(color_shaders);
+    colorVPos = glGetAttribLocation(colorProgram, "vPosition");
+    colorVCol = glGetAttribLocation(colorProgram, "vColor");
+    colorProjMatLoc = glGetUniformLocation(colorProgram, "proj_matrix");
+    colorCamMatLoc = glGetUniformLocation(colorProgram, "camera_matrix");
+    colorModelMatLoc = glGetUniformLocation(colorProgram, "model_matrix");
 
    // Load light shader
-    ShaderInfo lighting_shaders[] = { {GL_VERTEX_SHADER, lighting_vertex_shader},{GL_FRAGMENT_SHADER, lighting_frag_shader},{GL_NONE, NULL} };
-    lighting_program = LoadShaders(lighting_shaders);
-    lighting_vPos = glGetAttribLocation(lighting_program, "vPosition");
-    lighting_vNorm = glGetAttribLocation(lighting_program, "vNormal");
-    lighting_proj_mat_loc = glGetUniformLocation(lighting_program, "proj_matrix");
-    lighting_camera_mat_loc = glGetUniformLocation(lighting_program, "camera_matrix");
-    lighting_norm_mat_loc = glGetUniformLocation(lighting_program, "normal_matrix");
-    lighting_model_mat_loc = glGetUniformLocation(lighting_program, "model_matrix");
-    lighting_lights_block_idx = glGetUniformBlockIndex(lighting_program, "LightBuffer");
-    lighting_materials_block_idx = glGetUniformBlockIndex(lighting_program, "MaterialBuffer");
-    lighting_material_loc = glGetUniformLocation(lighting_program, "Material");
-    lighting_num_lights_loc = glGetUniformLocation(lighting_program, "NumLights");
-    lighting_light_on_loc = glGetUniformLocation(lighting_program, "LightOn");
-    lighting_eye_loc = glGetUniformLocation(lighting_program, "EyePosition");
+    ShaderInfo lighting_shaders[] = { {GL_VERTEX_SHADER, lightingVertexShader},{GL_FRAGMENT_SHADER, lightingFragShader},{GL_NONE, NULL} };
+    lightingProgram = LoadShaders(lighting_shaders);
+    lightingVPos = glGetAttribLocation(lightingProgram, "vPosition");
+    lightingVNorm = glGetAttribLocation(lightingProgram, "vNormal");
+    lightingProjMatLoc = glGetUniformLocation(lightingProgram, "proj_matrix");
+    lightingCameraMatLoc = glGetUniformLocation(lightingProgram, "camera_matrix");
+    lightingNormMatLoc = glGetUniformLocation(lightingProgram, "normal_matrix");
+    lightingModelMatLoc = glGetUniformLocation(lightingProgram, "model_matrix");
+    lightingLightsBlockIdx = glGetUniformBlockIndex(lightingProgram, "LightBuffer");
+    lightingMaterialsBlockIdx = glGetUniformBlockIndex(lightingProgram, "MaterialBuffer");
+    lightingMaterialLoc = glGetUniformLocation(lightingProgram, "Material");
+    lightingNumLightsLoc = glGetUniformLocation(lightingProgram, "NumLights");
+    lightingLightOnLoc = glGetUniformLocation(lightingProgram, "LightOn");
+    lightingEyeLoc = glGetUniformLocation(lightingProgram, "EyePosition");
 
     // Load object texture shaders
-    ShaderInfo texture_shaders[] = { {GL_VERTEX_SHADER, texture_vertex_shader},{GL_FRAGMENT_SHADER, texture_frag_shader},{GL_NONE, NULL} };
-    texture_program = LoadShaders(texture_shaders);
-    texture_vPos = glGetAttribLocation(texture_program, "vPosition");
-    texture_vTex = glGetAttribLocation(texture_program, "vTexCoord");
-    texture_proj_mat_loc = glGetUniformLocation(texture_program, "proj_matrix");
-    texture_camera_mat_loc = glGetUniformLocation(texture_program, "camera_matrix");
-    texture_model_mat_loc = glGetUniformLocation(texture_program, "model_matrix");
-	texture_uv_scale_loc = glGetUniformLocation(texture_program, "uvScale");
-	texture_uv_offset_loc = glGetUniformLocation(texture_program, "uvOffset");
+    ShaderInfo texture_shaders[] = { {GL_VERTEX_SHADER, textureVertexShader},{GL_FRAGMENT_SHADER, textureFragShader},{GL_NONE, NULL} };
+    textureProgram = LoadShaders(texture_shaders);
+    textureVPos = glGetAttribLocation(textureProgram, "vPosition");
+    textureVTex = glGetAttribLocation(textureProgram, "vTexCoord");
+    textureProjMatLoc = glGetUniformLocation(textureProgram, "proj_matrix");
+    textureCameraMatLoc = glGetUniformLocation(textureProgram, "camera_matrix");
+    textureModelMatLoc = glGetUniformLocation(textureProgram, "model_matrix");
+	textureUvScaleLoc = glGetUniformLocation(textureProgram, "uvScale");
+	textureUvOffsetLoc = glGetUniformLocation(textureProgram, "uvOffset");
 
 	// Load hud texture shaders
-	ShaderInfo hud_shaders[] = { {GL_VERTEX_SHADER, hud_vertex_shader},{GL_FRAGMENT_SHADER, hud_frag_shader},{GL_NONE, NULL} };
-	hud_program = LoadShaders(hud_shaders);
-	hud_vPos = glGetAttribLocation(hud_program, "vPosition");
-	hud_vTex = glGetAttribLocation(hud_program, "vTexCoord");
-	hud_proj_mat_loc = glGetUniformLocation(hud_program, "proj_matrix");
-	hud_camera_mat_loc = glGetUniformLocation(hud_program, "camera_matrix");
-	hud_model_mat_loc = glGetUniformLocation(hud_program, "model_matrix");
-	hud_uv_scale_loc = glGetUniformLocation(hud_program, "uvScale");
-	hud_uv_offset_loc = glGetUniformLocation(hud_program, "uvOffset");
+	ShaderInfo hud_shaders[] = { {GL_VERTEX_SHADER, hudVertexShader},{GL_FRAGMENT_SHADER, hudFragShader},{GL_NONE, NULL} };
+	hudProgram = LoadShaders(hud_shaders);
+	hudVPos = glGetAttribLocation(hudProgram, "vPosition");
+	hudVTex = glGetAttribLocation(hudProgram, "vTexCoord");
+	hudProjMatLoc = glGetUniformLocation(hudProgram, "proj_matrix");
+	hudCameraMatLoc = glGetUniformLocation(hudProgram, "camera_matrix");
+	hudModelMatLoc = glGetUniformLocation(hudProgram, "model_matrix");
+	hudUvScaleLoc = glGetUniformLocation(hudProgram, "uvScale");
+	hudUvOffsetLoc = glGetUniformLocation(hudProgram, "uvOffset");
 
 	// Load mask shaders
 	ShaderInfo mask_shaders[] = {
-		{GL_VERTEX_SHADER, mask_vertex_shader},
-		{GL_FRAGMENT_SHADER, mask_frag_shader},
+		{GL_VERTEX_SHADER, maskVertexShader},
+		{GL_FRAGMENT_SHADER, maskFragShader},
 		{GL_NONE, NULL}
 	};
-	mask_program = LoadShaders(mask_shaders);
-	mask_vPos         = glGetAttribLocation(mask_program, "vPosition");
-	mask_proj_mat_loc = glGetUniformLocation(mask_program, "proj_matrix");
-	mask_cam_mat_loc  = glGetUniformLocation(mask_program, "camera_matrix");
-	mask_model_mat_loc= glGetUniformLocation(mask_program, "model_matrix");
+	maskProgram = LoadShaders(mask_shaders);
+	maskVPos         = glGetAttribLocation(maskProgram, "vPosition");
+	maskProjMatLoc = glGetUniformLocation(maskProgram, "proj_matrix");
+	maskCamMatLoc  = glGetUniformLocation(maskProgram, "camera_matrix");
+	maskModelMatLoc= glGetUniformLocation(maskProgram, "model_matrix");
 
 	// Load outline (edge) shaders
 	ShaderInfo outline_shaders[] = {
-		{GL_VERTEX_SHADER, outline_vertex_shader},
-		{GL_FRAGMENT_SHADER, outline_frag_shader},
+		{GL_VERTEX_SHADER, outlineVertexShader},
+		{GL_FRAGMENT_SHADER, outlineFragShader},
 		{GL_NONE, NULL}
 	};
-	outline_program = LoadShaders(outline_shaders);
-	outline_vPos            = glGetAttribLocation(outline_program, "vPosition");
-	outline_vTex            = glGetAttribLocation(outline_program, "vTexCoord");
-	outline_mask_tex_loc    = glGetUniformLocation(outline_program, "maskTex");
-	outline_texel_size_loc  = glGetUniformLocation(outline_program, "texelSize");
-	outline_color_loc       = glGetUniformLocation(outline_program, "outlineColor");
-	outline_thickness_loc   = glGetUniformLocation(outline_program, "thickness");
+	outlineProgram = LoadShaders(outline_shaders);
+	outlineVPos            = glGetAttribLocation(outlineProgram, "vPosition");
+	outlineVTex            = glGetAttribLocation(outlineProgram, "vTexCoord");
+	outlineMaskTexLoc    = glGetUniformLocation(outlineProgram, "maskTex");
+	outlineTexelSizeLoc  = glGetUniformLocation(outlineProgram, "texelSize");
+	outlineColorLoc       = glGetUniformLocation(outlineProgram, "outlineColor");
+	outlineThicknessLoc   = glGetUniformLocation(outlineProgram, "thickness");
 
 	// Set texture unit for the mask sampler
-	glUseProgram(outline_program);
-	glUniform1i(outline_mask_tex_loc, 0);
+	glUseProgram(outlineProgram);
+	glUniform1i(outlineMaskTexLoc, 0);
 
-	glUseProgram(hud_program);
-	glUniform1i(glGetUniformLocation(hud_program, "tex"), 0);
+	glUseProgram(hudProgram);
+	glUniform1i(glGetUniformLocation(hudProgram, "tex"), 0);
 
-	glUseProgram(texture_program);
-	glUniform1i(glGetUniformLocation(texture_program, "tex"), 0);
+	glUseProgram(textureProgram);
+	glUniform1i(glGetUniformLocation(textureProgram, "tex"), 0);
 
 }
 

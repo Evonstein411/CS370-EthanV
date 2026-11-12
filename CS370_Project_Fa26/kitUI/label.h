@@ -14,7 +14,7 @@ struct Label : Widget {
         fit();
     }
 
-    void setText(string n_text) {
+    void set_text(string n_text) {
         label = n_text;
         fit();
     }
@@ -26,13 +26,13 @@ struct Label : Widget {
         prefH = h;
     }
 
-    void drawSelf() override {
-        model_matrix = mat4().identity();
+    void draw_self() override {
+        modelMatrix = mat4().identity();
         mat4 scale_matrix, trans_matrix = mat4().identity();
 
         scale_matrix = scale(w, h, 1.0f);
         trans_matrix = translate(x, (float)hh - h - y, 0.0f);
-        model_matrix = trans_matrix * scale_matrix;
+        modelMatrix = trans_matrix * scale_matrix;
         draw_solid_hud_quad(color);
 
         draw_string(label, x + 8.0f, y + 6.0f, textSize);

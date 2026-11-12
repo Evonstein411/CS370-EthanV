@@ -22,9 +22,9 @@ GLint texCoords = 2;
 GLint colCoords = 4;
 
 // Global state
-mat4 proj_matrix;
-mat4 camera_matrix;
-mat4 model_matrix;
+mat4 projMatrix;
+mat4 cameraMatrix;
+mat4 modelMatrix;
 
 // Initial Camera
 vec3 eye = {3.0f, 3.0f, 3.0f};

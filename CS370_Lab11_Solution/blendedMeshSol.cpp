@@ -96,8 +96,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -117,10 +117,10 @@ void display( )
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
     // Set projection matrix
-    proj_matrix = frustum(-4.0f*xratio, 4.0f*xratio, -4.0f*yratio, 4.0f*yratio, 2.0f, 6.0f);
+    projMatrix = frustum(-4.0f*xratio, 4.0f*xratio, -4.0f*yratio, 4.0f*yratio, 2.0f, 6.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
 	render_scene();
@@ -129,7 +129,7 @@ void display( )
 }
 
 void render_scene( ) {
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
 	mat4 scale_matrix = mat4().identity();
 	mat4 rot_matrix = mat4().identity();
 	mat4 trans_matrix = mat4().identity();
@@ -138,18 +138,18 @@ void render_scene( ) {
     // Set cube transformation matrix
     trans_matrix = translate(0.0f, -2.1f, 0.0f);
     scale_matrix = scale(6.0f, 0.2f, 6.0f);
-    model_matrix = trans_matrix*scale_matrix;
+    modelMatrix = trans_matrix*scale_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // Draw object
     draw_mat_object(Cube, WhitePlastic);
 
     // Set sphere transformation matrix
     trans_matrix = translate(sphere_pos);
     scale_matrix = scale(1.0f, 1.0f, 1.0f);
-    model_matrix = trans_matrix*scale_matrix;
+    modelMatrix = trans_matrix*scale_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // Draw object
     draw_mat_object(Sphere, RedPlastic);
 
@@ -158,18 +158,18 @@ void render_scene( ) {
     scale_matrix = scale(0.5f, 0.5f, 0.5f);
     rot_matrix = rotate(torus_theta, vec3(0.0f, 1.0f, 0.0f));
     tor_rot_matrix = rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
-    model_matrix = scale_matrix*rot_matrix*trans_matrix*tor_rot_matrix;
+    modelMatrix = scale_matrix*rot_matrix*trans_matrix*tor_rot_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // Draw object
     draw_mat_object(Torus, Brass);
 
     // Set (translucent) cylinder transformation matrix
     trans_matrix = translate(vec3(0.0f, -2.0f, 0.0f));
     scale_matrix = scale(1.0f, 1.0f, 1.0f);
-    model_matrix = trans_matrix*scale_matrix;
+    modelMatrix = trans_matrix*scale_matrix;
     // Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // TODO: Draw translucent object (disable depth mask)
     glDepthMask(GL_FALSE);
     draw_mat_object(Cone, RedAcrylic);

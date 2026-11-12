@@ -1,7 +1,7 @@
 // Light constants
 enum LightNames {WhitePointLight, RedSpotLight, CyanSpotLight, NumLights};
 GLuint LightBuffers[NumLightBuffers];
-vector<LightProperties> Lights;
+vector<LightProperties> lights;
 GLint lightOn[NumLights] = {0};
 
 /******************************************/
@@ -53,14 +53,14 @@ LightProperties cyanSpotLight = {
  
 void build_lights( ) {
 	// Allocate Lights vector
-	Lights.resize(NumLights);
+	lights.resize(NumLights);
     // Add lights to Lights vector
     if (mode > 0) {
         /******************************************/
         /*       INSERT (b) CODE HERE             */
         /******************************************/
         // TODO: Add white point light
-        Lights[WhitePointLight] = whitePointLight;
+        lights[WhitePointLight] = whitePointLight;
         lightOn[WhitePointLight] = 1;
 
         
@@ -70,7 +70,7 @@ void build_lights( ) {
         /*       INSERT (h) CODE HERE             */
         /******************************************/
         // TODO: Add red spotlight
-        Lights[RedSpotLight] = redSpotLight;
+        lights[RedSpotLight] = redSpotLight;
         lightOn[RedSpotLight] = 1;
     }
     if (mode > 6) {
@@ -78,7 +78,7 @@ void build_lights( ) {
         /*       INSERT (l) CODE HERE             */
         /******************************************/
         // TODO: Add cyan spotlight
-        Lights[CyanSpotLight] = cyanSpotLight;
+        lights[CyanSpotLight] = cyanSpotLight;
         lightOn[CyanSpotLight] = 1;
 
     }
@@ -90,5 +90,5 @@ void build_lights( ) {
 	// Create uniform buffer for lights
 	glGenBuffers(NumLightBuffers, LightBuffers);
 	glBindBuffer(GL_UNIFORM_BUFFER, LightBuffers[LightBuffer]);
-	glBufferData(GL_UNIFORM_BUFFER, Lights.size()*sizeof(LightProperties), Lights.data(), GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, lights.size()*sizeof(LightProperties), lights.data(), GL_STATIC_DRAW);
 }

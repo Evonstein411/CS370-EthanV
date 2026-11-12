@@ -2,12 +2,12 @@
 
 // Shader variables
 // Color shader program references
-GLuint color_program;
-GLuint color_vPos;
-GLuint color_vCol;
-GLuint color_proj_mat_loc;
-GLuint color_cam_mat_loc;
-GLuint color_model_mat_loc;
+GLuint colorProgram;
+GLuint colorVPos;
+GLuint colorVCol;
+GLuint colorProjMatLoc;
+GLuint colorCamMatLoc;
+GLuint colorModelMatLoc;
 
 // Dim shader program references
 GLuint dim_program;
@@ -19,25 +19,25 @@ GLuint dim_model_mat_loc;
 GLuint dim_factor_loc;
 
 // Color shader files
-const char *color_vertex_shader = "../../common/shaders/color.vert";
-const char *color_frag_shader = "../../common/shaders/color.frag";
+const char *colorVertexShader = "../../common/shaders/color.vert";
+const char *colorFragShader = "../../common/shaders/color.frag";
 const char *dim_vertex_shader = "../dim.vert";
 
 void build_shaders() {
     // Load color shader
-	ShaderInfo color_shaders[] = { {GL_VERTEX_SHADER, color_vertex_shader},{GL_FRAGMENT_SHADER, color_frag_shader},{GL_NONE, NULL} };
+	ShaderInfo color_shaders[] = { {GL_VERTEX_SHADER, colorVertexShader},{GL_FRAGMENT_SHADER, colorFragShader},{GL_NONE, NULL} };
 	// TODO: Build color shader program
-	color_program = LoadShaders(color_shaders);
+	colorProgram = LoadShaders(color_shaders);
 	// TODO: Get attribute shader variable references
-    color_vPos = glGetAttribLocation(color_program, "vPosition");
-    color_vCol = glGetAttribLocation(color_program, "vColor");
+    colorVPos = glGetAttribLocation(colorProgram, "vPosition");
+    colorVCol = glGetAttribLocation(colorProgram, "vColor");
 	// TODO: Get uniform shader variable references
-    color_proj_mat_loc = glGetUniformLocation(color_program, "proj_matrix");
-    color_cam_mat_loc = glGetUniformLocation(color_program, "camera_matrix");
-    color_model_mat_loc = glGetUniformLocation(color_program, "model_matrix");
+    colorProjMatLoc = glGetUniformLocation(colorProgram, "proj_matrix");
+    colorCamMatLoc = glGetUniformLocation(colorProgram, "camera_matrix");
+    colorModelMatLoc = glGetUniformLocation(colorProgram, "model_matrix");
 
     // Load dimmed shader
-    ShaderInfo dim_shaders[] = { {GL_VERTEX_SHADER, dim_vertex_shader},{GL_FRAGMENT_SHADER, color_frag_shader},{GL_NONE, NULL} };
+    ShaderInfo dim_shaders[] = { {GL_VERTEX_SHADER, dim_vertex_shader},{GL_FRAGMENT_SHADER, colorFragShader},{GL_NONE, NULL} };
 	// TODO: Build dimmed shader program
     dim_program = LoadShaders(dim_shaders);
 	// TODO: Get attribute shader variable references

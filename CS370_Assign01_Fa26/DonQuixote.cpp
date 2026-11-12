@@ -129,8 +129,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection matrix
-    proj_matrix = mat4().identity();    // Default projection matrix for now
-    camera_matrix = mat4().identity();  // Default camera matrix for now
+    projMatrix = mat4().identity();    // Default projection matrix for now
+    cameraMatrix = mat4().identity();  // Default camera matrix for now
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -143,7 +143,7 @@ void display( )
 }
 
 void render_scene( ) {
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
 
     // TODO: Declare transformation matrices
 	mat4 scale_matrix = mat4().identity();
@@ -162,7 +162,7 @@ void render_scene( ) {
 		for (int i = 0; i < NUM_STARS; i++) {
 			scale_matrix = scale(star_size[i], star_size[i], 0.0f);
 			trans_matrix = translate(star_pos[i][0], star_pos[i][1], 0.0f);
-			model_matrix = trans_matrix * scale_matrix;
+			modelMatrix = trans_matrix * scale_matrix;
 			draw_color_fan_object(Sun, MoonWhite);   // or FanBase / a StarWhite buffer
 		}
 	}
@@ -170,14 +170,14 @@ void render_scene( ) {
 	// TODO: Draw sun (using draw_color_fan_object)
 	scale_matrix = scale(0.10f, 0.10f, 0.0f);
 	trans_matrix = translate(sun_x, sun_y, 0.0f);
-	model_matrix = trans_matrix * scale_matrix;
+	modelMatrix = trans_matrix * scale_matrix;
 	draw_color_fan_object(Sun, sunColor);
 
 
     // TODO: Draw grass
 	scale_matrix = scale(1.0f, 0.4f, 1.0f);
 	trans_matrix = translate(0.0f, -1.6f, 0.0f);
-	model_matrix = scale_matrix*trans_matrix;
+	modelMatrix = scale_matrix*trans_matrix;
 	draw_color_object(Square, GrassGreen);
 
 
@@ -185,13 +185,13 @@ void render_scene( ) {
 
 	scale_matrix = scale(0.25f, 0.5f, 0.0f);
 	trans_matrix = translate(0.0f, 0.0f, 0.0f);
-	model_matrix = scale_matrix*trans_matrix;
+	modelMatrix = scale_matrix*trans_matrix;
 	draw_color_object(Square, HouseBrown);
 
 	//base
 	scale_matrix = scale(0.25f, 0.30f, 0.0f);
 	trans_matrix = translate(0.0f, -1.5f, 0.0f);
-	model_matrix = scale_matrix*trans_matrix;
+	modelMatrix = scale_matrix*trans_matrix;
 	draw_color_object(Square, StoneBase);
 
 	//base sides
@@ -200,19 +200,19 @@ void render_scene( ) {
 	scale_matrix = scale(0.05f, 0.30f, 0.0f);
 	rot_matrix = rotate(90.0f, 0.0f, 0.0f, 1.0f);
 	trans_matrix = translate(-1.5f, -6.0f, 0.0f);
-	model_matrix = scale_matrix*rot_matrix*trans_matrix;
+	modelMatrix = scale_matrix*rot_matrix*trans_matrix;
 	draw_color_object(Triangle, StoneSide);
 	//left side
 	scale_matrix = scale(0.05f, 0.30f, 0.0f);
 	rot_matrix = rotate(180.0f, 0.0f, 0.0f, 1.0f);
 	trans_matrix = translate(6.0f, 1.5f, 0.0f);
-	model_matrix = scale_matrix*rot_matrix*trans_matrix;
+	modelMatrix = scale_matrix*rot_matrix*trans_matrix;
 	draw_color_object(Triangle, StoneSide);
 
     // TODO: Draw roof
 	scale_matrix = scale(0.25f, 0.15f, 0.0f);
 	trans_matrix = translate(0.0f, 4.30f, 0.0f);
-	model_matrix = scale_matrix*trans_matrix;
+	modelMatrix = scale_matrix*trans_matrix;
 	draw_color_object(Trapezoid, RoofRed);
 
 
@@ -220,7 +220,7 @@ void render_scene( ) {
 	//base
 	scale_matrix = scale(0.025f, 0.025f, 0.0f);
 	trans_matrix = translate(0.0f, 0.6f, 0.0f);
-	model_matrix = trans_matrix*scale_matrix;
+	modelMatrix = trans_matrix*scale_matrix;
 	draw_color_fan_object(Sun, FanBase);
 
 
@@ -229,14 +229,14 @@ void render_scene( ) {
 	trans_matrix = translate(-1.0f, -1.0f, 0.0f);
 	rot_matrix = rotate(0.0f+ fan_angle, 0.0f, 0.0f, 1.0f);
 	trans2_matrix = translate(0.0f, 0.6f, 0.0f);
-	model_matrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+	modelMatrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
 	draw_color_object(Triangle, FanBlue);
 
 	scale_matrix = scale(0.3f, 0.1f, 0.0f);
 	trans_matrix = translate(-1.0f, -1.0f, 0.0f);
 	rot_matrix = rotate(120.0f+ fan_angle, 0.0f, 0.0f, 1.0f);
 	trans2_matrix = translate(0.0f, 0.6f, 0.0f);
-	model_matrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+	modelMatrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
 	draw_color_object(Triangle, FanBlue);
 
 
@@ -244,7 +244,7 @@ void render_scene( ) {
 	trans_matrix = translate(-1.0f, -1.0f, 0.0f);
 	rot_matrix = rotate(240.0f+ fan_angle, 0.0f, 0.0f, 1.0f);
 	trans2_matrix = translate(0.0f, 0.6f, 0.0f);
-	model_matrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
+	modelMatrix = trans2_matrix*rot_matrix*scale_matrix*trans_matrix;
 	draw_color_object(Triangle, FanBlue);
 }
 

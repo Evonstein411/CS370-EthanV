@@ -8,8 +8,8 @@ void debugTex(GLuint obj, GLuint tex)
     glViewport(0, 0, ww, hh);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
-    model_matrix = rotate(180.0f, vec3(0.0f, 0.0f, 1.0f))*rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
+    modelMatrix = rotate(180.0f, vec3(0.0f, 0.0f, 1.0f))*rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
     draw_tex_object(obj, tex);
 }

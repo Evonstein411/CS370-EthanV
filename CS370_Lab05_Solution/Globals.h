@@ -11,9 +11,9 @@ GLint texCoords = 2;
 GLint colCoords = 4;
 
 // Global state
-mat4 proj_matrix;
-mat4 camera_matrix;
-mat4 model_matrix;
+mat4 projMatrix;
+mat4 cameraMatrix;
+mat4 modelMatrix;
 
 // Global object variables
 GLfloat cube_angle = 0.0;

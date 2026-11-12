@@ -27,20 +27,20 @@ int color_to_index(unsigned char r, unsigned char g, unsigned char b) {
 
 // Helper that draws one object with a raw color buffer ID (not an index into ColorBuffers)
 void draw_picking_object(GLuint mesh, GLuint colorBuffer) {
-    glUseProgram(color_program);
-    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     glBindVertexArray(VAOs[mesh]);
 
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[mesh][PosBuffer]);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVCol);
 
     glDrawArrays(GL_TRIANGLES, 0, numVertices[mesh]);
 }
@@ -62,7 +62,7 @@ SceneObject* pick_scene_object(float mx, float my) {
         if (obj->mesh == (GLuint)-1)
             continue;
 
-        model_matrix = obj->getModelMatrix();
+        modelMatrix = obj->get_model_matrix();
 
         // Fill the color buffer with the index color
         vec4 col = index_to_color((int)i + 1);
@@ -86,44 +86,44 @@ SceneObject* pick_scene_object(float mx, float my) {
         float offset = length * 2.0f;
 
         mat4 trans = translate(selectedObject->position);
-        mat4 trans_offset = translate(0.0f, offset, 0.0f);
+        mat4 transOffset = translate(0.0f, offset, 0.0f);
         mat4 scale = vmath::scale(size, length, size);
 
-        auto drawPickArrow = [&](const mat4& model, int id) {
-            model_matrix = model;
+        auto draw_pick_arrow = [&](const mat4& model, int id) {
+            modelMatrix = model;
             vec4 col = index_to_color(id);
 
             vector<vec4> colors(gizmoArrowNumVerts, col);
             glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
             glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec4), colors.data(), GL_DYNAMIC_DRAW);
 
-            glUseProgram(color_program);
-            glUniformMatrix4fv(color_proj_mat_loc,  1, GL_FALSE, proj_matrix);
-            glUniformMatrix4fv(color_cam_mat_loc,   1, GL_FALSE, camera_matrix);
-            glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+            glUseProgram(colorProgram);
+            glUniformMatrix4fv(colorProjMatLoc,  1, GL_FALSE, projMatrix);
+            glUniformMatrix4fv(colorCamMatLoc,   1, GL_FALSE, cameraMatrix);
+            glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
             glBindVertexArray(gizmoArrowVAO);
             glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
-            glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(color_vPos);
+            glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(colorVPos);
 
             glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
-            glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(color_vCol);
+            glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(colorVCol);
 
             glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
         };
 
         // X
         mat4 rotate = vmath::rotate(90.0f, vec3(0,0,1));
-        drawPickArrow(trans * rotate * trans_offset * scale, GIZMO_X);
+        draw_pick_arrow(trans * rotate * transOffset * scale, GIZMO_X);
 
         // Y
-        drawPickArrow(trans * trans_offset * scale, GIZMO_Y);
+        draw_pick_arrow(trans * transOffset * scale, GIZMO_Y);
 
         // Z
         rotate = vmath::rotate(-90.0f, vec3(1,0,0));
-        drawPickArrow(trans * rotate * trans_offset * scale, GIZMO_Z);
+        draw_pick_arrow(trans * rotate * transOffset * scale, GIZMO_Z);
 
         glEnable(GL_DEPTH_TEST);
     }

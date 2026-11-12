@@ -17,7 +17,7 @@ const char * torusFile = "../../common/models/torus.obj";
 
 
 void load_model(const char * filename, GLuint obj);
-void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer);
+void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer);
 void build_cube_gradient(GLuint num_vertices, GLuint buffer);
 
 void build_geometry( )
@@ -67,12 +67,12 @@ void load_model(const char * filename, GLuint obj) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer) {
+void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer) {
     vector<vec4> obj_colors;
-    for (int i = 0; i < num_vertices; i++) {
+    for (int i = 0; i < numVertices; i++) {
         obj_colors.push_back(color);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[buffer]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*colCoords*num_vertices, obj_colors.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*colCoords*numVertices, obj_colors.data(), GL_STATIC_DRAW);
 }

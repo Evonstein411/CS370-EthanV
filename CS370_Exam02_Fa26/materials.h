@@ -1,7 +1,7 @@
 // Material constants
 enum MaterialNames {Steel, Copper, Dough, BlueAcrylic, GreenGlass, CoffeeBlack, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
-vector<MaterialProperties> Materials;
+vector<MaterialProperties> materials;
 
 // Create grey plastic material
 MaterialProperties steel = {
@@ -71,29 +71,29 @@ MaterialProperties coffeeBlack = {
 
 void build_materials( ) {
     // Allocate Materials vector
-    Materials.resize(NumMaterials);
+    materials.resize(NumMaterials);
     // Add materials to Materials vector
-    Materials[Steel] = steel;
+    materials[Steel] = steel;
     if (mode >= 2) {
         /******************************************/
         /*       INSERT (c) CODE HERE             */
         /******************************************/
-        Materials[Copper] = copper;
+        materials[Copper] = copper;
     }
 
     if (mode >= 3) {
         /******************************************/
         /*       INSERT (e) CODE HERE             */
         /******************************************/
-        Materials[Dough] = dough;
+        materials[Dough] = dough;
     }
 
     if (mode >= 7) {
         /******************************************/
         /*       INSERT (i) CODE HERE             */
         /******************************************/
-        Materials[BlueAcrylic]= blueAcrylic;
-        Materials[GreenGlass] = greenGlass;
+        materials[BlueAcrylic]= blueAcrylic;
+        materials[GreenGlass] = greenGlass;
 
     }
 
@@ -101,7 +101,7 @@ void build_materials( ) {
         /******************************************/
         /*       INSERT (n) CODE HERE             */
         /******************************************/
-		Materials[CoffeeBlack] = coffeeBlack;
+		materials[CoffeeBlack] = coffeeBlack;
        
     }
 
@@ -112,5 +112,5 @@ void build_materials( ) {
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, Materials.size()*sizeof(MaterialProperties), Materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
 }

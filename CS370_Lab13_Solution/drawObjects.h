@@ -2,16 +2,16 @@
 
 void draw_tex_object(GLuint obj, GLuint texture){
     // Select shader program
-    glUseProgram(texture_program);
+    glUseProgram(textureProgram);
 
     // Pass projection matrix to shader
-    glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(textureProjMatLoc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(texture_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(textureCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(texture_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(textureModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     // TODO: Bind texture
     glActiveTexture(GL_TEXTURE0);
@@ -22,13 +22,13 @@ void draw_tex_object(GLuint obj, GLuint texture){
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(texture_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vPos);
+    glVertexAttribPointer(textureVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVPos);
 
     // Bind texture object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][TexBuffer]);
-    glVertexAttribPointer(texture_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vTex);
+    glVertexAttribPointer(textureVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVTex);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);

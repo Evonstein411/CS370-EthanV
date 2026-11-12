@@ -22,27 +22,27 @@ void draw_mat_shadow_object(GLuint obj, GLuint material){
         glUseProgram(phong_shadow_program);
 
         // Pass object projection and camera matrices to shader
-        glUniformMatrix4fv(phong_shadow_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-        glUniformMatrix4fv(phong_shadow_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+        glUniformMatrix4fv(phong_shadow_proj_mat_loc, 1, GL_FALSE, projMatrix);
+        glUniformMatrix4fv(phong_shadow_camera_mat_loc, 1, GL_FALSE, cameraMatrix);
 
         // Bind lights
         glUniformBlockBinding(phong_shadow_program, phong_shadow_lights_block_idx, 0);
-        glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size() * sizeof(LightProperties));
+        glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size() * sizeof(LightProperties));
 
         // Bind materials
         glUniformBlockBinding(phong_shadow_program, phong_shadow_materials_block_idx, 1);
         glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0,
-                          Materials.size() * sizeof(MaterialProperties));
+                          materials.size() * sizeof(MaterialProperties));
 
         // Set camera position
         glUniform3fv(phong_shadow_eye_loc, 1, eye);
 
         // Set num lights and lightOn
-        glUniform1i(phong_shadow_num_lights_loc, Lights.size());
+        glUniform1i(phong_shadow_num_lights_loc, lights.size());
         glUniform1iv(phong_shadow_light_on_loc, NumLights, lightOn);
 
         // Pass normal matrix to shader
-        glUniformMatrix4fv(phong_shadow_norm_mat_loc, 1, GL_FALSE, normal_matrix);
+        glUniformMatrix4fv(phong_shadow_norm_mat_loc, 1, GL_FALSE, normalMatrix);
 
         // Pass material index to shader
         glUniform1i(phong_shadow_material_loc, material);
@@ -62,7 +62,7 @@ void draw_mat_shadow_object(GLuint obj, GLuint material){
     }
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(model_mat_loc, 1, GL_FALSE, modelMatrix);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);

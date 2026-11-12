@@ -8,29 +8,29 @@ GLuint highlightColorBuffer = 0;
 
 void draw_color_object(GLuint obj, GLuint color) {
     // Select shader program
-    glUseProgram(color_program);
+    glUseProgram(colorProgram);
 
     // Pass projection matrix to shader
-    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVPos);
 
     // Bind color buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[color]);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVCol);
 
     // Draw geometry
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
@@ -38,53 +38,53 @@ void draw_color_object(GLuint obj, GLuint color) {
 
 void draw_mat_object(GLuint obj, GLuint material){
     // Select shader program
-    glUseProgram(lighting_program);
+    glUseProgram(lightingProgram);
 
     // Pass projection and camera matrices to shader
-    glUniformMatrix4fv(lighting_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(lighting_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(lightingProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(lightingCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Bind lights
-    glUniformBlockBinding(lighting_program, lighting_lights_block_idx, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size()*sizeof(LightProperties));
+    glUniformBlockBinding(lightingProgram, lightingLightsBlockIdx, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size()*sizeof(LightProperties));
 
     // Bind materials
-    glUniformBlockBinding(lighting_program, lighting_materials_block_idx, 1);
-    size_t total = Materials.size() + DynamicMaterials.size();
+    glUniformBlockBinding(lightingProgram, lightingMaterialsBlockIdx, 1);
+    size_t total = materials.size() + dynamicMaterials.size();
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0,
                       total * sizeof(MaterialProperties));
     // Set camera position
-    glUniform3fv(lighting_eye_loc, 1, eye);
+    glUniform3fv(lightingEyeLoc, 1, eye);
 
     // Set num lights and lightOn
-    glUniform1i(lighting_num_lights_loc, Lights.size());
-    glUniform1iv(lighting_light_on_loc, NumLights, lightOn);
+    glUniform1i(lightingNumLightsLoc, lights.size());
+    glUniform1iv(lightingLightOnLoc, NumLights, lightOn);
 
     // Pass model matrix and normal matrix to shader
-    glUniformMatrix4fv(lighting_model_mat_loc, 1, GL_FALSE, model_matrix);
-    glUniformMatrix4fv(lighting_norm_mat_loc, 1, GL_FALSE, normal_matrix);
+    glUniformMatrix4fv(lightingModelMatLoc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(lightingNormMatLoc, 1, GL_FALSE, normalMatrix);
 
     // Pass material index to shader
-    glUniform1i(lighting_material_loc, material);
+    glUniform1i(lightingMaterialLoc, material);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(lighting_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vPos);
+    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVPos);
 
     // Bind normal object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][NormBuffer]);
-    glVertexAttribPointer(lighting_vNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vNorm);
+    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVNorm);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
-void drawGizmoArrow(const vec4& color) {
+void draw_gizmo_arrow(const vec4& color) {
     if (gizmoArrowVAO == 0) return;
 
     // Re-use your existing highlightColorBuffer or make a tiny dedicated one
@@ -95,20 +95,20 @@ void drawGizmoArrow(const vec4& color) {
     glBindBuffer(GL_ARRAY_BUFFER, gizmoColorBuffer);
     glBufferData(GL_ARRAY_BUFFER, cols.size() * sizeof(vec4), cols.data(), GL_DYNAMIC_DRAW);
 
-    glUseProgram(color_program);
-    glUniformMatrix4fv(color_proj_mat_loc,  1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(color_cam_mat_loc,   1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc,  1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc,   1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     glBindVertexArray(gizmoArrowVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, gizmoColorBuffer);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVCol);
 
     glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
 }
@@ -117,16 +117,16 @@ void drawGizmoArrow(const vec4& color) {
 
 void draw_tex_object(GLuint obj, GLuint textureID){
     // Select shader program
-    glUseProgram(texture_program);
+    glUseProgram(textureProgram);
 
     // Pass projection matrix to shader
-    glUniformMatrix4fv(texture_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(textureProjMatLoc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(texture_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(textureCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(texture_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(textureModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     // TODO: Bind texture
     glActiveTexture(GL_TEXTURE0);
@@ -137,13 +137,13 @@ void draw_tex_object(GLuint obj, GLuint textureID){
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(texture_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vPos);
+    glVertexAttribPointer(textureVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVPos);
 
     // Bind texture object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][TexBuffer]);
-    glVertexAttribPointer(texture_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(texture_vTex);
+    glVertexAttribPointer(textureVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(textureVTex);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
@@ -167,30 +167,30 @@ void draw_solid_hud_quad(vec4 color) {
     glBufferSubData(GL_ARRAY_BUFFER, 0, cols.size() * sizeof(vec4), cols.data());
 
     //draw color object
-    glUseProgram(color_program);
-    glUniformMatrix4fv(color_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(color_cam_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(color_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     glBindVertexArray(HUD_VAOs[HUDQuad]);
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][PosBuffer]);
-    glVertexAttribPointer(color_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vPos);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
-    glVertexAttribPointer(color_vCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(color_vCol);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(colorVCol);
 
     glDrawArrays(GL_TRIANGLES, 0, HUD_numVertices[HUDQuad]);
 }
 
 
 void draw_text_quad() {
-    glUseProgram(hud_program);
+    glUseProgram(hudProgram);
 
-    glUniformMatrix4fv(hud_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(hud_camera_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(hud_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(hudProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(hudCameraMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(hudModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fontTextureID);
@@ -198,12 +198,12 @@ void draw_text_quad() {
     glBindVertexArray(HUD_VAOs[HUDTextQuad]);
 
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
-    glVertexAttribPointer(hud_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(hud_vPos);
+    glVertexAttribPointer(hudVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(hudVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
-    glVertexAttribPointer(hud_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(hud_vTex);
+    glVertexAttribPointer(hudVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(hudVTex);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

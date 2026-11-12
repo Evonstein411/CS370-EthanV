@@ -1,7 +1,7 @@
 // TODO: Add RedAcrylic constant
 enum MaterialNames {Brass, RedPlastic, WhitePlastic, RedAcrylic, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
-vector<MaterialProperties> Materials;
+vector<MaterialProperties> materials;
 
 // Create brass material
 MaterialProperties brass = {
@@ -42,16 +42,16 @@ MaterialProperties redAcrylic = {
 
 void build_materials( ) {
     // Allocate Materials vector
-    Materials.resize(NumMaterials);
+    materials.resize(NumMaterials);
     // Add materials to Materials vector
-    Materials[Brass] = brass;
-    Materials[RedPlastic] = redPlastic;
-    Materials[WhitePlastic] = whitePlastic;
+    materials[Brass] = brass;
+    materials[RedPlastic] = redPlastic;
+    materials[WhitePlastic] = whitePlastic;
     // TODO: Add red acrylic to Materials vector
-    Materials[RedAcrylic] = redAcrylic;
+    materials[RedAcrylic] = redAcrylic;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, Materials.size()*sizeof(MaterialProperties), Materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
 }

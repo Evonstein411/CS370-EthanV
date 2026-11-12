@@ -48,8 +48,8 @@ struct Widget {
     bool stretched = false;
     int priority = 0; //higher priority value drawn first
 
-    std::function<void(float, float)> onDragCallback;
-    std::function<void()> onReleaseCallback;
+    std::function<void(float, float)> on_drag_callback;
+    std::function<void()> on_release_callback;
 
     vector<Widget*> children; //list of all current children
     Widget* parent = nullptr; //pointer to parent if have one
@@ -64,33 +64,33 @@ struct Widget {
         if (it != widgets.end())
             widgets.erase(it);
 
-        if (parent) parent->removeChild(this); //if im a child remove myself from parent
+        if (parent) parent->remove_child(this); //if im a child remove myself from parent
         for (Widget* c : children) c->parent = nullptr; //clear self from parent of all children
         children.clear(); //clear children list
 
     }
 
-    virtual void drawSelf() = 0; //defined per widget
-    virtual void drawAfter(){}
+    virtual void draw_self() = 0; //defined per widget
+    virtual void draw_after(){}
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
     virtual void on_click(float mx, float my) {}
     virtual void on_hover(float mx, float my){}
 
     virtual bool hit(float mx, float my) const {
-        if (hidden || isEffectivelyHidden()) return false;
+        if (hidden || is_effectively_hidden()) return false;
         float bottom = (float)hh - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
 
     //function for drawing children
-    virtual void drawChildren() {
+    virtual void draw_children() {
         for (Widget* c : children) {
             c->draw();
         }
     }
 
-    void markForDelete() {
+    void mark_for_delete() {
         if (pendingDelete) return;
         pendingDelete = true;
         hidden = true;
@@ -101,21 +101,21 @@ struct Widget {
         if(hidden) {
             return;
         }
-        drawSelf();
-        drawChildren();
-        drawAfter();
+        draw_self();
+        draw_children();
+        draw_after();
 
     }
 
     //interaction
 
     virtual void on_drag(float mx, float my) {
-        if (onDragCallback) {onDragCallback(mx, my);}
+        if (on_drag_callback) {on_drag_callback(mx, my);}
     }
 
     virtual void on_release() {
         grabbed = false;
-        if (onReleaseCallback) onReleaseCallback();
+        if (on_release_callback) on_release_callback();
     }
 
     void grab() {
@@ -124,59 +124,59 @@ struct Widget {
 
 
     //parent child relations
-    Widget* getParent() {
+    Widget* get_parent() {
         return parent;
     }
 
-    void addChild(Widget* child) {
+    void add_child(Widget* child) {
         if(child == this) return; //cant child self
 
         //remove from any prior parent
-        if (child->isChild()) {
-            child->getParent()->removeChild(child);
+        if (child->is_child()) {
+            child->get_parent()->remove_child(child);
         }
 
         child->parent = this;
         children.push_back(child);
     }
 
-    void removeChild(Widget* child) {
+    void remove_child(Widget* child) {
         if(!child) return; //do nothing if child doesn't exist
         auto searched_child = std::find(children.begin(), children.end(), child);
         if (searched_child == children.end()) return; //failed to find child do nothing
         children.erase(searched_child); //found child remove from children list
-        if (child->getParent() == this) { //remove self from parent of prior child
+        if (child->get_parent() == this) { //remove self from parent of prior child
             child->parent = nullptr;
         }
     }
 
 
     //only remove and add child directly write to parent to prevent desync of child and parent status
-    void setParent(Widget* new_parent) {
+    void set_parent(Widget* new_parent) {
         if(new_parent == parent) return; //do nothing if already parent
         if(new_parent) {
-            new_parent->addChild(this);   //add to new parent
+            new_parent->add_child(this);   //add to new parent
         }
         else if(parent) {
-            parent->removeChild(this);
+            parent->remove_child(this);
         }
     }
 
-    bool isChild() const {
+    bool is_child() const {
         return parent != nullptr;
     }
 
 
     //visibility status
-    void setPriority(int new_priority) {
-        priority = new_priority;
+    void set_priority(int newPriority) {
+        priority = newPriority;
     }
 
-    bool isHidden() {
+    bool is_hidden() {
         return hidden;
     }
 
-    bool isEffectivelyHidden() const {
+    bool is_effectively_hidden() const {
         for (const Widget* p = parent; p != nullptr; p = p->parent) {
             if (p->hidden) return true;
         }
@@ -191,7 +191,7 @@ struct Widget {
         hidden = false;
     }
 
-    void setHidden(bool new_hidden) {
+    void set_hidden(bool new_hidden) {
         hidden = new_hidden;
     }
 
@@ -203,7 +203,7 @@ struct Widget {
 inline void destroy_widget(Widget* w) {
     if (!w || w->pendingDelete) return;
     if (handlingEvent) {
-        w->markForDelete();
+        w->mark_for_delete();
         trash.push_back(w);
     } else {
         delete w;

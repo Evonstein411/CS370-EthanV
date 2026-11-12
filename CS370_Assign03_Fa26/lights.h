@@ -1,6 +1,6 @@
 enum LightNames {WhitePointLight, SphereLight, CubeLight, OctLight, TorusLight, NumLights};
 GLuint LightBuffers[NumLightBuffers];
-vector<LightProperties> Lights;
+vector<LightProperties> lights;
 GLint lightOn[NumLights] = {0};
 
 // Create white point light
@@ -72,25 +72,25 @@ LightProperties torusLight = {
 
 void build_lights( ) {
 	// Allocate Lights vector
-	Lights.resize(NumLights);
+	lights.resize(NumLights);
     // TODO: Add lights to Lights vector
-    Lights[WhitePointLight] = whitePointLight;
+    lights[WhitePointLight] = whitePointLight;
     lightOn[WhitePointLight] = 1;
 
-	Lights[SphereLight] = sphereLight;
+	lights[SphereLight] = sphereLight;
 	lightOn[SphereLight] = 1;
 
-	Lights[CubeLight] = cubeLight;
+	lights[CubeLight] = cubeLight;
 	lightOn[CubeLight] = 1;
 
-	Lights[OctLight] = octLight;
+	lights[OctLight] = octLight;
 	lightOn[OctLight] = 1;
 
-	Lights[TorusLight] =torusLight;
+	lights[TorusLight] =torusLight;
 	lightOn[TorusLight] = 1;
 
 	// Create uniform buffer for lights
 	glGenBuffers(NumLightBuffers, LightBuffers);
 	glBindBuffer(GL_UNIFORM_BUFFER, LightBuffers[LightBuffer]);
-	glBufferData(GL_UNIFORM_BUFFER, Lights.size()*sizeof(LightProperties), Lights.data(), GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, lights.size()*sizeof(LightProperties), lights.data(), GL_STATIC_DRAW);
 }

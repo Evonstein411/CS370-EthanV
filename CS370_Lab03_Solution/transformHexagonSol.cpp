@@ -45,8 +45,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection matrix
-    proj_matrix = mat4().identity();    // Default projection matrix for now
-    camera_matrix = mat4().identity();  // Default camera matrix for now
+    projMatrix = mat4().identity();    // Default projection matrix for now
+    cameraMatrix = mat4().identity();  // Default camera matrix for now
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -60,31 +60,31 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
 
 	// Draw base hexagon (red)
-	model_matrix = mat4().identity();
+	modelMatrix = mat4().identity();
     draw_color_object(Hexagon, HexRed);
 
     // TODO: Draw scaled hexagon
     scale_matrix = scale(0.5f, 0.5f, 1.0f);
-    model_matrix = scale_matrix;
+    modelMatrix = scale_matrix;
     draw_color_object(Hexagon, HexGreen);
 
     // TODO: Draw scaled/rotated hexagon
     rot_matrix = rotate(90.0f, vec3(0.0f, 0.0f, 1.0f));
     scale_matrix = scale(0.25f, 0.25f, 1.0f);
-    model_matrix = rot_matrix*scale_matrix;
+    modelMatrix = rot_matrix*scale_matrix;
     draw_color_object(Hexagon, HexBlue);
 
     // TODO: Draw scaled/rotated/translated hexagon
     trans_matrix = translate(0.5f, 0.5f, 0.0f);
     rot_matrix = rotate(-90.0f, 0.0f, 0.0f, 1.0f);
     scale_matrix = scale(0.25f, 0.25f, 1.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     draw_color_object(Hexagon, HexYellow);
 /*
     mat4 shear = mat4().identity();

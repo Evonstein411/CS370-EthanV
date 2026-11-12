@@ -66,8 +66,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection matrix
-    proj_matrix = mat4().identity();    // Default projection matrix for now
-    camera_matrix = mat4().identity();  // Default camera matrix for now
+    projMatrix = mat4().identity();    // Default projection matrix for now
+    cameraMatrix = mat4().identity();  // Default camera matrix for now
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -81,7 +81,7 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -95,6 +95,6 @@ void render_scene( ) {
 
 
     scale_matrix = scale(hex_scale*0.5f, hex_scale*0.5f, 1.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     draw_color_object(Hexagon, HexRed);
 }

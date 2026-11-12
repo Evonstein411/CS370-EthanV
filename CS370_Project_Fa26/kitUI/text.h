@@ -9,13 +9,13 @@ float text_width(const string& text, float size);
 void draw_string(const string& text, float x, float y, float size, vec4 color) {
     float scale = size / 32.0f;   // bake height is 32
 
-    glUseProgram(hud_program);
-    glUniformMatrix4fv(hud_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(hud_camera_mat_loc, 1, GL_FALSE, camera_matrix);
-    glUniform2f(hud_uv_scale_loc, 1.0f, 1.0f);
-    glUniform2f(hud_uv_offset_loc, 0.0f, 0.0f);
+    glUseProgram(hudProgram);
+    glUniformMatrix4fv(hudProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(hudCameraMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniform2f(hudUvScaleLoc, 1.0f, 1.0f);
+    glUniform2f(hudUvOffsetLoc, 0.0f, 0.0f);
 
-    GLint colorLoc = glGetUniformLocation(hud_program, "textColor");
+    GLint colorLoc = glGetUniformLocation(hudProgram, "textColor");
     if (colorLoc != -1)
         glUniform4fv(colorLoc, 1, color);
 
@@ -56,7 +56,7 @@ void draw_string(const string& text, float x, float y, float size, vec4 color) {
         glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
-        model_matrix = mat4().identity();
+        modelMatrix = mat4().identity();
         draw_text_quad();
     }
 }

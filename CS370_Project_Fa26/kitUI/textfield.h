@@ -13,14 +13,14 @@ struct TextFieldBase : Widget {
     TextFieldBase(float x, float y, float w, float h)
         : Widget(x, y, w, h) {}
 
-    void setEditable(bool status) { editable = status; }
+    void set_editable(bool status) { editable = status; }
 
     void on_click(float mx, float my) override {
         if (editable) focused = true;
     }
     virtual void commit() = 0;
-    virtual const string& getText() const = 0;
-    virtual void setText(string n_string) = 0;
+    virtual const string& get_text() const = 0;
+    virtual void set_text(string newString) = 0;
 
 };
 
@@ -47,12 +47,12 @@ struct TextField : TextFieldBase {
 
     void commit() override;
 
-    void setEditable(bool status) {
+    void set_editable(bool status) {
         editable = status;
     }
 
 
-    const string& getText() const override {
+    const string& get_text() const override {
         return text;
     }
 
@@ -89,21 +89,23 @@ struct TextField : TextFieldBase {
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
     }
 
-    void setText(string n_text) override{
+    void set_text(string newText) override{
         //prevent non numbers if needed
-        if (isNum && !valid_number(n_text)) return;
+        if (isNum && !valid_number(newText)) return;
         //prevent input from exceeding maxLen
-        if (n_text.length() > maxLen){
-            n_text.resize(maxLen);
+        if (newText.length() > maxLen){
+            newText.resize(maxLen);
         }
-        text = n_text;
+        text = newText;
         resize();
     }
 
-    void drawSelf() override {
-        model_matrix = mat4().identity();
-        mat4 scale_matrix, trans_matrix = mat4().identity();
-        model_matrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
+    void draw_self() override {
+        modelMatrix = mat4().identity();
+        mat4 scaleMatrix, transMatrix = mat4().identity();
+        transMatrix = translate(x, (float)hh - h - y, 0.0f);
+        scaleMatrix = scale(w, h, 1.0f);
+        modelMatrix =  transMatrix * scaleMatrix;
         draw_solid_hud_quad(color);
         draw_string(label, x + 8.0f, y + 8.0f, 32);
 
@@ -114,9 +116,9 @@ struct TextField : TextFieldBase {
         if (boxW < HUD_PAD_X) boxW = HUD_PAD_X;
         if (boxH < HUD_PAD_Y) boxH = HUD_PAD_Y;
 
-        trans_matrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
-        scale_matrix = scale(boxW, boxH, 1.0f);
-        model_matrix =  trans_matrix * scale_matrix;
+        transMatrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
+        scaleMatrix = scale(boxW, boxH, 1.0f);
+        modelMatrix =  transMatrix * scaleMatrix;
         draw_solid_hud_quad(editable ? fieldColor : disabledColor);
         draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, editable? textColor: DISABLED_TEXT_COLOR);
 
@@ -124,7 +126,7 @@ struct TextField : TextFieldBase {
             float textW = text_width(text, textSize);
             float caretX = x + labelW + 4.0f + textW + 1.0f;
             float caretY = boxY + 10.0f;          // same top as the text
-            drawCaret(caretX, caretY);
+            draw_caret(caretX, caretY);
         }
     }
 
@@ -153,7 +155,7 @@ struct TextField : TextFieldBase {
 
     }
 
-    void drawCaret(float caretX, float caretY) {
+    void draw_caret(float caretX, float caretY) {
         // 1 second full cycle → 0.5s on, 0.5s off
         if (fmod((float)glfwGetTime(), 1.0f) > 0.5f)
             return;
@@ -161,9 +163,9 @@ struct TextField : TextFieldBase {
         float cw = 2.0f;
         float ch = textSize - 8.0f;
 
-        mat4 trans_matrix = translate(caretX, (float)hh - ch - caretY, 0.0f);
-        mat4 scale_matrix = scale(cw, ch, 1.0f);
-        model_matrix = trans_matrix * scale_matrix;
+        mat4 transMatrix = translate(caretX, (float)hh - ch - caretY, 0.0f);
+        mat4 scaleMatrix = scale(cw, ch, 1.0f);
+        modelMatrix = transMatrix * scaleMatrix;
         draw_solid_hud_quad(textColor);
     }
 

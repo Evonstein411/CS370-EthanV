@@ -47,8 +47,8 @@ struct SceneObject {
         objects.push_back(this);
         drawType = MATERIAL;
 
-        material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
-        DynamicMaterials.push_back(materialProperties);
+        material = (GLuint)dynamicMaterials.size();   // index in the dynamic list
+        dynamicMaterials.push_back(materialProperties);
         hasMaterial = true;
 
 
@@ -74,7 +74,7 @@ struct SceneObject {
         hasColor = false;
     }
 
-    mat4 getModelMatrix() const {
+    mat4 get_model_matrix() const {
         mat4 T = translate(position);
         mat4 Rx = vmath::rotate(rotation[0], vec3(1,0,0));
         mat4 Ry = vmath::rotate(rotation[1], vec3(0,1,0));
@@ -83,7 +83,7 @@ struct SceneObject {
         return T * Rx * Ry * Rz * S;
     }
 
-    void initializeType(DrawType newType) {
+    void initialize_type(DrawType newType) {
         //solid color add color if none and build buffer
         if (newType == SOLID_COLOR) {
             if(!hasColor) {
@@ -99,8 +99,8 @@ struct SceneObject {
         } else if (newType == MATERIAL) {
             if(!hasMaterial) {
                 materialProperties = baseMaterial; //use base material
-                material = (GLuint)DynamicMaterials.size();   // index in the dynamic list
-                DynamicMaterials.push_back(materialProperties);
+                material = (GLuint)dynamicMaterials.size();   // index in the dynamic list
+                dynamicMaterials.push_back(materialProperties);
                 hasMaterial = true;
             }
 
@@ -111,7 +111,7 @@ struct SceneObject {
         }
     }//end init type
 
-    void setColor(vec4 new_color) {
+    void set_color(vec4 new_color) {
         color = new_color;
         build_solid_color_buffer(numVertices[mesh], color, colorBuffer);
 
@@ -121,12 +121,12 @@ struct SceneObject {
         if (mesh == -1 || drawType == NONE) return;
 
 
-        model_matrix = getModelMatrix();
+        modelMatrix = get_model_matrix();
         if (drawType == SOLID_COLOR) {
             draw_color_object(mesh, colorBuffer);
         }else if(drawType == MATERIAL) {
-            normal_matrix = model_matrix.inverse().transpose();
-            GLuint shaderIndex = (GLuint)Materials.size() + material;
+            normalMatrix = modelMatrix.inverse().transpose();
+            GLuint shaderIndex = (GLuint)materials.size() + material;
             draw_mat_object(mesh, shaderIndex);
         }else if(drawType == TEXTURE) {
             draw_tex_object(mesh, texture);

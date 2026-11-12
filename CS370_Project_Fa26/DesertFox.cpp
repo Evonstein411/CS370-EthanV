@@ -37,9 +37,9 @@ void display();
 void render_scene();
 void init_scene();
 void render_hud();
-void createOutlineFBO(int width, int height);
-void drawTranslationGizmo();
-void drawSelectionOutline();
+void create_outline_fbo(int width, int height);
+void draw_translation_gizmo();
+void draw_selection_outline();
 void update_camera_matrices();
 
 
@@ -79,7 +79,7 @@ int main(int argc, char**argv)
     // Create shaders
     build_shaders();
     // Create FBO for outlines
-    createOutlineFBO(ww, hh);
+    create_outline_fbo(ww, hh);
     // Create scene
     init_scene();
     // Create HUD
@@ -100,7 +100,7 @@ int main(int argc, char**argv)
     z = (GLfloat)(radius*cos(deg2rad(azimuth))*sin(deg2rad(elevation)));
     eye = vec3(x,y,z);
 
-    if (camera_mode == PERSPECTIVE) {
+    if (cameraMode == PERSPECTIVE) {
         float yaw = deg2rad(fpsAzimuth);
         center = eye + vec3(cos(yaw), 0.0f, sin(yaw));  // level at start
     }
@@ -129,8 +129,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection and camera matrices
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
 	// Clear window and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,38 +163,38 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
-    normal_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
+    normalMatrix = mat4().identity();
 
     for (size_t i = 0; i < objects.size(); i++) {
         objects[i]->draw();
     }
 
-    drawSelectionOutline();
-    drawTranslationGizmo();
+    draw_selection_outline();
+    draw_translation_gizmo();
 
 
 }
 
 void init_scene() {
-    int cube_id = find_mesh("cube");
-    int sphere_id = find_mesh("sphere");
-    if (cube_id < 0 || sphere_id < 0) {
+    int cubeID = find_mesh("cube");
+    int sphereID = find_mesh("sphere");
+    if (cubeID < 0 || sphereID < 0) {
         fprintf(stderr, "Required models missing from ../models\n");
         return;
     }
 
 
-    SceneObject* sphereObject = new SceneObject(sphere_id, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* floor = new SceneObject(cube_id, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall = new SceneObject(cube_id, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall2 = new SceneObject(cube_id, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall3 = new SceneObject(cube_id, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall4 = new SceneObject(cube_id, "wall4", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* sphereObject = new SceneObject(sphereID, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* floor = new SceneObject(cubeID, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall = new SceneObject(cubeID, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall2 = new SceneObject(cubeID, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall3 = new SceneObject(cubeID, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    SceneObject* wall4 = new SceneObject(cubeID, "wall4", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
 }
 
 
-void createOutlineFBO(int width, int height) {
+void create_outline_fbo(int width, int height) {
     if (outlineFBO) {
         glDeleteFramebuffers(1, &outlineFBO);
         glDeleteTextures(1, &outlineMaskTex);
@@ -214,7 +214,7 @@ void createOutlineFBO(int width, int height) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void drawSelectionOutline() {
+void draw_selection_outline() {
     if (!selectedObject || selectedObject->mesh == (GLuint)-1) return;
 
     // Build model matrix the same way SceneObject::draw does
@@ -222,8 +222,8 @@ void drawSelectionOutline() {
     mat4 rotX  = vmath::rotate(selectedObject->rotation[0], vec3(1,0,0));
     mat4 rotY  = vmath::rotate(selectedObject->rotation[1], vec3(0,1,0));
     mat4 rotZ  = vmath::rotate(selectedObject->rotation[2], vec3(0,0,1));
-    mat4 scale_matrix = vmath::scale(selectedObject->scale);
-    model_matrix = trans * rotX * rotY * rotZ * scale_matrix;
+    mat4 scale = vmath::scale(selectedObject->scale);
+    modelMatrix = trans * rotX * rotY * rotZ * scale;
 
     // --- Mask pass ---
     glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
@@ -232,15 +232,15 @@ void drawSelectionOutline() {
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
 
-    glUseProgram(mask_program);
-    glUniformMatrix4fv(mask_proj_mat_loc,  1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(mask_cam_mat_loc,   1, GL_FALSE, camera_matrix);
-    glUniformMatrix4fv(mask_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUseProgram(maskProgram);
+    glUniformMatrix4fv(maskProjMatLoc,  1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(maskCamMatLoc,   1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(maskModelMatLoc, 1, GL_FALSE, modelMatrix);
 
     glBindVertexArray(VAOs[selectedObject->mesh]);
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[selectedObject->mesh][PosBuffer]);
-    glVertexAttribPointer(mask_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(mask_vPos);
+    glVertexAttribPointer(maskVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(maskVPos);
     glDrawArrays(GL_TRIANGLES, 0, numVertices[selectedObject->mesh]);
 
     // --- Edge pass (back to window) ---
@@ -249,30 +249,30 @@ void drawSelectionOutline() {
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 
-    glUseProgram(outline_program);
+    glUseProgram(outlineProgram);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, outlineMaskTex);
-    glUniform2f(outline_texel_size_loc, 1.0f / ww, 1.0f / hh);
-    glUniform4f(outline_color_loc, 0.85f, 0.55f, 0.25f, 1.0f);
-    glUniform1f(outline_thickness_loc, 1.0f);
+    glUniform2f(outlineTexelSizeLoc, 1.0f / ww, 1.0f / hh);
+    glUniform4f(outlineColorLoc, 0.85f, 0.55f, 0.25f, 1.0f);
+    glUniform1f(outlineThicknessLoc, 1.0f);
 
     // Draw fullscreen quad
     glBindVertexArray(fullscreenVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
-    glVertexAttribPointer(outline_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(outline_vPos);
+    glVertexAttribPointer(outlineVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(outlineVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
-    glVertexAttribPointer(outline_vTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(outline_vTex);
+    glVertexAttribPointer(outlineVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(outlineVTex);
 
     glDrawArrays(GL_TRIANGLES, 0, fullscreenNumVertices);
 
     glEnable(GL_DEPTH_TEST);
 }
 
-void drawTranslationGizmo() {
+void draw_translation_gizmo() {
     if (!selectedObject || gizmoArrowVAO == 0) return;
 
     float size = 0.35f;
@@ -280,7 +280,7 @@ void drawTranslationGizmo() {
     float offset = length*2.0f;
 
     mat4 trans = translate(selectedObject->position);
-    mat4 trans_offset = translate(0.0f, offset, 0.0f);
+    mat4 transOffset = translate(0.0f, offset, 0.0f);
     mat4 scale = vmath::scale(size, length, size);
     mat4 rotate;
 
@@ -293,17 +293,17 @@ void drawTranslationGizmo() {
 
     // X (red) — rotate +Y onto +X, then scale
     rotate = vmath::rotate(90.0f, vec3(0,0,1));
-    model_matrix = trans * rotate * trans_offset * scale;
-    drawGizmoArrow(xColor);
+    modelMatrix = trans * rotate * transOffset * scale;
+    draw_gizmo_arrow(xColor);
 
     // Y (green)
-    model_matrix = trans * trans_offset * scale;
-    drawGizmoArrow(yColor);
+    modelMatrix = trans * transOffset * scale;
+    draw_gizmo_arrow(yColor);
 
     // Z (blue) — rotate +Y onto +Z
     rotate = vmath::rotate(-90.0f, vec3(1,0,0));
-    model_matrix = trans * rotate * trans_offset * scale;
-    drawGizmoArrow(zColor);
+    modelMatrix = trans * rotate * transOffset * scale;
+    draw_gizmo_arrow(zColor);
 
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
@@ -317,9 +317,9 @@ void update_camera_matrices() {
     else if (hh <= ww)
         xratio = (GLfloat)ww / (GLfloat)hh;
 
-    if (camera_mode == PERSPECTIVE) {
+    if (cameraMode == PERSPECTIVE) {
         float aspect = (float)ww / (float)hh;
-        proj_matrix = perspective(60.0f, aspect, 0.1f, 200.0f);
+        projMatrix = perspective(60.0f, aspect, 0.1f, 200.0f);
 
         float yaw   = deg2rad(fpsAzimuth);
         float pitch = deg2rad(fpsElevation);
@@ -329,11 +329,11 @@ void update_camera_matrices() {
             sin(yaw) * cos(pitch)
         ));
         center = eye + dir;
-        camera_matrix = lookat(eye, center, up);
+        cameraMatrix = lookat(eye, center, up);
     } else {
-        proj_matrix = ortho(-radius * xratio, radius * xratio,
+        projMatrix = ortho(-radius * xratio, radius * xratio,
                             -radius * yratio, radius * yratio, -100.0f, 100.0f);
-        camera_matrix = lookat(eye, center, up);
+        cameraMatrix = lookat(eye, center, up);
     }
 }
 

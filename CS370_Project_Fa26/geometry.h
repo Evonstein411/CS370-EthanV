@@ -32,10 +32,10 @@ GLint HUD_numVertices[NumHUD];
 // Color buffers
 vector<GLuint> ColorBuffers;
 
-float color_r = 0.0f;
-float color_g = 0.0f;
-float color_b = 0.0f;
-float color_a = 0.0f;
+float colorR = 0.0f;
+float colorG = 0.0f;
+float colorB = 0.0f;
+float colorA = 0.0f;
 
 
 // Model files
@@ -45,8 +45,8 @@ const char * sphereFile = "../../common/models/sphere.obj";
 
 
 int load_model(const char* filename, const string& displayName);
-void loadGizmoArrow();
-void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer);
+void load_gizmo_arrow();
+void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer);
 void build_hud_quad(GLuint hudObj);
 void scan_models(const string& folder = "../models");
 int add_model_file(const string& path);
@@ -64,7 +64,7 @@ void build_geometry() {
     build_hud_quad(HUDQuad);
     build_hud_quad(HUDTextQuad);
     build_fullscreen_quad();
-    loadGizmoArrow();
+    load_gizmo_arrow();
     // Selectable models from folder
     scan_models();
 }
@@ -157,16 +157,16 @@ int load_model(const char * filename, const string& displayName) {
 
 }
 
-void build_solid_color_buffer(GLuint num_vertices, vec4 color, GLuint buffer) {
+void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer) {
     // Create object colors
     vector<vec4> obj_colors;
-    for (int i = 0; i < num_vertices; i++) {
+    for (int i = 0; i < numVertices; i++) {
         obj_colors.push_back(color);
     }
 
     // Bind and load color buffers
     glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[buffer]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*colCoords*num_vertices, obj_colors.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*colCoords*numVertices, obj_colors.data(), GL_STATIC_DRAW);
 }
 
 void build_hud_quad(GLuint obj) {
@@ -267,7 +267,7 @@ void build_fullscreen_quad() {
     glBindVertexArray(0);
 }
 
-void loadGizmoArrow() {
+void load_gizmo_arrow() {
     vector<vec4> vertices;
     vector<vec2> uvs;
     vector<vec3> normals;

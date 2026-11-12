@@ -14,11 +14,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             pouring = false;
         }
         if (mode == 0 || mode == 1 || mode == 5 || mode == 7) {
-            Lights.clear();
+            lights.clear();
             build_lights();
         }
         if (mode == 2 || mode == 3 || mode == 7 || mode == 9) {
-            Materials.clear();
+            materials.clear();
             build_materials();
         }
         if (mode == 6) {

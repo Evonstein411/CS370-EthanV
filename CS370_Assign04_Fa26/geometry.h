@@ -5,7 +5,7 @@ GLuint ObjBuffers[NumVAOs][NumObjBuffers];
 GLint numVertices[NumVAOs];
 // Model files
 const char * cubeFile = "../../common/models/unitcube.obj";
-char * sphereFile = "../../common/models/uv_sphere.obj";
+const char * sphereFile = "../../common/models/uv_sphere.obj";
 
 void load_model(const char * filename, GLuint obj);
 void build_texture_cube(GLuint obj);
@@ -133,7 +133,31 @@ void build_texture_cube(GLuint obj) {
     };
 
     // TODO: Define texture coordinates for torso
-    uvCoords = {};
+    uvCoords = {
+        // Front  (left panel)
+        vec2(0.00f, 0.15f), vec2(0.00f, 0.85f), vec2(0.33f, 0.85f),
+        vec2(0.33f, 0.85f), vec2(0.33f, 0.15f), vec2(0.00f, 0.15f),
+
+        // Back   (middle panel)
+        vec2(0.33f, 0.15f), vec2(0.33f, 0.85f), vec2(0.66f, 0.85f),
+        vec2(0.66f, 0.85f), vec2(0.66f, 0.15f), vec2(0.33f, 0.15f),
+
+        // Left   (right half of the right panel)
+        vec2(0.83f, 0.15f), vec2(0.83f, 0.85f), vec2(1.00f, 0.85f),
+        vec2(1.00f, 0.85f), vec2(1.00f, 0.15f), vec2(0.83f, 0.15f),
+
+        // Right  (left half of the right panel)
+        vec2(0.66f, 0.15f), vec2(0.66f, 0.85f), vec2(0.83f, 0.85f),
+        vec2(0.83f, 0.85f), vec2(0.83f, 0.15f), vec2(0.66f, 0.15f),
+
+        // Top    (any region is fine – using a bit of the front)
+        vec2(0.00f, 0.15f), vec2(0.00f, 0.85f), vec2(0.33f, 0.85f),
+        vec2(0.33f, 0.85f), vec2(0.33f, 0.15f), vec2(0.00f, 0.15f),
+
+        // Bottom (any region is fine – using the black area)
+        vec2(0.70f, 0.00f), vec2(0.70f, 0.10f), vec2(1.00f, 0.10f),
+        vec2(1.00f, 0.10f), vec2(1.00f, 0.00f), vec2(0.70f, 0.00f)
+    };
 
     // Set number of vertices
     numVertices[obj] = vertices.size();
@@ -164,7 +188,14 @@ void build_background(GLuint b_obj) {
     };
 
     // TODO: Define texture coordinates for background
-    uvCoords = {};
+    uvCoords = {
+        vec2(1.0f, 1.0f),
+        vec2(0.0f, 1.0f),
+        vec2(0.0f, 0.0f),
+        vec2(0.0f, 0.0f),
+        vec2(1.0f, 0.0f),
+        vec2(1.0f, 1.0f)
+    };
 
     numVertices[b_obj] = vertices.size();
 

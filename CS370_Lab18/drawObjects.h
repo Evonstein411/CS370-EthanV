@@ -2,46 +2,46 @@
 
 void draw_mat_object(GLuint obj, GLuint material){
     // Select shader program
-    glUseProgram(lighting_program);
+    glUseProgram(lightingProgram);
 
     // Pass projection and camera matrices to shader
-    glUniformMatrix4fv(lighting_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(lighting_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(lightingProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(lightingCameraMatLoc, 1, GL_FALSE, cameraMatrix);
 
     // Bind lights
-    glUniformBlockBinding(lighting_program, lighting_lights_block_idx, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size()*sizeof(LightProperties));
+    glUniformBlockBinding(lightingProgram, lightingLightsBlockIdx, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size()*sizeof(LightProperties));
 
     // Bind materials
-    glUniformBlockBinding(lighting_program, lighting_materials_block_idx, 1);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, Materials.size()*sizeof(MaterialProperties));
+    glUniformBlockBinding(lightingProgram, lightingMaterialsBlockIdx, 1);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, MaterialBuffers[MaterialBuffer], 0, materials.size()*sizeof(MaterialProperties));
 
     // Set camera position
-    glUniform3fv(lighting_eye_loc, 1, eye);
+    glUniform3fv(lightingEyeLoc, 1, eye);
 
     // Set num lights and lightOn
-    glUniform1i(lighting_num_lights_loc, Lights.size());
-    glUniform1iv(lighting_light_on_loc, NumLights, lightOn);
+    glUniform1i(lightingNumLightsLoc, lights.size());
+    glUniform1iv(lightingLightOnLoc, NumLights, lightOn);
 
     // Pass model matrix and normal matrix to shader
-    glUniformMatrix4fv(lighting_model_mat_loc, 1, GL_FALSE, model_matrix);
-    glUniformMatrix4fv(lighting_norm_mat_loc, 1, GL_FALSE, normal_matrix);
+    glUniformMatrix4fv(lightingModelMatLoc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(lightingNormMatLoc, 1, GL_FALSE, normalMatrix);
 
     // Pass material index to shader
-    glUniform1i(lighting_material_loc, material);
+    glUniform1i(lightingMaterialLoc, material);
 
     // Bind vertex array
     glBindVertexArray(VAOs[obj]);
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(lighting_vPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vPos);
+    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVPos);
 
     // Bind normal object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][NormBuffer]);
-    glVertexAttribPointer(lighting_vNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(lighting_vNorm);
+    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(lightingVNorm);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
@@ -52,13 +52,13 @@ void draw_multi_tex_object(GLuint obj, GLuint baseID, GLuint blendID, GLfloat mi
     glUseProgram(multi_tex_program);
 
     // Pass projection matrix to shader
-    glUniformMatrix4fv(multi_tex_proj_mat_loc, 1, GL_FALSE, proj_matrix);
+    glUniformMatrix4fv(multi_tex_proj_mat_loc, 1, GL_FALSE, projMatrix);
 
     // Pass camera matrix to shader
-    glUniformMatrix4fv(multi_tex_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(multi_tex_camera_mat_loc, 1, GL_FALSE, cameraMatrix);
 
     // Pass model matrix to shader
-    glUniformMatrix4fv(multi_tex_model_mat_loc, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(multi_tex_model_mat_loc, 1, GL_FALSE, modelMatrix);
 
     // Pass mix factor to shader
     glUniform1f(multi_tex_mix_loc, mix);
@@ -97,23 +97,23 @@ void draw_bump_object(GLuint obj, GLuint baseID, GLuint normalID){
     glUseProgram(bump_program);
 
     // Pass projection and camera matrices to shader
-    glUniformMatrix4fv(bump_proj_mat_loc, 1, GL_FALSE, proj_matrix);
-    glUniformMatrix4fv(bump_camera_mat_loc, 1, GL_FALSE, camera_matrix);
+    glUniformMatrix4fv(bump_proj_mat_loc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(bump_camera_mat_loc, 1, GL_FALSE, cameraMatrix);
 
     // Bind lights
     glUniformBlockBinding(bump_program, bump_lights_block_idx, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, Lights.size() * sizeof(LightProperties));
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, LightBuffers[LightBuffer], 0, lights.size() * sizeof(LightProperties));
 
     // Set camera position
     glUniform3fv(bump_eye_loc, 1, eye);
 
     // Set num lights and lightOn
-    glUniform1i(bump_num_lights_loc, Lights.size());
+    glUniform1i(bump_num_lights_loc, lights.size());
     glUniform1iv(bump_light_on_loc, NumLights, lightOn);
 
     // Pass model matrix and normal matrix to shader
-    glUniformMatrix4fv(bump_model_mat_loc, 1, GL_FALSE, model_matrix);
-    glUniformMatrix4fv(bump_norm_mat_loc, 1, GL_FALSE, normal_matrix);
+    glUniformMatrix4fv(bump_model_mat_loc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(bump_norm_mat_loc, 1, GL_FALSE, normalMatrix);
 
     // Set base texture to texture unit 0 and make it active
     glUniform1i(bump_base_loc, 0);

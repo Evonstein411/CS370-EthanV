@@ -1,7 +1,7 @@
 #include "kitUI/hud.h"
 
 extern SceneObject* selectedObject;
-extern void createOutlineFBO(int width, int height);
+extern void create_outline_fbo(int width, int height);
 
 vec3 dragStartPos;
 vec2 dragStartMouse;
@@ -36,7 +36,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
 
 
-    if (camera_mode == ORTHO) {
+    if (cameraMode == ORTHO) {
         handle_key_ortho(key, action);
     }else {
         handle_key_perspective(key, action);
@@ -107,7 +107,7 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
         lastMouseX = xpos;
         lastMouseY = ypos;
 
-        if (camera_mode == ORTHO) {
+        if (cameraMode == ORTHO) {
             azimuth   -= dx * mouseLookSensitivity;
             elevation -= dy * mouseLookSensitivity;
 
@@ -151,9 +151,9 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
 
     // column-vector: viewAxis = camera_matrix * axis (w = 0)
     vec3 viewAxis;
-    viewAxis[0] = camera_matrix[0][0]*axis[0] + camera_matrix[1][0]*axis[1] + camera_matrix[2][0]*axis[2];
-    viewAxis[1] = camera_matrix[0][1]*axis[0] + camera_matrix[1][1]*axis[1] + camera_matrix[2][1]*axis[2];
-    viewAxis[2] = camera_matrix[0][2]*axis[0] + camera_matrix[1][2]*axis[1] + camera_matrix[2][2]*axis[2];
+    viewAxis[0] = cameraMatrix[0][0]*axis[0] + cameraMatrix[1][0]*axis[1] + cameraMatrix[2][0]*axis[2];
+    viewAxis[1] = cameraMatrix[0][1]*axis[0] + cameraMatrix[1][1]*axis[1] + cameraMatrix[2][1]*axis[2];
+    viewAxis[2] = cameraMatrix[0][2]*axis[0] + cameraMatrix[1][2]*axis[1] + cameraMatrix[2][2]*axis[2];
 
     vec2 screenDir(viewAxis[0], viewAxis[1]);
     float len = length(screenDir);
@@ -171,14 +171,14 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    if (camera_mode != ORTHO) return;
+    if (cameraMode != ORTHO) return;
 
     // yoffset > 0 means scroll up (zoom in), < 0 means scroll down (zoom out)
     float zoom = (float)yoffset * dr * 4.0f;   // scale factor, tune as needed
 
     radius -= zoom;
-    if (radius < min_radius)
-        radius = min_radius;
+    if (radius < minRadius)
+        radius = minRadius;
 
     // recompute eye from spherical coords (same as handle_key_ortho)
     float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
@@ -198,7 +198,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
     ww = width;
     hh = height;
-    createOutlineFBO(ww, hh);
+    create_outline_fbo(ww, hh);
 }
 
 //ensure cursor matching size of window and proper scaling
@@ -257,9 +257,9 @@ void handle_key_ortho(int key, int action) {
     else if (key == GLFW_KEY_Z)
     {
         radius -= dr;
-        if (radius < min_radius)
+        if (radius < minRadius)
         {
-            radius = min_radius;
+            radius = minRadius;
         }
     }
 

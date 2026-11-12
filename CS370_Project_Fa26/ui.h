@@ -1,69 +1,68 @@
 #include "kitUI/hud.h"
 
-
-//selected object (exists in DesertFox.cpp)
+// selected object (exists in DesertFox.cpp)
 extern SceneObject* selectedObject;
 
-
-//globals
+// globals
 int selectedMesh = -1;
 int selectedType = -1;
 int selectedTexture = -1;
-string name_string = "";
+string nameString = "";
 
-//file browsers
-FileBrowser* texture_file_browser = nullptr;
-FileBrowser* mesh_file_browser = nullptr;
-FileBrowser* scene_file_browser = nullptr;
+// file browsers
+FileBrowser* textureFileBrowser = nullptr;
+FileBrowser* meshFileBrowser = nullptr;
+FileBrowser* sceneFileBrowser = nullptr;
 
-//sections
-Section* material_section = nullptr;
-Section* object_section = nullptr;
-Section* solid_color_section = nullptr;
-Section* texture_section = nullptr;
-Section* transform_section = nullptr;
-Section* scene_graph_section = nullptr;
-//canvas
+// sections
+Section* materialSection = nullptr;
+Section* objectSection = nullptr;
+Section* solidColorSection = nullptr;
+Section* textureSection = nullptr;
+Section* transformSection = nullptr;
+Section* sceneGraphSection = nullptr;
+
+// canvas
 Canvas* topbar = nullptr;
 
-//panels
-Panel* topbar_panel = nullptr;
-Panel* object_panel = nullptr;
-Panel* settings_panel = nullptr;
-Panel* material_panel = nullptr;
-Panel* solid_color_panel = nullptr;
-Panel* texture_panel = nullptr;
-Panel* transform_panel = nullptr;
-Panel* save_dialog_panel = nullptr;
-Panel* scene_graph_panel = nullptr;
+// panels
+Panel* topbarPanel = nullptr;
+Panel* objectPanel = nullptr;
+Panel* settingsPanel = nullptr;
+Panel* materialPanel = nullptr;
+Panel* solidColorPanel = nullptr;
+Panel* texturePanel = nullptr;
+Panel* transformPanel = nullptr;
+Panel* saveDialogPanel = nullptr;
+Panel* sceneGraphPanel = nullptr;
 
-//dropdowns
-Dropdown* type_dropdown = nullptr;
-Dropdown* model_dropdown = nullptr;
-Dropdown* texture_dropdown = nullptr;
+// dropdowns
+Dropdown* typeDropdown = nullptr;
+Dropdown* modelDropdown = nullptr;
+Dropdown* textureDropdown = nullptr;
 
-//labels
-Label* ambient_label = nullptr;
-Label* diffuse_label = nullptr;
-Label* specular_label = nullptr;
-Label* shininess_label = nullptr;
-Label* translation_label = nullptr;
-Label* rotation_label = nullptr;
-Label* scale_label = nullptr;
-Label* save_scene_label = nullptr;
+// labels
+Label* ambientLabel = nullptr;
+Label* diffuseLabel = nullptr;
+Label* specularLabel = nullptr;
+Label* shininessLabel = nullptr;
+Label* translationLabel = nullptr;
+Label* rotationLabel = nullptr;
+Label* scaleLabel = nullptr;
+Label* saveSceneLabel = nullptr;
 
-//buttons
-Button* light_button = nullptr;
-Button* add_texture_button = nullptr;
-Button* add_model_button = nullptr;
-Button* add_object_button = nullptr;
-Button* load_scene_button = nullptr;
-Button* save_scene_button = nullptr;
-Button* save_name_button = nullptr;
-Button* cancel_save_button = nullptr;
-Button* camera_mode_button = nullptr;
+// buttons
+Button* lightButton = nullptr;
+Button* addTextureButton = nullptr;
+Button* addModelButton = nullptr;
+Button* addObjectButton = nullptr;
+Button* loadSceneButton = nullptr;
+Button* saveSceneButton = nullptr;
+Button* saveNameButton = nullptr;
+Button* cancelSaveButton = nullptr;
+Button* cameraModeButton = nullptr;
 
-//button functions
+// button functions
 void toggle_lights();
 void add_texture();
 void add_model();
@@ -74,60 +73,60 @@ void confirm_save_scene();
 void hide_save_dialog();
 void toggle_camera_mode();
 
-//text fields
-TextField<string>* object_name_field = nullptr;
-TextField<string>* save_name_field = nullptr;
+// text fields
+TextField<string>* objectNameField = nullptr;
+TextField<string>* saveNameField = nullptr;
 
-TextField<float>* ambient_r_field = nullptr;
-TextField<float>* ambient_g_field = nullptr;
-TextField<float>* ambient_b_field = nullptr;
-TextField<float>* ambient_a_field = nullptr;
+TextField<float>* ambientRField = nullptr;
+TextField<float>* ambientGField = nullptr;
+TextField<float>* ambientBField = nullptr;
+TextField<float>* ambientAField = nullptr;
 
-TextField<float>* diffuse_r_field = nullptr;
-TextField<float>* diffuse_g_field = nullptr;
-TextField<float>* diffuse_b_field = nullptr;
-TextField<float>* diffuse_a_field = nullptr;
+TextField<float>* diffuseRField = nullptr;
+TextField<float>* diffuseGField = nullptr;
+TextField<float>* diffuseBField = nullptr;
+TextField<float>* diffuseAField = nullptr;
 
-TextField<float>* specular_r_field = nullptr;
-TextField<float>* specular_g_field = nullptr;
-TextField<float>* specular_b_field = nullptr;
-TextField<float>* specular_a_field = nullptr;
+TextField<float>* specularRField = nullptr;
+TextField<float>* specularGField = nullptr;
+TextField<float>* specularBField = nullptr;
+TextField<float>* specularAField = nullptr;
 
-TextField<float>* shininess_field = nullptr;
+TextField<float>* shininessField = nullptr;
 
-TextField<float>* color_r_field = nullptr;
-TextField<float>* color_g_field = nullptr;
-TextField<float>* color_b_field = nullptr;
-TextField<float>* color_a_field = nullptr;
+TextField<float>* colorRField = nullptr;
+TextField<float>* colorGField = nullptr;
+TextField<float>* colorBField = nullptr;
+TextField<float>* colorAField = nullptr;
 
-TextField<float>* trans_x_field = nullptr;
-TextField<float>* trans_y_field = nullptr;
-TextField<float>* trans_z_field = nullptr;
+TextField<float>* transXField = nullptr;
+TextField<float>* transYField = nullptr;
+TextField<float>* transZField = nullptr;
 
-TextField<float>* rot_x_field = nullptr;
-TextField<float>* rot_y_field = nullptr;
-TextField<float>* rot_z_field = nullptr;
+TextField<float>* rotXField = nullptr;
+TextField<float>* rotYField = nullptr;
+TextField<float>* rotZField = nullptr;
 
-TextField<float>* scale_x_field = nullptr;
-TextField<float>* scale_y_field = nullptr;
-TextField<float>* scale_z_field = nullptr;
+TextField<float>* scaleXField = nullptr;
+TextField<float>* scaleYField = nullptr;
+TextField<float>* scaleZField = nullptr;
 
-//field variables
-float trans_x = 0.0f;
-float trans_y = 0.0f;
-float trans_z = 0.0f;
+// field variables
+float transX = 0.0f;
+float transY = 0.0f;
+float transZ = 0.0f;
 
-float rot_x = 0.0f;
-float rot_y = 0.0f;
-float rot_z = 0.0f;
+float rotX = 0.0f;
+float rotY = 0.0f;
+float rotZ = 0.0f;
 
-float scale_x = 0.0f;
-float scale_y = 0.0f;
-float scale_z = 0.0f;
+float scaleX = 0.0f;
+float scaleY = 0.0f;
+float scaleZ = 0.0f;
 
-string save_name_string = "";
+string saveNameString = "";
 
-//forward decs
+// forward declarations
 void update_fields();
 void rebuild_scene_graph();
 void select_object(SceneObject* obj);
@@ -137,329 +136,319 @@ void render_hud() {
 }
 
 void init_hud() {
-
-    //TOPBAR
+    // TOPBAR
     Canvas* topbar = new Canvas(0, 0, (float)ww, 64);
 
-    light_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
-    topbar->add(light_button, ww-240.0f, 4.0f);
+    lightButton = new Button(0.0f, 0.0f, 240.0f, 40.0f, toggle_lights, "TOGGLE LIGHTS");
+    topbar->add(lightButton, ww - 240.0f, 4.0f);
 
-    add_object_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, add_object, "Add Object");
-    topbar->add(add_object_button, 8.0f, 4.0f);
+    addObjectButton = new Button(0.0f, 0.0f, 160.0f, 40.0f, add_object, "Add Object");
+    topbar->add(addObjectButton, 8.0f, 4.0f);
 
-    load_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, load_scene, "Load Scene");
-    topbar->add(load_scene_button, 168.0f, 4.0f);
+    loadSceneButton = new Button(0.0f, 0.0f, 160.0f, 40.0f, load_scene, "Load Scene");
+    topbar->add(loadSceneButton, 168.0f, 4.0f);
 
-    save_scene_button = new Button(0.0f, 0.0f, 160.0f, 40.0f, save_scene, "Save Scene");
-    topbar->add(save_scene_button, 336.0f, 4.0f);
+    saveSceneButton = new Button(0.0f, 0.0f, 160.0f, 40.0f, save_scene, "Save Scene");
+    topbar->add(saveSceneButton, 336.0f, 4.0f);
 
-    camera_mode_button = new Button(0.0f, 0.0f, 200.0f, 40.0f, toggle_camera_mode, "ORTHO");
-    topbar->add(camera_mode_button, ww-480.0f, 4.0f);   // adjust X as needed
+    cameraModeButton = new Button(0.0f, 0.0f, 200.0f, 40.0f, toggle_camera_mode, "ORTHO");
+    topbar->add(cameraModeButton, ww - 480.0f, 4.0f);
 
-    scene_graph_section = new Section(ww - 200.0f, 80.0f, "Scene Graph");
-    scene_graph_panel = new Panel(ww - 200.0f, 80.0f);
-    scene_graph_section->add(scene_graph_panel);
+    sceneGraphSection = new Section(ww - 200.0f, 80.0f, "Scene Graph");
+    sceneGraphPanel = new Panel(ww - 200.0f, 80.0f);
+    sceneGraphSection->add(sceneGraphPanel);
 
     rebuild_scene_graph();
 
-    //save scene dialog
-    save_dialog_panel = new Panel(0.0f, 0.0f);
-    save_dialog_panel->setPriority(10);
+    // save scene dialog
+    saveDialogPanel = new Panel(0.0f, 0.0f);
+    saveDialogPanel->set_priority(10);
 
-    save_scene_label = new Label(0, 0, 220, 32, "Save Scene As:");
-    save_dialog_panel->add(save_scene_label, 0, 0, 2, 1);
+    saveSceneLabel = new Label(0, 0, 220, 32, "Save Scene As:");
+    saveDialogPanel->add(saveSceneLabel, 0, 0, 2, 1);
 
-    save_name_field = new TextField<string>(0, 0, 220, 40, "Name:",  32, false, &save_name_string);
-    save_dialog_panel->add(save_name_field, 0, 1, 2, 1);
+    saveNameField = new TextField<string>(0, 0, 220, 40, "Name:", 32, false, &saveNameString);
+    saveDialogPanel->add(saveNameField, 0, 1, 2, 1);
 
-    save_name_button = new Button(0, 0, 100, 36, confirm_save_scene, "Save");
-    save_dialog_panel->add(save_name_button, 0, 2);
+    saveNameButton = new Button(0, 0, 100, 36, confirm_save_scene, "Save");
+    saveDialogPanel->add(saveNameButton, 0, 2);
 
-    cancel_save_button = new Button(0, 0, 100, 36, hide_save_dialog, "Cancel");
-    save_dialog_panel->add(cancel_save_button, 1, 2);
+    cancelSaveButton = new Button(0, 0, 100, 36, hide_save_dialog, "Cancel");
+    saveDialogPanel->add(cancelSaveButton, 1, 2);
 
-    save_dialog_panel->hide();
+    saveDialogPanel->hide();
 
-    //main panel owns all object detail related widgets
-    object_panel = new Panel(20.0f, 90.0f);
+    // main panel owns all object detail related widgets
+    objectPanel = new Panel(20.0f, 90.0f);
 
-    //object settings section (name, type, etc.)
-    object_section = new Section(0.0f, 0.0f, "Object");
-    object_panel->add(object_section, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
+    // object settings section (name, type, etc.)
+    objectSection = new Section(0.0f, 0.0f, "Object");
+    objectPanel->add(objectSection, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    //material section
-    material_section = new Section(0.0f, 0.0f, "Material");
-    object_panel->add(material_section, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
+    // material section
+    materialSection = new Section(0.0f, 0.0f, "Material");
+    objectPanel->add(materialSection, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    //color section
-    solid_color_section = new Section(0.0f, 0.0f, "Solid Color");
-    object_panel->add(solid_color_section, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
+    // color section
+    solidColorSection = new Section(0.0f, 0.0f, "Solid Color");
+    objectPanel->add(solidColorSection, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    //texture section
-    texture_section = new Section(0.0f, 0.0f, "Texture");
-    object_panel->add(texture_section, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
+    // texture section
+    textureSection = new Section(0.0f, 0.0f, "Texture");
+    objectPanel->add(textureSection, 0, 3, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    //transform section
-    transform_section = new Section(0.0f, 0.0f, "Transform");
-    object_panel->add(transform_section, 0, 4, 1, 1, Alignment::STRETCH, Alignment::START);
+    // transform section
+    transformSection = new Section(0.0f, 0.0f, "Transform");
+    objectPanel->add(transformSection, 0, 4, 1, 1, Alignment::STRETCH, Alignment::START);
 
+    // setting panel
+    settingsPanel = new Panel(20.0f, 90.0f);
+    objectSection->add(settingsPanel);
 
-    //setting panel
-    settings_panel = new Panel(20.0f, 90.0f);
-    object_section->add(settings_panel);
+    objectNameField = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &nameString);
+    settingsPanel->add(objectNameField, 0, 0);
 
-    object_name_field = new TextField<string>(0.0f, 0.0f, 65.0f, 48.0f, "Name:", 20.0f, false, &name_string);
-    settings_panel->add(object_name_field, 0, 0);
+    modelDropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Mesh:", meshNames, selectedMesh);
+    settingsPanel->add(modelDropdown, 0, 1);
 
-    model_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Mesh:", meshNames, selectedMesh);
-    settings_panel->add(model_dropdown, 0, 1);
+    addModelButton = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
+    settingsPanel->add(addModelButton, 1, 1);
 
-    add_model_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_model, "Add Model");
-    settings_panel->add(add_model_button, 1, 1);
+    typeDropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
+    settingsPanel->add(typeDropdown, 0, 2);
 
-    type_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Draw Type:", drawTypeNames, selectedType);
-    settings_panel->add(type_dropdown, 0, 2);
-
-    scene_file_browser = new FileBrowser();
-    scene_file_browser->setFilter({".df"}); //need to come up with extension for a scene using .df for now
-    scene_file_browser->onFileSelected = [](const string& path) {
+    sceneFileBrowser = new FileBrowser();
+    sceneFileBrowser->set_filter({".df"});
+    sceneFileBrowser->onFileSelected = [](const string& path) {
         load_scene_file(path);
         rebuild_scene_graph();
     };
 
-
-    mesh_file_browser = new FileBrowser();
-    mesh_file_browser->setFilter({".obj"});
-    mesh_file_browser->onFileSelected = [](const string& path) {
+    meshFileBrowser = new FileBrowser();
+    meshFileBrowser->set_filter({".obj"});
+    meshFileBrowser->onFileSelected = [](const string& path) {
         int index = add_model_file(path);
         if (index < 0) return;
 
         selectedMesh = index;
-        if (model_dropdown)
-            model_dropdown->setOptions(meshNames);
+        if (modelDropdown)
+            modelDropdown->set_options(meshNames);
 
         if (selectedObject) {
             selectedObject->mesh = (GLuint)index;
             if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor)
-                build_solid_color_buffer(numVertices[index],selectedObject->color,selectedObject->colorBuffer);
+                build_solid_color_buffer(numVertices[index], selectedObject->color, selectedObject->colorBuffer);
         }
     };
 
-    //material panel
-    material_panel = new Panel(20.0f, 170.0f);
-    material_section->add(material_panel);
+    // material panel
+    materialPanel = new Panel(20.0f, 170.0f);
+    materialSection->add(materialPanel);
 
-    //ambient
-    ambient_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
-    material_panel->add(ambient_label, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
+    // ambient
+    ambientLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
+    materialPanel->add(ambientLabel, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    ambient_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambient_r);
-    material_panel->add(ambient_r_field, 1, 0);
+    ambientRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambientR);
+    materialPanel->add(ambientRField, 1, 0);
 
-    ambient_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambient_g);
-    material_panel->add(ambient_g_field, 2, 0);
+    ambientGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambientG);
+    materialPanel->add(ambientGField, 2, 0);
 
-    ambient_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambient_b);
-    material_panel->add(ambient_b_field, 3, 0);
+    ambientBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambientB);
+    materialPanel->add(ambientBField, 3, 0);
 
-    ambient_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambient_a);
-    material_panel->add(ambient_a_field, 4, 0);
+    ambientAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambientA);
+    materialPanel->add(ambientAField, 4, 0);
 
-    //diffuse
-    diffuse_label= new Label(0.0f, 0.0f, 130.0f, 48.0f, "diffuse");
-    material_panel->add(diffuse_label, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
+    // diffuse
+    diffuseLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "diffuse");
+    materialPanel->add(diffuseLabel, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    diffuse_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuse_r);
-    material_panel->add(diffuse_r_field, 1, 1);
+    diffuseRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuseR);
+    materialPanel->add(diffuseRField, 1, 1);
 
-    diffuse_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuse_g);
-    material_panel->add(diffuse_g_field, 2, 1);
+    diffuseGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuseG);
+    materialPanel->add(diffuseGField, 2, 1);
 
-    diffuse_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuse_b);
-    material_panel->add(diffuse_b_field, 3, 1);
+    diffuseBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuseB);
+    materialPanel->add(diffuseBField, 3, 1);
 
-    diffuse_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuse_a);
-    material_panel->add(diffuse_a_field, 4, 1);
+    diffuseAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuseA);
+    materialPanel->add(diffuseAField, 4, 1);
 
+    // specular
+    specularLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "specular");
+    materialPanel->add(specularLabel, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    //specular
-    specular_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "specular");
-    material_panel->add(specular_label, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
+    specularRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specularR);
+    materialPanel->add(specularRField, 1, 2);
 
-    specular_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specular_r);
-    material_panel->add(specular_r_field, 1, 2);
+    specularGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specularG);
+    materialPanel->add(specularGField, 2, 2);
 
-    specular_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specular_g);
-    material_panel->add(specular_g_field, 2, 2);
+    specularBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specularB);
+    materialPanel->add(specularBField, 3, 2);
 
-    specular_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specular_b);
-    material_panel->add(specular_b_field, 3, 2);
+    specularAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specularA);
+    materialPanel->add(specularAField, 4, 2);
 
+    // shininess
+    shininessLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
+    materialPanel->add(shininessLabel, 0, 3, 1, 1, Alignment::START, Alignment::START);
+    shininessField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
+    materialPanel->add(shininessField, 1, 3);
 
-    specular_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specular_a);
-    material_panel->add(specular_a_field, 4, 2);
+    // solid color panel
+    solidColorPanel = new Panel(0.0f, 0.0f);
+    solidColorSection->add(solidColorPanel);
 
-    //shininess
-    shininess_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
-    material_panel->add(shininess_label, 0, 3, 1, 1, Alignment::START, Alignment::START);
-    shininess_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, ":", 4.0f, true, &shininess);
-    material_panel->add(shininess_field, 1, 3);
+    colorRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &colorR);
+    solidColorPanel->add(colorRField, 0, 0);
 
-    //solid color panel
-    solid_color_panel = new Panel(0.0f, 0.0f);
-    solid_color_section->add(solid_color_panel);
+    colorGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &colorG);
+    solidColorPanel->add(colorGField, 0, 1);
 
-    color_r_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &color_r);
-    solid_color_panel->add(color_r_field, 0, 0);
+    colorBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &colorB);
+    solidColorPanel->add(colorBField, 0, 2);
 
-    color_g_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &color_g);
-    solid_color_panel->add(color_g_field, 0, 1);
+    colorAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &colorA);
+    solidColorPanel->add(colorAField, 0, 3);
 
-    color_b_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &color_b);
-    solid_color_panel->add(color_b_field, 0, 2);
+    // texture panel
+    texturePanel = new Panel(0.0f, 0.0f);
+    textureSection->add(texturePanel);
 
-    color_a_field =new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &color_a);
-    solid_color_panel->add(color_a_field, 0, 3);
+    textureDropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Texture:", textureNames, selectedTexture);
+    texturePanel->add(textureDropdown, 0, 0);
 
-    //texture panel
-    texture_panel = new Panel(0.0f, 0.0f);
-    texture_section->add(texture_panel);
+    addTextureButton = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
+    texturePanel->add(addTextureButton, 1, 0, 1, 1, Alignment::START, Alignment::START);
 
-    texture_dropdown = new Dropdown(0.0f, 0.0f, 1.0f, 1.0f, "Texture:", textureNames, selectedTexture);
-    texture_panel->add(texture_dropdown, 0, 0);
+    textureFileBrowser = new FileBrowser();
+    textureFileBrowser->set_filter({".png", ".jpg", ".jpeg"});
+    textureFileBrowser->onFileSelected = [](const string& texturePath) {
+        int texIndex = add_texture_file(texturePath);
+        if (texIndex < 0) return;
 
-    add_texture_button = new Button(0.0f, 0.0f, 240.0f, 40.0f, add_texture, "Add Texture");
-    texture_panel->add(add_texture_button, 1, 0, 1, 1, Alignment::START, Alignment::START);
-
-    texture_file_browser = new FileBrowser();
-    texture_file_browser->setFilter({".png", ".jpg", ".jpeg"});
-    texture_file_browser->onFileSelected = [](const string& texturePath) {
-        int tex_index = add_texture_file(texturePath);
-        if (tex_index < 0) return;
-
-        selectedTexture = tex_index;
-        if (texture_dropdown)
-            texture_dropdown->setOptions(textureNames);
+        selectedTexture = texIndex;
+        if (textureDropdown)
+            textureDropdown->set_options(textureNames);
 
         if (selectedObject) {
             selectedObject->drawType = TEXTURE;
-            selectedObject->texture = TextureIDs[tex_index];
+            selectedObject->texture = TextureIDs[texIndex];
         }
     };
 
-    transform_panel = new Panel(0.0f, 0.0f);
-    transform_section->add(transform_panel);
+    transformPanel = new Panel(0.0f, 0.0f);
+    transformSection->add(transformPanel);
 
-    translation_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "translation");
-    transform_panel->add(translation_label, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
+    translationLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "translation");
+    transformPanel->add(translationLabel, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    trans_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &trans_x);
-    transform_panel->add(trans_x_field, 1, 0);
+    transXField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &transX);
+    transformPanel->add(transXField, 1, 0);
 
-    trans_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &trans_y);
-    transform_panel->add(trans_y_field, 2, 0);
+    transYField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &transY);
+    transformPanel->add(transYField, 2, 0);
 
-    trans_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &trans_z);
-    transform_panel->add(trans_z_field, 3, 0);
+    transZField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &transZ);
+    transformPanel->add(transZField, 3, 0);
 
-    rotation_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "rotation");
-    transform_panel->add(rotation_label, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
+    rotationLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "rotation");
+    transformPanel->add(rotationLabel, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    rot_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &rot_x);
-    transform_panel->add(rot_x_field, 1, 1);
+    rotXField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &rotX);
+    transformPanel->add(rotXField, 1, 1);
 
-    rot_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &rot_y);
-    transform_panel->add(rot_y_field, 2, 1);
+    rotYField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &rotY);
+    transformPanel->add(rotYField, 2, 1);
 
-    rot_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &rot_z);
-    transform_panel->add(rot_z_field, 3, 1);
+    rotZField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &rotZ);
+    transformPanel->add(rotZField, 3, 1);
 
-    scale_label = new Label(0.0f, 0.0f, 130.0f, 48.0f, "scale");
-    transform_panel->add(scale_label, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
+    scaleLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "scale");
+    transformPanel->add(scaleLabel, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
 
-    scale_x_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &scale_x);
-    transform_panel->add(scale_x_field, 1, 2);
+    scaleXField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "X:", 4.0f, true, &scaleX);
+    transformPanel->add(scaleXField, 1, 2);
 
-    scale_y_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &scale_y);
-    transform_panel->add(scale_y_field, 2, 2);
+    scaleYField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Y:", 4.0f, true, &scaleY);
+    transformPanel->add(scaleYField, 2, 2);
 
-    scale_z_field = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &scale_z);
-    transform_panel->add(scale_z_field, 3, 2);
-
-
-
+    scaleZField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "Z:", 4.0f, true, &scaleZ);
+    transformPanel->add(scaleZField, 3, 2);
 
     update_fields();
-
-}//end init hud
+}
 
 void set_section_visibility(DrawType type) {
-    if (material_section)    material_section->setHidden(type != MATERIAL);
-    if (solid_color_section) solid_color_section->setHidden(type != SOLID_COLOR);
-    if (texture_section)     texture_section->setHidden(type != TEXTURE);
+    if (materialSection) materialSection->set_hidden(type != MATERIAL);
+    if (solidColorSection) solidColorSection->set_hidden(type != SOLID_COLOR);
+    if (textureSection) textureSection->set_hidden(type != TEXTURE);
 }
 
 void sync_material_to_fields(const MaterialProperties& mat) {
-    ambient_r = mat.ambient[0];  ambient_g = mat.ambient[1];
-    ambient_b = mat.ambient[2];  ambient_a = mat.ambient[3];
-    diffuse_r = mat.diffuse[0];  diffuse_g = mat.diffuse[1];
-    diffuse_b = mat.diffuse[2];  diffuse_a = mat.diffuse[3];
-    specular_r = mat.specular[0]; specular_g = mat.specular[1];
-    specular_b = mat.specular[2]; specular_a = mat.specular[3];
+    ambientR = mat.ambient[0];  ambientG = mat.ambient[1];
+    ambientB = mat.ambient[2];  ambientA = mat.ambient[3];
+    diffuseR = mat.diffuse[0];  diffuseG = mat.diffuse[1];
+    diffuseB = mat.diffuse[2];  diffuseA = mat.diffuse[3];
+    specularR = mat.specular[0]; specularG = mat.specular[1];
+    specularB = mat.specular[2]; specularA = mat.specular[3];
     shininess = mat.shininess;
 
-    if (ambient_r_field) ambient_r_field->setText(to_string(ambient_r));
-    if (ambient_g_field) ambient_g_field->setText(to_string(ambient_g));
-    if (ambient_b_field) ambient_b_field->setText(to_string(ambient_b));
-    if (ambient_a_field) ambient_a_field->setText(to_string(ambient_a));
-    if (diffuse_r_field) diffuse_r_field->setText(to_string(diffuse_r));
-    if (diffuse_g_field) diffuse_g_field->setText(to_string(diffuse_g));
-    if (diffuse_b_field) diffuse_b_field->setText(to_string(diffuse_b));
-    if (diffuse_a_field) diffuse_a_field->setText(to_string(diffuse_a));
-    if (specular_r_field) specular_r_field->setText(to_string(specular_r));
-    if (specular_g_field) specular_g_field->setText(to_string(specular_g));
-    if (specular_b_field) specular_b_field->setText(to_string(specular_b));
-    if (specular_a_field) specular_a_field->setText(to_string(specular_a));
-    if (shininess_field)  shininess_field->setText(to_string(shininess));
+    if (ambientRField) ambientRField->set_text(to_string(ambientR));
+    if (ambientGField) ambientGField->set_text(to_string(ambientG));
+    if (ambientBField) ambientBField->set_text(to_string(ambientB));
+    if (ambientAField) ambientAField->set_text(to_string(ambientA));
+    if (diffuseRField) diffuseRField->set_text(to_string(diffuseR));
+    if (diffuseGField) diffuseGField->set_text(to_string(diffuseG));
+    if (diffuseBField) diffuseBField->set_text(to_string(diffuseB));
+    if (diffuseAField) diffuseAField->set_text(to_string(diffuseA));
+    if (specularRField) specularRField->set_text(to_string(specularR));
+    if (specularGField) specularGField->set_text(to_string(specularG));
+    if (specularBField) specularBField->set_text(to_string(specularB));
+    if (specularAField) specularAField->set_text(to_string(specularA));
+    if (shininessField) shininessField->set_text(to_string(shininess));
 }
 
 void sync_material_from_fields(MaterialProperties& mat) {
-    mat.ambient  = vec4(ambient_r, ambient_g, ambient_b, ambient_a);
-    mat.diffuse  = vec4(diffuse_r, diffuse_g, diffuse_b, diffuse_a);
-    mat.specular = vec4(specular_r, specular_g, specular_b, specular_a);
+    mat.ambient = vec4(ambientR, ambientG, ambientB, ambientA);
+    mat.diffuse = vec4(diffuseR, diffuseG, diffuseB, diffuseA);
+    mat.specular = vec4(specularR, specularG, specularB, specularA);
     mat.shininess = shininess;
 }
 
 void sync_color_to_fields(const vec4& color) {
-    color_r = color[0]; color_g = color[1];
-    color_b = color[2]; color_a = color[3];
-    if (color_r_field) color_r_field->setText(to_string(color_r));
-    if (color_g_field) color_g_field->setText(to_string(color_g));
-    if (color_b_field) color_b_field->setText(to_string(color_b));
-    if (color_a_field) color_a_field->setText(to_string(color_a));
+    colorR = color[0]; colorG = color[1];
+    colorB = color[2]; colorA = color[3];
+    if (colorRField) colorRField->set_text(to_string(colorR));
+    if (colorGField) colorGField->set_text(to_string(colorG));
+    if (colorBField) colorBField->set_text(to_string(colorB));
+    if (colorAField) colorAField->set_text(to_string(colorA));
 }
 
 void sync_color_from_fields(vec4& color) {
-    color = vec4(color_r, color_g, color_b, color_a);
+    color = vec4(colorR, colorG, colorB, colorA);
 }
 
 void sync_transform_to_fields(vec3 translate, vec3 rotate, vec3 scale) {
-    trans_x = translation[0]; trans_y = translation[1]; trans_z = translation[2];
-    rot_x = rotation[0]; rot_y = rotation[1]; rot_z = rotation[2];
-    scale_x = scale[0]; scale_y = scale[1]; scale_z = scale[2];
+    transX = translate[0]; transY = translate[1]; transZ = translate[2];
+    rotX = rotate[0]; rotY = rotate[1]; rotZ = rotate[2];
+    scaleX = scale[0]; scaleY = scale[1]; scaleZ = scale[2];
 
-    if (trans_x_field) trans_x_field->setText(to_string(trans_x));
-    if (trans_y_field) trans_y_field->setText(to_string(trans_y));
-    if (trans_z_field) trans_z_field->setText(to_string(trans_z));
+    if (transXField) transXField->set_text(to_string(transX));
+    if (transYField) transYField->set_text(to_string(transY));
+    if (transZField) transZField->set_text(to_string(transZ));
 
-    if (rot_x_field) rot_x_field->setText(to_string(rot_x));
-    if (rot_y_field) rot_y_field->setText(to_string(rot_y));
-    if (rot_z_field) rot_z_field->setText(to_string(rot_z));
+    if (rotXField) rotXField->set_text(to_string(rotX));
+    if (rotYField) rotYField->set_text(to_string(rotY));
+    if (rotZField) rotZField->set_text(to_string(rotZ));
 
-    if (scale_x_field) scale_x_field->setText(to_string(scale_x));
-    if (scale_y_field) scale_y_field->setText(to_string(scale_y));
-    if (scale_z_field) scale_z_field->setText(to_string(scale_z));
-
+    if (scaleXField) scaleXField->set_text(to_string(scaleX));
+    if (scaleYField) scaleYField->set_text(to_string(scaleY));
+    if (scaleZField) scaleZField->set_text(to_string(scaleZ));
 }
 
 void sync_transform_from_fields(vec3 translate, vec3 rotate, vec3 scale) {
@@ -474,65 +463,58 @@ int find_texture_index(GLuint texID) {
     return -1;
 }
 
-
-
 void update_fields() {
     if (!selectedObject) {
-        object_name_field->setText("NONE");
-        object_name_field->setEditable(false);
-        type_dropdown->setEnabled(false);
-        model_dropdown->setEnabled(false);
+        objectNameField->set_text("NONE");
+        objectNameField->set_editable(false);
+        typeDropdown->set_enabled(false);
+        modelDropdown->set_enabled(false);
         selectedType = -1;
         selectedTexture = -1;
         selectedMesh = -1;
-        transform_section->hide();
-        set_section_visibility(static_cast<DrawType>(-1)); // hides all
+        transformSection->hide();
+        set_section_visibility(static_cast<DrawType>(-1));
         return;
     }
 
     if (selectedObject->mesh == -1) {
-        type_dropdown->setEnabled(false);
-    }else {
-        type_dropdown->setEnabled(true);
+        typeDropdown->set_enabled(false);
+    } else {
+        typeDropdown->set_enabled(true);
     }
 
+    objectNameField->set_editable(true);
+    nameString = selectedObject->name;
+    objectNameField->set_text(nameString);
 
-    object_name_field->setEditable(true);
-    name_string = selectedObject->name;
-    object_name_field->setText(name_string);
-
-    model_dropdown->setEnabled(true);
+    modelDropdown->set_enabled(true);
     selectedMesh = (int)selectedObject->mesh;
 
     selectedType = selectedObject->drawType;
     set_section_visibility(selectedObject->drawType);
 
-    transform_section->show();
+    transformSection->show();
     sync_transform_to_fields(selectedObject->position, selectedObject->rotation, selectedObject->scale);
 
-    // Refresh texture list only when the texture section is relevant
-    if (texture_dropdown && selectedObject->drawType == TEXTURE) {
-        texture_dropdown->setOptions(textureNames);
+    if (textureDropdown && selectedObject->drawType == TEXTURE) {
+        textureDropdown->set_options(textureNames);
         selectedTexture = find_texture_index(selectedObject->texture);
     } else {
         selectedTexture = -1;
     }
 
     if (selectedObject->drawType == MATERIAL) {
-        sync_material_to_fields(DynamicMaterials[selectedObject->material]);
+        sync_material_to_fields(dynamicMaterials[selectedObject->material]);
     } else if (selectedObject->drawType == SOLID_COLOR) {
         sync_color_to_fields(selectedObject->color);
     }
 }
 
-
 void update_from_fields() {
     if (!selectedObject) return;
 
+    sync_transform_from_fields({transX, transY, transZ}, {rotX, rotY, rotZ}, {scaleX, scaleY, scaleZ});
 
-    sync_transform_from_fields({trans_x, trans_y, trans_z}, {rot_x, rot_y, rot_z}, {scale_x, scale_y, scale_z});
-
-    //mesh
     if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() && selectedObject->mesh != selectedMesh) {
         selectedObject->mesh = selectedMesh;
         if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor) {
@@ -543,34 +525,29 @@ void update_from_fields() {
     }
 
     if (selectedObject->mesh == -1) {
-        type_dropdown->setEnabled(false);
-    }else {
-        type_dropdown->setEnabled(true);
+        typeDropdown->set_enabled(false);
+    } else {
+        typeDropdown->set_enabled(true);
     }
 
-    // Name
-    if (object_name_field && selectedObject->name != name_string) {
-        selectedObject->name = name_string;
+    if (objectNameField && selectedObject->name != nameString) {
+        selectedObject->name = nameString;
         rebuild_scene_graph();
     }
 
-    // Type change
     if (selectedType >= 0 && selectedObject->drawType != static_cast<DrawType>(selectedType)) {
-        selectedObject->initializeType(static_cast<DrawType>(selectedType));
+        selectedObject->initialize_type(static_cast<DrawType>(selectedType));
         selectedObject->drawType = static_cast<DrawType>(selectedType);
-        update_fields();          // refresh UI for the new type
-        return;                   // avoid writing stale field values this frame
+        update_fields();
+        return;
     }
 
-
-
-    // Per-type writes
     if (selectedObject->drawType == MATERIAL) {
-        sync_material_from_fields(DynamicMaterials[selectedObject->material]);
+        sync_material_from_fields(dynamicMaterials[selectedObject->material]);
     } else if (selectedObject->drawType == SOLID_COLOR) {
         vec4 c;
         sync_color_from_fields(c);
-        selectedObject->setColor(c);
+        selectedObject->set_color(c);
     } else if (selectedObject->drawType == TEXTURE) {
         if (selectedTexture >= 0 && selectedTexture < (int)TextureIDs.size())
             selectedObject->texture = TextureIDs[selectedTexture];
@@ -586,7 +563,6 @@ void select_object(SceneObject* obj) {
 void delete_selected_object() {
     if (!selectedObject) return;
 
-    // remove from the scene list
     auto it = std::find(objects.begin(), objects.end(), selectedObject);
     if (it != objects.end())
         objects.erase(it);
@@ -594,18 +570,18 @@ void delete_selected_object() {
     delete selectedObject;
     selectedObject = nullptr;
 
-    update_fields();          // clear the detail panel
-    rebuild_scene_graph();    // refresh the list
+    update_fields();
+    rebuild_scene_graph();
 }
 
 void rebuild_scene_graph() {
-    if (!scene_graph_panel) return;
+    if (!sceneGraphPanel) return;
 
-    for (auto& cell : scene_graph_panel->cells) {
+    for (auto& cell : sceneGraphPanel->cells) {
         if (cell.widget)
             destroy_widget(cell.widget);
     }
-    scene_graph_panel->cells.clear();
+    sceneGraphPanel->cells.clear();
 
     for (int i = 0; i < (int)objects.size(); ++i) {
         SceneObject* obj = objects[i];
@@ -617,66 +593,61 @@ void rebuild_scene_graph() {
             b->color = HUD_ACCENT;
         }
 
-        scene_graph_panel->add(b, 0, i);
-
-
+        sceneGraphPanel->add(b, 0, i);
     }
 }
 
 void show_save_dialog() {
-    save_name_string = "untitled";
-    if (save_name_field) {
-        save_name_field->setText(save_name_string);
-        save_name_field->focused = true;   // ready to type immediately
+    saveNameString = "untitled";
+    if (saveNameField) {
+        saveNameField->set_text(saveNameString);
+        saveNameField->focused = true;
     }
-    if (save_dialog_panel) {
-        save_dialog_panel->show();
-        save_dialog_panel->x = (ww - save_dialog_panel->w) * 0.5f;
-        save_dialog_panel->y = (hh - save_dialog_panel->h) * 0.5f;
+    if (saveDialogPanel) {
+        saveDialogPanel->show();
+        saveDialogPanel->x = (ww - saveDialogPanel->w) * 0.5f;
+        saveDialogPanel->y = (hh - saveDialogPanel->h) * 0.5f;
     }
 }
 
 //-----------------------------------Button Functions--------------------------------------
-//----------------------all function used by buttons defined below-------------------------
 
 void toggle_lights() {
     lightOn[WhitePointLight] = !lightOn[WhitePointLight];
 }
 
-void add_texture(){
-    texture_file_browser->openBrowser();
+void add_texture() {
+    textureFileBrowser->open_browser();
 }
 
 void add_model() {
-    mesh_file_browser->openBrowser();
+    meshFileBrowser->open_browser();
 }
 
 void add_object() {
     string name = "object" + std::to_string(objects.size() + 1);
-    SceneObject* obj = new SceneObject(name);   // empty
+    SceneObject* obj = new SceneObject(name);
     select_object(obj);
     rebuild_scene_graph();
     update_fields();
 }
 
 void load_scene() {
-    scene_file_browser->openBrowser();
+    sceneFileBrowser->open_browser();
 }
 
 void save_scene() {
     show_save_dialog();
-
 }
 
 void hide_save_dialog() {
-    if (save_dialog_panel) save_dialog_panel->hide();
-    if (save_name_field) save_name_field->focused = false;
+    if (saveDialogPanel) saveDialogPanel->hide();
+    if (saveNameField) saveNameField->focused = false;
 }
 
 void confirm_save_scene() {
-    string name = save_name_field ? save_name_field->getText() : save_name_string;
+    string name = saveNameField ? saveNameField->get_text() : saveNameString;
 
-    // basic cleanup
     if (name.empty() || name.find_first_not_of(" \t") == string::npos)
         name = "untitled";
 
@@ -685,25 +656,23 @@ void confirm_save_scene() {
 }
 
 void toggle_camera_mode() {
-    if (camera_mode == ORTHO) {
+    if (cameraMode == ORTHO) {
         orthoEye = eye;
         orthoCenter = center;
         orthoAzimuth = azimuth;
         orthoElevation = elevation;
         orthoRadius = radius;
-        camera_mode = PERSPECTIVE;
-        camera_mode_button->setLabel("PERSPECTIVE");
+        cameraMode = PERSPECTIVE;
+        cameraModeButton->set_label("PERSPECTIVE");
         eye = fpsEye;
-    }else {
+    } else {
         fpsEye = eye;
-        camera_mode = ORTHO;
-        camera_mode_button->setLabel("ORTHO");
+        cameraMode = ORTHO;
+        cameraModeButton->set_label("ORTHO");
         eye = orthoEye;
         center = orthoCenter;
         azimuth = orthoAzimuth;
         elevation = orthoElevation;
         radius = orthoRadius;
-
     }
-
 }

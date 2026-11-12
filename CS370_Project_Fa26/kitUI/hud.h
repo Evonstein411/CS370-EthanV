@@ -102,7 +102,7 @@ bool hud_mouse_button(float mx, float my, int button, int action) {
     for (size_t i = 0; i < widgets.size(); i++) {
         Dropdown* dd = dynamic_cast<Dropdown*>(widgets[i]);
         if (dd && dd->open && !dd->contains(mx, my))
-            dd->closePopup();
+            dd->close_popup();
     }
 
     if (top) {
@@ -123,21 +123,18 @@ void draw_widgets() {
     //NOTE: IF YOU WANT TRANSPARENCY OF HUD ELEMENTS MAKE SURE ALPHA BLENDING IS ON
 
     //switch to pixel based ortho camera, store camera data pre hud draw
-    mat4 scene_proj_matrix = proj_matrix;
-    mat4 scene_camera_matrix = camera_matrix;
-    proj_matrix = ortho(0.0f, (float)ww, 0.0f, (float)hh, -1.0f, 1.0f);
-    camera_matrix  = mat4().identity();
+    mat4 sceneProjMatrix = projMatrix;
+    mat4 sceneCameraMatrix = cameraMatrix;
+    projMatrix = ortho(0.0f, (float)ww, 0.0f, (float)hh, -1.0f, 1.0f);
+    cameraMatrix  = mat4().identity();
 
     //model matrices
-    model_matrix = mat4().identity();
-    mat4 scale_matrix = mat4().identity();
-    mat4 trans_matrix = mat4().identity();
-
+    modelMatrix = mat4().identity();
 
     //list of parents
     vector<Widget*> topLevel;
     for (Widget* w : widgets)
-        if (!w->isChild())
+        if (!w->is_child())
             topLevel.push_back(w);
 
     //sort by priority
@@ -148,8 +145,8 @@ void draw_widgets() {
         w->draw();
 
     //reset settings to pre hud state, restore camera
-    proj_matrix = scene_proj_matrix;
-    camera_matrix = scene_camera_matrix;
+    projMatrix = sceneProjMatrix;
+    cameraMatrix = sceneCameraMatrix;
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -159,7 +156,7 @@ void draw_widgets() {
 
 //helper function for finding topmost widget for hit testing
 Widget* find_topmost(Widget* w, float mx, float my) {
-    if (!w || w->hidden || w->isEffectivelyHidden())
+    if (!w || w->hidden || w->is_effectively_hidden())
         return nullptr;
 
     // Children: higher priority first, then reverse creation order
@@ -180,7 +177,7 @@ Widget* find_topmost(Widget* w, float mx, float my) {
 Widget* find_topmost_widget(float mx, float my) {
     vector<Widget*> topLevel;
     for (Widget* w : widgets)
-        if (!w->isChild())
+        if (!w->is_child())
             topLevel.push_back(w);
 
     // Higher priority first

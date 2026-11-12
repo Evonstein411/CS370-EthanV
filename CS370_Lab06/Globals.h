@@ -11,9 +11,9 @@ GLint texCoords = 2;
 GLint colCoords = 4;
 
 // Global state
-mat4 proj_matrix;
-mat4 camera_matrix;
-mat4 model_matrix;
+mat4 projMatrix;
+mat4 cameraMatrix;
+mat4 modelMatrix;
 
 // Initial Camera
 vec3 eye = {3.0f, 3.0f, 0.0f};
@@ -27,7 +27,7 @@ GLfloat elevation = 90.0f;
 GLfloat del = 2.0f;
 GLfloat radius = 6.0f;
 GLfloat dr = 0.1f;
-GLfloat min_radius = 2.0f;
+GLfloat minRadius = 2.0f;
 
 // Global object variables
 GLfloat cube_angle = 0.0;

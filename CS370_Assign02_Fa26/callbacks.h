@@ -59,9 +59,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         else if (key == GLFW_KEY_Z)
         {
             radius -= dr;
-            if (radius < min_radius)
+            if (radius < minRadius)
             {
-                radius = min_radius;
+                radius = minRadius;
             }
         }
 

@@ -1,6 +1,6 @@
 enum LightNames {WhiteDirLight, GreenPointLight, RedSpotLight, NumLights};
 GLuint LightBuffers[NumLightBuffers];
-vector<LightProperties> Lights;
+vector<LightProperties> lights;
 GLint lightOn[NumLights] = {0};
 
 // White directional light
@@ -47,17 +47,17 @@ LightProperties redSpotLight = {
 
 void build_lights( ) {
     // Allocate Lights vector
-    Lights.resize(NumLights);
+    lights.resize(NumLights);
     // Add lights to Lights vector
-    Lights[WhiteDirLight] = whiteDirLight;
+    lights[WhiteDirLight] = whiteDirLight;
     lightOn[WhiteDirLight] = 1;
-    Lights[GreenPointLight] = greenPointLight;
+    lights[GreenPointLight] = greenPointLight;
     lightOn[GreenPointLight] = 1;
-    Lights[RedSpotLight] = redSpotLight;
+    lights[RedSpotLight] = redSpotLight;
 	lightOn[RedSpotLight] = 1;
 
     // Create uniform buffer for lights
     glGenBuffers(NumLightBuffers, LightBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, LightBuffers[LightBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, Lights.size()*sizeof(LightProperties), Lights.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, lights.size()*sizeof(LightProperties), lights.data(), GL_STATIC_DRAW);
 }

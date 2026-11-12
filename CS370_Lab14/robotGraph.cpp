@@ -83,8 +83,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -103,10 +103,10 @@ void display( )
     {
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
-    proj_matrix = ortho(-10.0f*xratio, 10.0f*xratio, -10.0f*yratio, 10.0f*yratio, -10.0f, 10.0f);
+    projMatrix = ortho(-10.0f*xratio, 10.0f*xratio, -10.0f*yratio, 10.0f*yratio, -10.0f, 10.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
 	render_scene();

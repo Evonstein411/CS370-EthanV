@@ -137,8 +137,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -158,10 +158,10 @@ void display( )
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
     // Set projection matrix
-    proj_matrix = ortho(-10.0f*xratio, 10.0f*xratio, -10.0f*yratio, 10.0f*yratio, -10.0f, 10.0f);
+    projMatrix = ortho(-10.0f*xratio, 10.0f*xratio, -10.0f*yratio, 10.0f*yratio, -10.0f, 10.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
 	render_scene();
@@ -170,7 +170,7 @@ void display( )
 }
 
 void render_scene( ) {
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -181,24 +181,24 @@ void render_scene( ) {
 	trans_matrix = translate(torus_pos);
 	scale_matrix = scale(1.0f, 1.0f, 1.0f);
 	rot_matrix = rotate(torus_ang, vec3(0.0f, 0.0f, 1.0f));
-	model_matrix = trans_matrix * rot_matrix * scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix * rot_matrix * scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Torus, TorusMaterial);
 
 
 	//sphere
 	trans_matrix = translate(sphere_pos);
 	scale_matrix = scale(1.0f, 1.0f, 1.0f);
-	model_matrix = trans_matrix*scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix*scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Sphere, SphereMaterial);
 
 	//cube
 	trans_matrix = translate(cube_pos);
 	scale_matrix = scale(1.0f, 1.0f, 1.0f);
 	rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
-	model_matrix = trans_matrix * rot_matrix * scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix * rot_matrix * scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Cube, CubeMaterial);
 
 
@@ -206,30 +206,30 @@ void render_scene( ) {
 	trans_matrix = translate(pyr_pos);
 	scale_matrix = scale(1.0f, 1.0f, 1.0f);
 	rot_matrix = rotate(pyr_ang, vec3(0.0f, 1.0f, 0.0f));
-	model_matrix = trans_matrix * rot_matrix * scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix * rot_matrix * scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Octahedron, OctMaterial);
 
 	//stage
 	trans_matrix = translate(0.0f, -0.5f, 0.0f);
 	scale_matrix = scale(15.0f, 1.0f, 7.5f);
-	model_matrix = trans_matrix*scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix*scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Cube, Wood);
 
 	//stage cylinder
 	trans_matrix = translate(0.0f, -0.5f, 3.75f);
 	scale_matrix = scale(7.5f, 0.5f, 7.5f);
 	rot_matrix = rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
-	model_matrix = trans_matrix * rot_matrix * scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix * rot_matrix * scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(Cylinder, Wood);
 
 	//half circle
 	trans_matrix = translate(0.0f, 0.0f, 3.75f);
 	scale_matrix = scale(5.25f, 0.5f, 5.25f);
 	rot_matrix = rotate(180.0f, vec3(0.0f, 1.0f, 0.0f));
-	model_matrix = trans_matrix * rot_matrix * scale_matrix;
-	normal_matrix = model_matrix.inverse().transpose();
+	modelMatrix = trans_matrix * rot_matrix * scale_matrix;
+	normalMatrix = modelMatrix.inverse().transpose();
 	draw_mat_object(HalfCircle, Wood);
 }

@@ -22,13 +22,13 @@ struct FileBrowser : Widget {
             : Widget(0, 0, 0, 0) {
         priority = 2;
         content = new Panel(x, y);
-        addChild(content);
+        add_child(content);
 
         pathLabel = new Label(0, 0, 320, 32, "");
         content->add(pathLabel, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
 
         closeButton = new Button(0, 0, 32, 32,
-            [this]() { closeBrowser(); }, "X");
+            [this]() { close_browser(); }, "X");
         content->add(closeButton, 1, 0, 1, 1, Alignment::END, Alignment::START);
 
         listPanel = new ScrollPanel(0, 0, 480.0f);
@@ -53,14 +53,14 @@ struct FileBrowser : Widget {
         // Panel destructor unparents; we explicitly delete what we own
         if (content) {
             // Delete entry buttons first (same pattern as Dropdown::setOptions)
-            clearList();
+            clear_list();
             delete content;
             content = nullptr;
         }
     };
 
     //set allowed file extensions
-    void setFilter(const vector<string>& extensions) {
+    void set_filter(const vector<string>& extensions) {
         allowedExtensions = extensions;
         // Normalize to lowercase with leading dot
         for (auto& ext : allowedExtensions) {
@@ -68,13 +68,13 @@ struct FileBrowser : Widget {
                 ext = "." + ext;
             std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
         }
-        updateFilterLabel();
+        update_filter_label();
     }
 
-    void updateFilterLabel() {
+    void update_filter_label() {
         if (!filterLabel) return;
         if (allowedExtensions.empty()) {
-            filterLabel->setText("(any)");
+            filterLabel->set_text("(any)");
             return;
         }
         string s;
@@ -82,26 +82,26 @@ struct FileBrowser : Widget {
             if (i) s += " ";
             s += allowedExtensions[i];
         }
-        filterLabel->setText(s);
+        filterLabel->set_text(s);
     }
 
-    void openBrowser(const string& startPath = "") {
+    void open_browser(const string& startPath = "") {
         show();
         if (!startPath.empty())
             currentPath = startPath;
         open = true;
         content->show();
         refresh();
-        centerOnScreen();
+        center_on_screen();
     }
 
-    void closeBrowser() {
+    void close_browser() {
         open = false;
         content->hide();
         this->hide();
     }
 
-    void centerOnScreen() {
+    void center_on_screen() {
         if (!content) return;
         content->layout();
         w = content->w;
@@ -112,7 +112,7 @@ struct FileBrowser : Widget {
         content->y = y;
     }
 
-    void clearList() {
+    void clear_list() {
         if (!listPanel) return;
         for (auto& cell : listPanel->cells) {
             if (cell.widget) {
@@ -123,7 +123,7 @@ struct FileBrowser : Widget {
     }
 
     //helper to check if file follows current extension filter
-    bool passesFilter(const fs::path& p) const {
+    bool passes_filter(const fs::path& p) const {
         if (allowedExtensions.empty())
             return true;   // no filter → show all files
         string ext = p.extension().string();
@@ -137,8 +137,8 @@ struct FileBrowser : Widget {
     void refresh() {
         if (!listPanel || !pathLabel) return;
 
-        clearList();
-        pathLabel->setText(currentPath);
+        clear_list();
+        pathLabel->set_text(currentPath);
 
         int row = 0;
 
@@ -169,14 +169,14 @@ struct FileBrowser : Widget {
                             refresh();
                         }, name + "/");
                     listPanel->add(b, 0, row++);
-                } else if (passesFilter(entry.path())) {
+                } else if (passes_filter(entry.path())) {
                     Button* b = new Button(0, 0, 280, 32,
                         [this, full]() {
                             selectedPath = full;
-                            selectedLabel->setText(fs::path(full).filename().string());
+                            selectedLabel->set_text(fs::path(full).filename().string());
                             if (onFileSelected)
                                 onFileSelected(full);
-                            closeBrowser();
+                            close_browser();
                         }, name);
                     listPanel->add(b, 0, row++);
                 }
@@ -187,10 +187,10 @@ struct FileBrowser : Widget {
         content->layout();
         w = content->w;
         h = content->h;
-        centerOnScreen();
+        center_on_screen();
     }// rebuild the list of entries
 
-    void drawSelf() override {
+    void draw_self() override {
         //draw handled by children
     }
 

@@ -1,22 +1,22 @@
 enum MaterialNames {Brass, Base, Floor, NumMaterials};
 GLuint MaterialBuffers[NumMaterialBuffers];
-vector<MaterialProperties> Materials;
-vector<MaterialProperties> DynamicMaterials;
+vector<MaterialProperties> materials;
+vector<MaterialProperties> dynamicMaterials;
 
-float ambient_r = 0.33f;
-float ambient_g = 0.22f;
-float ambient_b = 0.03f;
-float ambient_a = 1.0f;
+float ambientR = 0.33f;
+float ambientG = 0.22f;
+float ambientB = 0.03f;
+float ambientA = 1.0f;
 
-float diffuse_r = 0.78f;
-float diffuse_g = 0.57f;
-float diffuse_b = 0.11f;
-float diffuse_a = 1.0f;
+float diffuseR = 0.78f;
+float diffuseG = 0.57f;
+float diffuseB = 0.11f;
+float diffuseA = 1.0f;
 
-float specular_r = 0.99f;
-float specular_g = 0.91f;
-float specular_b = 0.81f;
-float specular_a = 1.0f;
+float specularR = 0.99f;
+float specularG = 0.91f;
+float specularB = 0.81f;
+float specularA = 1.0f;
 
 float shininess = 27.8f;
 
@@ -47,21 +47,21 @@ MaterialProperties brass = {
 
 void build_materials() {
     // Allocate Materials vector
-    Materials.resize(NumMaterials);
+    materials.resize(NumMaterials);
     // Add materials to Materials vector
-    Materials[Brass] = brass;
-	Materials[Floor] = floormat;
-	Materials[Base] = baseMaterial;
+    materials[Brass] = brass;
+	materials[Floor] = floormat;
+	materials[Base] = baseMaterial;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, Materials.size()*sizeof(MaterialProperties), Materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
 }
 
 void build_dynamic_materials() {
-	vector<MaterialProperties> all = Materials;
-	all.insert(all.end(), DynamicMaterials.begin(), DynamicMaterials.end());
+	vector<MaterialProperties> all = materials;
+	all.insert(all.end(), dynamicMaterials.begin(), dynamicMaterials.end());
 
 	glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
 	glBufferData(GL_UNIFORM_BUFFER,

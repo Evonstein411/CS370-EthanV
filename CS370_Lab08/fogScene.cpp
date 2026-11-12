@@ -75,8 +75,8 @@ int main(int argc, char**argv)
 void display( )
 {
     // Declare projection and camera matrices
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
     // Clear window and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -96,10 +96,10 @@ void display( )
     }
 
     // Set perspective projection matrix
-    proj_matrix = frustum(-1.0f*xratio, 1.0f*xratio, -1.0f*yratio, 1.0f*yratio, 1.0f, 8.0f);
+    projMatrix = frustum(-1.0f*xratio, 1.0f*xratio, -1.0f*yratio, 1.0f*yratio, 1.0f, 8.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
     render_scene();
@@ -110,7 +110,7 @@ void display( )
 
 void render_scene( ) {
     // Declare transformation matrices
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -120,7 +120,7 @@ void render_scene( ) {
     trans_matrix = translate(0.0f, 0.0f, 0.0f);
     rot_matrix = rotate(cube_angle, axis);
     scale_matrix = scale(2.0f, 2.0f, 2.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     // Draw cube
     draw_fog_color_object(Cube, CubeRed);
 
@@ -128,7 +128,7 @@ void render_scene( ) {
     trans_matrix = translate(0.0f, 2.0f, 0.0f);
     rot_matrix = rotate(cube_angle, axis);
     scale_matrix = scale(1.0f, 1.0f, 1.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     // Draw sphere
     draw_fog_color_object(Sphere, SphereYellow);
 

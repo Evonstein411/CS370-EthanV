@@ -36,8 +36,33 @@ void build_texture_node(TexNode& node, GLuint obj, GLuint texture, mat4 base_tra
 
 // Create and attach scene graph nodes
 void build_scene_graph( ) {
-    // TODO: Add scene graph nodes
+    mat4 torso_base = scale(TORSO_WIDTH, TORSO_HEIGHT, TORSO_DEPTH);
+    build_texture_node(torso, TexCube, Shirt, torso_base);
+    torso.set_update_transform(translate(0.0f, TORSO_HEIGHT * 0.5f, 0.0f));
 
+    mat4 head_base = scale(HEAD_WIDTH, HEAD_HEIGHT, HEAD_DEPTH);
+    build_texture_node(head, Sphere, Face, head_base);
+    head.set_update_transform(
+        translate(0.0f, TORSO_HEIGHT * 0.5f + HEAD_HEIGHT, 0.0f)
+        * rotate(180.0f, vec3(1.0f, 0.0f, 0.0f))
+    );
+    torso.attach_nodes(&head, NULL);
+
+    mat4 left_arm_base = scale(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_DEPTH);
+    build_lighting_node(left_upper_arm, Cube, ArmMaterial, false, left_arm_base);
+    left_upper_arm.set_update_transform(
+        translate(TORSO_WIDTH * 0.5f + UPPER_ARM_WIDTH * 0.5f, TORSO_HEIGHT * 0.4f, 0.0f)
+        * rotate(upper_left_arm_phi, vec3(1.0f, 0.0f, 0.0f))
+    );
+    head.attach_nodes(NULL, &left_upper_arm);
+
+    mat4 right_arm_base = scale(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_DEPTH);
+    build_lighting_node(right_upper_arm, Cube, ArmMaterial, false, right_arm_base);
+    right_upper_arm.set_update_transform(
+        translate(-(TORSO_WIDTH * 0.5f + UPPER_ARM_WIDTH * 0.5f), TORSO_HEIGHT * 0.4f, 0.0f)
+        * rotate(upper_right_arm_phi, vec3(1.0f, 0.0f, 0.0f))
+    );
+    left_upper_arm.attach_nodes(NULL, &right_upper_arm);
 
 }
 

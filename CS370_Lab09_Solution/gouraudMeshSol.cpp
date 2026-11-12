@@ -71,8 +71,8 @@ int main(int argc, char**argv)
 
 void display( )
 {
-    proj_matrix = mat4().identity();
-    camera_matrix = mat4().identity();
+    projMatrix = mat4().identity();
+    cameraMatrix = mat4().identity();
 
 	// Clear window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -92,10 +92,10 @@ void display( )
         xratio = (GLfloat)ww / (GLfloat)hh;
     }
     // Set projection matrix
-    proj_matrix = frustum(-1.0f*xratio, 1.0f*xratio, -1.0f*yratio, 1.0f*yratio, 1.0f, 100.0f);
+    projMatrix = frustum(-1.0f*xratio, 1.0f*xratio, -1.0f*yratio, 1.0f*yratio, 1.0f, 100.0f);
 
     // Set camera matrix
-    camera_matrix = lookat(eye, center, up);
+    cameraMatrix = lookat(eye, center, up);
 
     // Render objects
 	render_scene();
@@ -104,7 +104,7 @@ void display( )
 }
 
 void render_scene( ) {
-    model_matrix = mat4().identity();
+    modelMatrix = mat4().identity();
     mat4 scale_matrix = mat4().identity();
     mat4 rot_matrix = mat4().identity();
     mat4 trans_matrix = mat4().identity();
@@ -113,9 +113,9 @@ void render_scene( ) {
     trans_matrix = translation(0.0f, 0.0f, 0.0f);
     rot_matrix = rotation(cube_angle, normalize(axis));
     scale_matrix = scale(3.0f, 1.0f, 3.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     // TODO: Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // TODO: Draw cube object as brass
     draw_mat_object(Cube, Brass);
 
@@ -124,9 +124,9 @@ void render_scene( ) {
     trans_matrix = translation(0.0f, 1.5f, 0.0f);
     rot_matrix = rotation(cube_angle, normalize(axis))*rotation(90.0f, 1.0f, 0.0f, 0.0f);
     scale_matrix = scale(1.0f, 1.0f, 1.0f);
-    model_matrix = trans_matrix*rot_matrix*scale_matrix;
+    modelMatrix = trans_matrix*rot_matrix*scale_matrix;
     // TODO: Compute normal matrix from model matrix
-    normal_matrix = model_matrix.inverse().transpose();
+    normalMatrix = modelMatrix.inverse().transpose();
     // TODO: Draw sphere object as red plastic
     draw_mat_object(Sphere, RedPlastic);
 }

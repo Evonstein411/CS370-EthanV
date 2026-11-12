@@ -33,7 +33,7 @@ struct Panel : Widget {
     //destructor handle deleting cells and removing child status from widgets
     ~Panel() {
         for (size_t i = 0; i < cells.size(); i++)
-            removeChild(cells[i].widget);
+            remove_child(cells[i].widget);
         cells.clear();
     }
 
@@ -51,7 +51,7 @@ struct Panel : Widget {
         c.xAlign = xAlign;
         c.yAlign = yAlign;
         cells.push_back(c);
-        addChild(w);
+        add_child(w);
     }
 
 virtual void layout() {
@@ -223,13 +223,13 @@ virtual void layout() {
     h = padY * 2.0f + rowY[nRows];
 }//end layout
 
-    void drawSelf() override {
+    void draw_self() override {
         //update layout before drawing
         layout();
         if (drawBackground) {
-            mat4 trans_matrix = translate(x, (float)hh - h - y, 0.0f);
-            mat4 scale_matrix = scale(w, h, 1.0f);
-            model_matrix = trans_matrix * scale_matrix;
+            mat4 transMatrix = translate(x, (float)hh - h - y, 0.0f);
+            mat4 scaleMatrix = scale(w, h, 1.0f);
+            modelMatrix = transMatrix * scaleMatrix;
             draw_solid_hud_quad(color);
         }
 

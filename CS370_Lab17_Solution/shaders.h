@@ -2,19 +2,19 @@
 
 // Shader variables
 // Light shader program references
-GLuint lighting_program;
-GLuint lighting_vPos;
-GLuint lighting_vNorm;
-GLuint lighting_camera_mat_loc;
-GLuint lighting_model_mat_loc;
-GLuint lighting_proj_mat_loc;
-GLuint lighting_norm_mat_loc;
-GLuint lighting_lights_block_idx;
-GLuint lighting_materials_block_idx;
-GLuint lighting_material_loc;
-GLuint lighting_num_lights_loc;
-GLuint lighting_light_on_loc;
-GLuint lighting_eye_loc;
+GLuint lightingProgram;
+GLuint lightingVPos;
+GLuint lightingVNorm;
+GLuint lightingCameraMatLoc;
+GLuint lightingModelMatLoc;
+GLuint lightingProjMatLoc;
+GLuint lightingNormMatLoc;
+GLuint lightingLightsBlockIdx;
+GLuint lightingMaterialsBlockIdx;
+GLuint lightingMaterialLoc;
+GLuint lightingNumLightsLoc;
+GLuint lightingLightOnLoc;
+GLuint lightingEyeLoc;
 
 // Multi-texture shader program references
 GLuint multi_tex_program;
@@ -28,8 +28,8 @@ GLuint multi_tex_blend_loc;
 GLuint multi_tex_mix_loc;
 
 // Lighting shader files
-const char *lighting_vertex_shader = "../../common/shaders/Phonglighting.vert";
-const char *lighting_frag_shader = "../../common/shaders/Phonglighting.frag";
+const char *lightingVertexShader = "../../common/shaders/Phonglighting.vert";
+const char *lightingFragShader = "../../common/shaders/Phonglighting.frag";
 
 // Multitexture shader files
 const char *multi_tex_vertex_shader = "../multiTex.vert";
@@ -37,20 +37,20 @@ const char *multi_tex_frag_shader = "../multiTex.frag";
 
 void build_shaders() {
     // Load light shader
-    ShaderInfo lighting_shaders[] = { {GL_VERTEX_SHADER, lighting_vertex_shader},{GL_FRAGMENT_SHADER, lighting_frag_shader},{GL_NONE, NULL} };
-    lighting_program = LoadShaders(lighting_shaders);
-    lighting_vPos = glGetAttribLocation(lighting_program, "vPosition");
-    lighting_vNorm = glGetAttribLocation(lighting_program, "vNormal");
-    lighting_proj_mat_loc = glGetUniformLocation(lighting_program, "proj_matrix");
-    lighting_camera_mat_loc = glGetUniformLocation(lighting_program, "camera_matrix");
-    lighting_norm_mat_loc = glGetUniformLocation(lighting_program, "normal_matrix");
-    lighting_model_mat_loc = glGetUniformLocation(lighting_program, "model_matrix");
-    lighting_lights_block_idx = glGetUniformBlockIndex(lighting_program, "LightBuffer");
-    lighting_materials_block_idx = glGetUniformBlockIndex(lighting_program, "MaterialBuffer");
-    lighting_material_loc = glGetUniformLocation(lighting_program, "Material");
-    lighting_num_lights_loc = glGetUniformLocation(lighting_program, "NumLights");
-    lighting_light_on_loc = glGetUniformLocation(lighting_program, "LightOn");
-    lighting_eye_loc = glGetUniformLocation(lighting_program, "EyePosition");
+    ShaderInfo lighting_shaders[] = { {GL_VERTEX_SHADER, lightingVertexShader},{GL_FRAGMENT_SHADER, lightingFragShader},{GL_NONE, NULL} };
+    lightingProgram = LoadShaders(lighting_shaders);
+    lightingVPos = glGetAttribLocation(lightingProgram, "vPosition");
+    lightingVNorm = glGetAttribLocation(lightingProgram, "vNormal");
+    lightingProjMatLoc = glGetUniformLocation(lightingProgram, "proj_matrix");
+    lightingCameraMatLoc = glGetUniformLocation(lightingProgram, "camera_matrix");
+    lightingNormMatLoc = glGetUniformLocation(lightingProgram, "normal_matrix");
+    lightingModelMatLoc = glGetUniformLocation(lightingProgram, "model_matrix");
+    lightingLightsBlockIdx = glGetUniformBlockIndex(lightingProgram, "LightBuffer");
+    lightingMaterialsBlockIdx = glGetUniformBlockIndex(lightingProgram, "MaterialBuffer");
+    lightingMaterialLoc = glGetUniformLocation(lightingProgram, "Material");
+    lightingNumLightsLoc = glGetUniformLocation(lightingProgram, "NumLights");
+    lightingLightOnLoc = glGetUniformLocation(lightingProgram, "LightOn");
+    lightingEyeLoc = glGetUniformLocation(lightingProgram, "EyePosition");
 
     // Load multi texture shader
     ShaderInfo multi_tex_shaders[] = { {GL_VERTEX_SHADER, multi_tex_vertex_shader},{GL_FRAGMENT_SHADER, multi_tex_frag_shader},{GL_NONE, NULL} };
