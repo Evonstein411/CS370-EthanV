@@ -1,4 +1,4 @@
-enum MaterialNames {Brass, Base, Floor, NumMaterials};
+enum MaterialNames {BRASS, BASE, FLOOR, NUMMATERIALS};
 GLuint MaterialBuffers[NumMaterialBuffers];
 vector<MaterialProperties> materials;
 vector<MaterialProperties> dynamicMaterials;
@@ -28,7 +28,7 @@ MaterialProperties baseMaterial = {
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
-MaterialProperties floormat = {
+MaterialProperties floorMat = {
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //ambient
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //diffuse
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //specular
@@ -47,11 +47,11 @@ MaterialProperties brass = {
 
 void build_materials() {
     // Allocate Materials vector
-    materials.resize(NumMaterials);
+    materials.resize(NUMMATERIALS);
     // Add materials to Materials vector
-    materials[Brass] = brass;
-	materials[Floor] = floormat;
-	materials[Base] = baseMaterial;
+    materials[BRASS] = brass;
+	materials[FLOOR] = floorMat;
+	materials[BASE] = baseMaterial;
 
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);

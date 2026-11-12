@@ -130,6 +130,10 @@ string saveNameString = "";
 void update_fields();
 void rebuild_scene_graph();
 void select_object(SceneObject* obj);
+void add_vec4_fields(Panel* panel, int row,
+                     Label*& label, const char* labelText,
+                     TextField<float>*& r, TextField<float>*& g, TextField<float>*& b, TextField<float>*& a,
+                     float& rVal, float& gVal, float& bVal, float& aVal);
 
 void render_hud() {
     draw_widgets();
@@ -246,52 +250,22 @@ void init_hud() {
     materialSection->add(materialPanel);
 
     // ambient
-    ambientLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "ambient");
-    materialPanel->add(ambientLabel, 0, 0, 1, 1, Alignment::STRETCH, Alignment::START);
-
-    ambientRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &ambientR);
-    materialPanel->add(ambientRField, 1, 0);
-
-    ambientGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &ambientG);
-    materialPanel->add(ambientGField, 2, 0);
-
-    ambientBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &ambientB);
-    materialPanel->add(ambientBField, 3, 0);
-
-    ambientAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &ambientA);
-    materialPanel->add(ambientAField, 4, 0);
+    add_vec4_fields(materialPanel, 0,
+                    ambientLabel, "ambient",
+                    ambientRField, ambientGField, ambientBField, ambientAField,
+                    ambientR, ambientG, ambientB, ambientA);
 
     // diffuse
-    diffuseLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "diffuse");
-    materialPanel->add(diffuseLabel, 0, 1, 1, 1, Alignment::STRETCH, Alignment::START);
-
-    diffuseRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &diffuseR);
-    materialPanel->add(diffuseRField, 1, 1);
-
-    diffuseGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &diffuseG);
-    materialPanel->add(diffuseGField, 2, 1);
-
-    diffuseBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &diffuseB);
-    materialPanel->add(diffuseBField, 3, 1);
-
-    diffuseAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &diffuseA);
-    materialPanel->add(diffuseAField, 4, 1);
+    add_vec4_fields(materialPanel, 1,
+                    diffuseLabel, "diffuse",
+                    diffuseRField, diffuseGField, diffuseBField, diffuseAField,
+                    diffuseR, diffuseG, diffuseB, diffuseA);
 
     // specular
-    specularLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "specular");
-    materialPanel->add(specularLabel, 0, 2, 1, 1, Alignment::STRETCH, Alignment::START);
-
-    specularRField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &specularR);
-    materialPanel->add(specularRField, 1, 2);
-
-    specularGField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &specularG);
-    materialPanel->add(specularGField, 2, 2);
-
-    specularBField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &specularB);
-    materialPanel->add(specularBField, 3, 2);
-
-    specularAField = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &specularA);
-    materialPanel->add(specularAField, 4, 2);
+    add_vec4_fields(materialPanel, 2,
+                    specularLabel, "specular",
+                    specularRField, specularGField, specularBField, specularAField,
+                    specularR, specularG, specularB, specularA);
 
     // shininess
     shininessLabel = new Label(0.0f, 0.0f, 130.0f, 48.0f, "shininess");
@@ -608,6 +582,24 @@ void show_save_dialog() {
         saveDialogPanel->x = (ww - saveDialogPanel->w) * 0.5f;
         saveDialogPanel->y = (hh - saveDialogPanel->h) * 0.5f;
     }
+}
+
+
+void add_vec4_fields(Panel* panel, int row,
+                     Label*& label, const char* labelText,
+                     TextField<float>*& r, TextField<float>*& g,
+                     TextField<float>*& b, TextField<float>*& a,
+                     float& rVal, float& gVal, float& bVal, float& aVal) {
+    label = new Label(0.0f, 0.0f, 130.0f, 48.0f, labelText);
+    panel->add(label, 0, row, 1, 1, Alignment::STRETCH, Alignment::START);
+    r = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "R:", 4.0f, true, &rVal);
+    panel->add(r, 1, row);
+    g = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "G:", 4.0f, true, &gVal);
+    panel->add(g, 2, row);
+    b = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "B:", 4.0f, true, &bVal);
+    panel->add(b, 3, row);
+    a = new TextField<float>(0.0f, 0.0f, 65.0f, 48.0f, "A:", 4.0f, true, &aVal);
+    panel->add(a, 4, row);
 }
 
 //-----------------------------------Button Functions--------------------------------------
