@@ -223,6 +223,7 @@ void init_hud() {
 
     sceneFileBrowser = new FileBrowser();
     sceneFileBrowser->set_filter({".df"});
+    sceneFileBrowser->set_start_location(FileBrowser::StartLocation::CWD);
     sceneFileBrowser->onFileSelected = [](const string& path) {
         load_scene_file(path);
         rebuild_scene_graph();

@@ -2,6 +2,28 @@
 #define CS370_FA26_FILEBROWSER_H
 
 struct FileBrowser : Widget {
+    enum class StartLocation {
+        HOME,
+        CWD
+    };
+
+    StartLocation startLocation = StartLocation::HOME;
+
+    void set_start_location(StartLocation loc) {
+        startLocation = loc;
+    }
+
+    // Helper (can be private or just a method)
+    string get_default_path() {
+        if (startLocation == StartLocation::CWD) {
+            return fs::current_path().string();
+        }
+        // HOME (existing logic)
+        const char* home = getenv("HOME");
+        if (!home) home = getenv("USERPROFILE");
+        return home ? string(home) : fs::current_path().string();
+    }
+
     string currentPath;
     bool open = false;
 
@@ -89,6 +111,8 @@ struct FileBrowser : Widget {
         show();
         if (!startPath.empty())
             currentPath = startPath;
+        else
+            currentPath = get_default_path();
         open = true;
         content->show();
         refresh();
