@@ -1,13 +1,17 @@
 #include "../kitUI/hud.h"
 
-// selected object (exists in DesertFox.cpp)
-extern SceneObject* selectedObject;
 
 // globals
 int selectedMesh = -1;
 int selectedType = -1;
 int selectedTexture = -1;
 string nameString = "";
+inline const vector<string> drawTypeNames = {
+    "None",
+    "Solid Color",
+    "Material",
+    "Texture"
+};
 
 // file browsers
 FileBrowser* textureFileBrowser = nullptr;
@@ -129,11 +133,16 @@ string saveNameString = "";
 // forward declarations
 void update_fields();
 void rebuild_scene_graph();
-void select_object(SceneObject* obj);
+void select_object(SceneNode* node);
 void add_vec4_fields(Panel* panel, int row,
                      Label*& label, const char* labelText,
                      TextField<float>*& r, TextField<float>*& g, TextField<float>*& b, TextField<float>*& a,
                      float& rVal, float& gVal, float& bVal, float& aVal);
+
+inline MeshNode* selected_mesh() {
+    return dynamic_cast<MeshNode*>(sceneManager.get_selected());
+}
+
 
 void render_hud() {
     draw_widgets();
@@ -225,7 +234,8 @@ void init_hud() {
     sceneFileBrowser->set_filter({".df"});
     sceneFileBrowser->set_start_location(FileBrowser::StartLocation::CWD);
     sceneFileBrowser->onFileSelected = [](const string& path) {
-        load_scene_file(path);
+        if (Scene* s = sceneManager.get_active())
+            s->load(path);
         rebuild_scene_graph();
     };
 
@@ -239,10 +249,12 @@ void init_hud() {
         if (modelDropdown)
             modelDropdown->set_options(meshNames);
 
-        if (selectedObject) {
-            selectedObject->mesh = (GLuint)index;
-            if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor)
-                build_solid_color_buffer(numVertices[index], selectedObject->color, selectedObject->colorBuffer);
+        if (MeshNode* mesh = selected_mesh()) {
+            mesh->mesh = (GLuint)index;
+            if (auto* solid = dynamic_cast<SolidColorDraw*>(mesh->drawType)) {
+                if (solid->hasColor)
+                    build_solid_color_buffer(numVertices[index], solid->color, solid->colorBuffer);
+            }
         }
     };
 
@@ -310,9 +322,11 @@ void init_hud() {
         if (textureDropdown)
             textureDropdown->set_options(textureNames);
 
-        if (selectedObject) {
-            selectedObject->drawType = TEXTURE;
-            selectedObject->texture = TextureIDs[texIndex];
+        if (MeshNode* mesh = selected_mesh()) {
+            if (!dynamic_cast<TextureDraw*>(mesh->drawType))
+                mesh->set_draw_type(new TextureDraw());
+            if (auto* tex = dynamic_cast<TextureDraw*>(mesh->drawType))
+                tex->texture = TextureIDs[texIndex];
         }
     };
 
@@ -358,10 +372,10 @@ void init_hud() {
     update_fields();
 }
 
-void set_section_visibility(DrawType type) {
-    if (materialSection) materialSection->set_hidden(type != MATERIAL);
-    if (solidColorSection) solidColorSection->set_hidden(type != SOLID_COLOR);
-    if (textureSection) textureSection->set_hidden(type != TEXTURE);
+void set_section_visibility(const char* typeName) {
+    if (materialSection)   materialSection->set_hidden(strcmp(typeName, "Material") != 0);
+    if (solidColorSection) solidColorSection->set_hidden(strcmp(typeName, "Solid Color") != 0);
+    if (textureSection)    textureSection->set_hidden(strcmp(typeName, "Texture") != 0);
 }
 
 void sync_material_to_fields(const MaterialProperties& mat) {
@@ -426,10 +440,12 @@ void sync_transform_to_fields(vec3 translate, vec3 rotate, vec3 scale) {
     if (scaleZField) scaleZField->set_text(to_string(scaleZ));
 }
 
-void sync_transform_from_fields(vec3 translate, vec3 rotate, vec3 scale) {
-    selectedObject->position = translate;
-    selectedObject->rotation = rotate;
-    selectedObject->scale = scale;
+void sync_transform_from_fields(vec3 t, vec3 r, vec3 s) {
+    if (SceneNode* n = sceneManager.get_selected()) {
+        n->position = t;
+        n->rotation = r;
+        n->scale = s;
+    }
 }
 
 int find_texture_index(GLuint texID) {
@@ -439,7 +455,8 @@ int find_texture_index(GLuint texID) {
 }
 
 void update_fields() {
-    if (!selectedObject) {
+    MeshNode* mesh = selected_mesh();
+    if (!mesh) {
         objectNameField->set_text("NONE");
         objectNameField->set_editable(false);
         typeDropdown->set_enabled(false);
@@ -448,128 +465,124 @@ void update_fields() {
         selectedTexture = -1;
         selectedMesh = -1;
         transformSection->hide();
-        set_section_visibility(static_cast<DrawType>(-1));
+        set_section_visibility("");
         return;
     }
 
-    if (selectedObject->mesh == -1) {
-        typeDropdown->set_enabled(false);
-    } else {
-        typeDropdown->set_enabled(true);
-    }
-
     objectNameField->set_editable(true);
-    nameString = selectedObject->name;
+    nameString = mesh->name;
     objectNameField->set_text(nameString);
 
     modelDropdown->set_enabled(true);
-    selectedMesh = (int)selectedObject->mesh;
+    selectedMesh = (int)mesh->mesh;
+    typeDropdown->set_enabled(mesh->mesh != (GLuint)-1);
 
-    selectedType = selectedObject->drawType;
-    set_section_visibility(selectedObject->drawType);
+    const char* typeName = mesh->drawType ? mesh->drawType->get_name() : "";
+    // map name → dropdown index if you still want selectedType
+    selectedType = -1;
+    for (int i = 0; i < (int)drawTypeNames.size(); ++i)
+        if (drawTypeNames[i] == typeName) { selectedType = i; break; }
 
+    set_section_visibility(typeName);
     transformSection->show();
-    sync_transform_to_fields(selectedObject->position, selectedObject->rotation, selectedObject->scale);
+    sync_transform_to_fields(mesh->position, mesh->rotation, mesh->scale);
 
-    if (textureDropdown && selectedObject->drawType == TEXTURE) {
-        textureDropdown->set_options(textureNames);
-        selectedTexture = find_texture_index(selectedObject->texture);
+    if (auto* tex = dynamic_cast<TextureDraw*>(mesh->drawType)) {
+        if (textureDropdown) textureDropdown->set_options(textureNames);
+        selectedTexture = find_texture_index(tex->texture);
     } else {
         selectedTexture = -1;
     }
 
-    if (selectedObject->drawType == MATERIAL) {
-        sync_material_to_fields(dynamicMaterials[selectedObject->material]);
-    } else if (selectedObject->drawType == SOLID_COLOR) {
-        sync_color_to_fields(selectedObject->color);
-    }
+    if (auto* mat = dynamic_cast<MaterialDraw*>(mesh->drawType))
+        sync_material_to_fields(mat->materialProperties);
+    else if (auto* solid = dynamic_cast<SolidColorDraw*>(mesh->drawType))
+        sync_color_to_fields(solid->color);
 }
 
 void update_from_fields() {
-    if (!selectedObject) return;
+    MeshNode* mesh = selected_mesh();
+    if (!mesh) return;
 
-    sync_transform_from_fields({transX, transY, transZ}, {rotX, rotY, rotZ}, {scaleX, scaleY, scaleZ});
+    sync_transform_from_fields({transX, transY, transZ},
+                               {rotX, rotY, rotZ},
+                               {scaleX, scaleY, scaleZ});
 
-    if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() && selectedObject->mesh != selectedMesh) {
-        selectedObject->mesh = selectedMesh;
-        if (selectedObject->drawType == SOLID_COLOR && selectedObject->hasColor) {
-            build_solid_color_buffer(numVertices[selectedObject->mesh],
-                                     selectedObject->color,
-                                     selectedObject->colorBuffer);
-        }
+    if (selectedMesh >= 0 && selectedMesh < (int)meshNames.size() &&
+        mesh->mesh != (GLuint)selectedMesh) {
+        mesh->mesh = (GLuint)selectedMesh;
+        if (auto* solid = dynamic_cast<SolidColorDraw*>(mesh->drawType))
+            if (solid->hasColor)
+                build_solid_color_buffer(numVertices[mesh->mesh], solid->color, solid->colorBuffer);
     }
 
-    if (selectedObject->mesh == -1) {
-        typeDropdown->set_enabled(false);
-    } else {
-        typeDropdown->set_enabled(true);
-    }
+    typeDropdown->set_enabled(mesh->mesh != (GLuint)-1);
 
-    if (objectNameField && selectedObject->name != nameString) {
-        selectedObject->name = nameString;
+    if (objectNameField && mesh->name != nameString) {
+        mesh->name = nameString;
         rebuild_scene_graph();
     }
 
-    if (selectedType >= 0 && selectedObject->drawType != static_cast<DrawType>(selectedType)) {
-        selectedObject->initialize_type(static_cast<DrawType>(selectedType));
-        selectedObject->drawType = static_cast<DrawType>(selectedType);
+    // draw-type change
+    const char* currentName = mesh->drawType ? mesh->drawType->get_name() : "";
+    if (selectedType >= 0 && selectedType < (int)drawTypeNames.size() &&
+        drawTypeNames[selectedType] != currentName) {
+        DrawType* neu = nullptr;
+        if (drawTypeNames[selectedType] == "Solid Color") neu = new SolidColorDraw();
+        else if (drawTypeNames[selectedType] == "Material") neu = new MaterialDraw();
+        else if (drawTypeNames[selectedType] == "Texture") neu = new TextureDraw();
+        mesh->set_draw_type(neu);
         update_fields();
         return;
     }
 
-    if (selectedObject->drawType == MATERIAL) {
-        sync_material_from_fields(dynamicMaterials[selectedObject->material]);
-    } else if (selectedObject->drawType == SOLID_COLOR) {
+    if (auto* mat = dynamic_cast<MaterialDraw*>(mesh->drawType))
+        sync_material_from_fields(mat->materialProperties);
+    else if (auto* solid = dynamic_cast<SolidColorDraw*>(mesh->drawType)) {
         vec4 c;
         sync_color_from_fields(c);
-        selectedObject->set_color(c);
-    } else if (selectedObject->drawType == TEXTURE) {
+        solid->color = c;
+        if (solid->hasColor)
+            build_solid_color_buffer(numVertices[mesh->mesh], solid->color, solid->colorBuffer);
+    }
+    else if (auto* tex = dynamic_cast<TextureDraw*>(mesh->drawType)) {
         if (selectedTexture >= 0 && selectedTexture < (int)TextureIDs.size())
-            selectedObject->texture = TextureIDs[selectedTexture];
+            tex->texture = TextureIDs[selectedTexture];
     }
 }
 
-void select_object(SceneObject* obj) {
-    selectedObject = obj;
+void select_object(SceneNode* node) {
+    sceneManager.set_selected(node);
     update_fields();
     rebuild_scene_graph();
 }
 
 void delete_selected_object() {
-    if (!selectedObject) return;
-
-    auto it = std::find(objects.begin(), objects.end(), selectedObject);
-    if (it != objects.end())
-        objects.erase(it);
-
-    delete selectedObject;
-    selectedObject = nullptr;
-
+    SceneNode* sel = sceneManager.get_selected();
+    if (!sel) return;
+    Scene* scene = sceneManager.get_active();
+    if (scene)
+        scene->remove_root(sel);          // only works for roots right now
+    sceneManager.set_selected(nullptr);
     update_fields();
     rebuild_scene_graph();
 }
 
 void rebuild_scene_graph() {
     if (!sceneGraphPanel) return;
+    // clear old buttons...
+    Scene* scene = sceneManager.get_active();
+    if (!scene) return;
 
-    for (auto& cell : sceneGraphPanel->cells) {
-        if (cell.widget)
-            destroy_widget(cell.widget);
-    }
-    sceneGraphPanel->cells.clear();
-
-    for (int i = 0; i < (int)objects.size(); ++i) {
-        SceneObject* obj = objects[i];
+    int row = 0;
+    scene->for_each([&](SceneNode* n) {
         Button* b = new Button(0, 0, 240.0f, 36.0f,
-            [obj]() { select_object(obj); },
-            obj->name);
-
-        if (obj == selectedObject) {
+            [n]() { select_object(n); },
+            n->name);
+        if (n == sceneManager.get_selected())
             b->color = HUD_ACCENT;
-        }
-
-        sceneGraphPanel->add(b, 0, i);
-    }
+        sceneGraphPanel->add(b, 0, row++);
+    });
 }
 
 void show_save_dialog() {
@@ -618,11 +631,12 @@ void add_model() {
 }
 
 void add_object() {
-    string name = "object" + std::to_string(objects.size() + 1);
-    SceneObject* obj = new SceneObject(name);
-    select_object(obj);
-    rebuild_scene_graph();
-    update_fields();
+    Scene* scene = sceneManager.get_active();
+    if (!scene) return;
+    string name = "object" + std::to_string(scene->roots.size() + 1);
+    MeshNode* node = new MeshNode(name);          // empty mesh
+    scene->add_root(node);
+    select_object(node);
 }
 
 void load_scene() {
@@ -644,7 +658,8 @@ void confirm_save_scene() {
     if (name.empty() || name.find_first_not_of(" \t") == string::npos)
         name = "untitled";
 
-    save_scene_file(name);
+    if (Scene* s = sceneManager.get_active())
+        s->save(name);
     hide_save_dialog();
 }
 

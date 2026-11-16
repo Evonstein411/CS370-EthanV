@@ -86,8 +86,13 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/textureutils.cpp
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../hitdetection.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ui.h
+
+        # editor
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/hitdetection.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/callbacks.h
+
+        # kitUI (still at project root)
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widgets.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/hud.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widget.h
@@ -101,8 +106,23 @@ set(COMMON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/scrollpanel.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/filebrowser.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/canvas.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scene.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scenenode.h
+
+        # scene
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scene.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scenenode.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/meshnode.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/lightnode.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/sceneobject.h
+
+        # rendering
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/geometry.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/lights.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/materials.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/textures.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/drawobjects.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/shaders.h
+        ../scene/scenemanager.h
+        ../scene/nodes.h
 )
 
 #-------------------------------------------------------------
@@ -112,6 +132,11 @@ function(configure_target TARGET)
 
     target_compile_features(${TARGET} PRIVATE cxx_std_17)
     target_compile_definitions(${TARGET} PRIVATE TARGET_NAME="${TARGET}")
+
+    target_include_directories(${TARGET} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/..
+            ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI
+    )
 
     if(APPLE)
         target_link_libraries(${TARGET}

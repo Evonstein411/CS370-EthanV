@@ -1,6 +1,5 @@
 #include "../kitUI/hud.h"
 
-extern SceneObject* selectedObject;
 extern void create_outline_fbo(int width, int height);
 
 vec3 dragStartPos;
@@ -25,7 +24,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
     //deselect with escape
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        selectedObject = nullptr;
+        sceneManager.set_selected(nullptr);
         update_fields();
     }
 
@@ -65,12 +64,13 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        SceneObject* clicked = pick_scene_object(mx, my);
+        SceneNode* clicked = pick_scene_object(mx, my);
         int raw = get_raw_index();   // or rawIndex if it’s global
+        SceneNode* selected = sceneManager.get_selected();
 
-        if ((raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selectedObject) {
+        if ((raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selected) {
             activeGizmo = (GizmoAxis)raw;
-            dragStartPos = selectedObject->position;
+            dragStartPos = selected->position;
             dragStartMouse = vec2(mx, my);
             return;
         }
@@ -136,7 +136,8 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
         return;   // skip gizmo logic while looking
     }
 
-    if (activeGizmo == GIZMO_NONE || !selectedObject) return;
+    SceneNode* selected = sceneManager.get_selected();
+    if (activeGizmo == GIZMO_NONE || !selected) return;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
         activeGizmo = GIZMO_NONE;
         return;
@@ -161,12 +162,12 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     screenDir = screenDir * (1.0f / len);
 
     // distance-based sensitivity so it feels the same in both modes
-    float dist = length(eye - selectedObject->position);
+    float dist = length(eye - selected->position);
     float sensitivity = 0.0015f * dist;
 
     float amount = dot(delta, screenDir) * sensitivity;
 
-    selectedObject->position = dragStartPos + axis * amount;
+    selected->position = dragStartPos + axis * amount;
     update_fields();
 }
 

@@ -47,53 +47,65 @@ void draw_picking_object(GLuint mesh, GLuint colorBuffer) {
 
 
 //function returns clicked scene object
-SceneObject* pick_scene_object(float mx, float my) {
+SceneNode* pick_scene_object(float mx, float my) {
     update_camera_matrices();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // One reusable color buffer for the whole pick pass
+
     GLuint pickColorBuf;
     glGenBuffers(1, &pickColorBuf);
 
-    for (size_t i = 0; i < objects.size(); ++i) {
-        SceneObject* obj = objects[i];
+    // collect every enabled MeshNode that has a real mesh
+    vector<MeshNode*> pickables;
+    if (Scene* scene = sceneManager.get_active()) {
+        scene->for_each([&](SceneNode* n) {
+            if (!n->enabled) return;
+            if (MeshNode* m = dynamic_cast<MeshNode*>(n)) {
+                if (m->mesh != (GLuint)-1)
+                    pickables.push_back(m);
+            }
+        });
+    }
 
-        if (obj->mesh == (GLuint)-1)
-            continue;
+    for (size_t i = 0; i < pickables.size(); ++i) {
+        MeshNode* meshNode = pickables[i];
 
-        modelMatrix = obj->get_model_matrix();
+        modelMatrix = meshNode->get_world_matrix();
 
-        // Fill the color buffer with the index color
         vec4 col = index_to_color((int)i + 1);
-        vector<vec4> colors(numVertices[obj->mesh], col);
+        vector<vec4> colors(numVertices[meshNode->mesh], col);
         glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
         glBufferData(GL_ARRAY_BUFFER,
-                     sizeof(vec4) * numVertices[obj->mesh],
+                     sizeof(vec4) * numVertices[meshNode->mesh],
                      colors.data(),
                      GL_DYNAMIC_DRAW);
 
-        draw_picking_object(obj->mesh, pickColorBuf);
+        draw_picking_object(meshNode->mesh, pickColorBuf);
     }
 
-
-
-    if (selectedObject && gizmoArrowVAO != 0) {
+    // ---- gizmo picking (uses selected node) ----
+    SceneNode* selected = sceneManager.get_selected();
+    if (selected && gizmoArrowVAO != 0) {
         glDisable(GL_DEPTH_TEST);
 
         float size = 0.75f;
         float length = 1.0f;
         float offset = length * 2.0f;
 
-        mat4 trans = translate(selectedObject->position);
+        // world position of the selected node
+        vec4 col = selected->get_world_matrix()[3];
+        mat4 trans = translate(vec3(col[0], col[1], col[2]));
+        // or simply: mat4 trans = translate(selected->position);
+
         mat4 transOffset = translate(0.0f, offset, 0.0f);
         mat4 scale = vmath::scale(size, length, size);
 
         auto draw_pick_arrow = [&](const mat4& model, int id) {
             modelMatrix = model;
-            vec4 col = index_to_color(id);
+            vec4 c = index_to_color(id);
 
-            vector<vec4> colors(gizmoArrowNumVerts, col);
+            vector<vec4> colors(gizmoArrowNumVerts, c);
             glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
             glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec4), colors.data(), GL_DYNAMIC_DRAW);
 
@@ -114,21 +126,16 @@ SceneObject* pick_scene_object(float mx, float my) {
             glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
         };
 
-        // X
         mat4 rotate = vmath::rotate(90.0f, vec3(0,0,1));
         draw_pick_arrow(trans * rotate * transOffset * scale, GIZMO_X);
-
-        // Y
         draw_pick_arrow(trans * transOffset * scale, GIZMO_Y);
-
-        // Z
         rotate = vmath::rotate(-90.0f, vec3(1,0,0));
         draw_pick_arrow(trans * rotate * transOffset * scale, GIZMO_Z);
 
         glEnable(GL_DEPTH_TEST);
     }
 
-    // Read the pixel (y is already bottom-origin from your mouse code)
+    // read pixel
     unsigned char pixel[4];
     glReadPixels((GLint)mx, (GLint)my, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
@@ -137,15 +144,16 @@ SceneObject* pick_scene_object(float mx, float my) {
 
     glDeleteBuffers(1, &pickColorBuf);
 
-    // IMPORTANT: immediately redraw the real scene so the next swap is correct
-    // (this prevents the colored ID pass from appearing on screen)
+    // redraw real scene
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
     render_scene();
     render_hud();
     glFlush();
 
-    if (index > 0 && index <= (int)objects.size())
-        return objects[index - 1];
+    // map index back to node (gizmo IDs are > 1000, so they won't match)
+    if (index > 0 && index <= (int)pickables.size())
+        return pickables[index - 1];
+
     return nullptr;
 }

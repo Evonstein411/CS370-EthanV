@@ -17,16 +17,15 @@
 #include "rendering/textures.h"
 #include "rendering/drawobjects.h"
 #include "rendering/shaders.h"
-#include "scene/sceneobject.h"
+#include "scene/nodes.h"
 #include "scene/scene.h"
+#include "scene/scenemanager.h"
 #include "editor/hitdetection.h"
 #include "editor/ui.h"
 #include "editor/callbacks.h"
 
 
 //globals
-vector<SceneObject*> objects;
-SceneObject* selectedObject = nullptr;
 GLuint outlineFBO = 0;
 GLuint outlineMaskTex = 0;
 
@@ -162,13 +161,8 @@ void display( )
 }
 
 void render_scene( ) {
-    // Declare transformation matrices
-    modelMatrix = mat4().identity();
-    normalMatrix = mat4().identity();
-
-    for (size_t i = 0; i < objects.size(); i++) {
-        objects[i]->draw();
-    }
+    if (Scene* scene = sceneManager.get_active())
+        scene->draw();
 
     draw_selection_outline();
     draw_translation_gizmo();
@@ -177,6 +171,10 @@ void render_scene( ) {
 }
 
 void init_scene() {
+    sceneManager.create_scene("Desert");
+    Scene* scene = sceneManager.get_active();
+    if (!scene) return;
+
     int cubeID = find_mesh("cube");
     int sphereID = find_mesh("sphere");
     if (cubeID < 0 || sphereID < 0) {
@@ -184,13 +182,24 @@ void init_scene() {
         return;
     }
 
+    scene->add_root(MeshNode::create_material("sphere", sphereID,
+        {0,0,0}, {2,2,2}, {0,0,0}, baseMaterial));
 
-    SceneObject* sphereObject = new SceneObject(sphereID, "sphere", {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* floor = new SceneObject(cubeID, "floor", {0.0f, -3.0f, 0.0f}, {50.0f, 2.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall = new SceneObject(cubeID, "wall1", {25.0f, 3.0f, 00.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall2 = new SceneObject(cubeID, "wall2", {-25.0f, 3.0f, 0.0f}, {1.0f, 10.0f, 50.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall3 = new SceneObject(cubeID, "wall3", {0.0f, 3.0f, 25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
-    SceneObject* wall4 = new SceneObject(cubeID, "wall4", {0.0f, 3.0f, -25.0f}, {50.0f, 10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, baseMaterial);
+    scene->add_root(MeshNode::create_material("floor", cubeID,
+        {0,-3,0}, {50,2,50}, {0,0,0}, baseMaterial));
+
+    scene->add_root(MeshNode::create_material("wall1", cubeID,
+        {25,3,0}, {1,10,50}, {0,0,0}, baseMaterial));
+
+    scene->add_root(MeshNode::create_material("wall2", cubeID,
+    {-25,3,0}, {1,10,50}, {0,0,0}, baseMaterial));
+
+    scene->add_root(MeshNode::create_material("wall3", cubeID,
+    {0,3,25}, {50,10,1}, {0,0,0}, baseMaterial));
+
+    scene->add_root(MeshNode::create_material("wall3", cubeID,
+    {0,3,-25}, {50,10,1}, {0,0,0}, baseMaterial));
+
 }
 
 
@@ -215,15 +224,13 @@ void create_outline_fbo(int width, int height) {
 }
 
 void draw_selection_outline() {
-    if (!selectedObject || selectedObject->mesh == (GLuint)-1) return;
+    SceneNode* selected = sceneManager.get_selected();
+    if (!selected) return;
 
-    // Build model matrix the same way SceneObject::draw does
-    mat4 trans = translate(selectedObject->position);
-    mat4 rotX  = vmath::rotate(selectedObject->rotation[0], vec3(1,0,0));
-    mat4 rotY  = vmath::rotate(selectedObject->rotation[1], vec3(0,1,0));
-    mat4 rotZ  = vmath::rotate(selectedObject->rotation[2], vec3(0,0,1));
-    mat4 scale = vmath::scale(selectedObject->scale);
-    modelMatrix = trans * rotX * rotY * rotZ * scale;
+    MeshNode* meshNode = dynamic_cast<MeshNode*>(selected);
+    if (!meshNode || meshNode->mesh == (GLuint)-1) return;
+
+    modelMatrix = selected->get_world_matrix();
 
     // --- Mask pass ---
     glBindFramebuffer(GL_FRAMEBUFFER, outlineFBO);
@@ -237,11 +244,11 @@ void draw_selection_outline() {
     glUniformMatrix4fv(maskCamMatLoc,   1, GL_FALSE, cameraMatrix);
     glUniformMatrix4fv(maskModelMatLoc, 1, GL_FALSE, modelMatrix);
 
-    glBindVertexArray(VAOs[selectedObject->mesh]);
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[selectedObject->mesh][PosBuffer]);
+    glBindVertexArray(VAOs[meshNode->mesh]);
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[meshNode->mesh][PosBuffer]);
     glVertexAttribPointer(maskVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(maskVPos);
-    glDrawArrays(GL_TRIANGLES, 0, numVertices[selectedObject->mesh]);
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[meshNode->mesh]);
 
     // --- Edge pass (back to window) ---
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -273,13 +280,15 @@ void draw_selection_outline() {
 }
 
 void draw_translation_gizmo() {
-    if (!selectedObject || gizmoArrowVAO == 0) return;
+    SceneNode* selected = sceneManager.get_selected();
+    if (!selected || gizmoArrowVAO == 0) return;
 
     float size = 0.35f;
     float length = 1.0f;
     float offset = length*2.0f;
 
-    mat4 trans = translate(selectedObject->position);
+    vec4 col = selected->get_world_matrix()[3];
+    mat4 trans = translate(vec3(col[0], col[1], col[2]));
     mat4 transOffset = translate(0.0f, offset, 0.0f);
     mat4 scale = vmath::scale(size, length, size);
     mat4 rotate;
