@@ -112,7 +112,6 @@ set(COMMON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scenenode.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/meshnode.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/lightnode.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/sceneobject.h
 
         # rendering
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/geometry.h
@@ -123,6 +122,7 @@ set(COMMON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/shaders.h
         ../scene/scenemanager.h
         ../scene/nodes.h
+        ../scene/drawtype.h
 )
 
 #-------------------------------------------------------------

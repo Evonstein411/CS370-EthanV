@@ -6,54 +6,7 @@
 #define CS370_FA26_MESHNODE_H
 
 #include "scenenode.h"
-
-struct MeshNode;
-
-
-// -------------------------------------------------------
-// DrawType hierarchy
-// -------------------------------------------------------
-
-struct DrawType {
-    virtual ~DrawType() = default;
-    virtual void initialize(MeshNode* mesh) = 0;
-    virtual void draw(MeshNode* mesh) = 0;
-    virtual const char* get_name() const = 0;
-    // future: virtual void build_ui(Panel* panel) {}
-};
-
-struct SolidColorDraw : DrawType {
-    vec4 color{1.0f};
-    GLuint colorBuffer = 0;
-    bool hasColor = false;
-
-    void initialize(MeshNode* mesh) override;
-    void draw(MeshNode* mesh) override;
-    const char* get_name() const override { return "Solid Color"; }
-};
-
-struct MaterialDraw : DrawType {
-    MaterialProperties materialProperties;
-    GLuint material = 0;          // index into dynamicMaterials
-    bool hasMaterial = false;
-
-    void initialize(MeshNode* mesh) override;
-    void draw(MeshNode* mesh) override;
-    const char* get_name() const override { return "Material"; }
-};
-
-struct TextureDraw : DrawType {
-    GLuint texture = 0;
-
-    void initialize(MeshNode* mesh) override;
-    void draw(MeshNode* mesh) override;
-    const char* get_name() const override { return "Texture"; }
-};
-
-
-// -------------------------------------------------------
-// MeshNode
-// -------------------------------------------------------
+#include "drawtype.h"
 
 struct MeshNode : SceneNode {
     GLuint mesh = (GLuint)-1;
@@ -127,12 +80,49 @@ struct MeshNode : SceneNode {
         return node;
     }
 
+    const char* get_type_name() const override { return "MeshNode"; }
+
+    void write(std::ostream& out) const override {
+        SceneNode::write(out);                 // common fields first
+
+        std::string meshName = "none";
+        if (mesh != (GLuint)-1 && mesh < meshNames.size())
+            meshName = meshNames[mesh];
+        out << "mesh " << meshName << "\n";
+
+        if (drawType) {
+            out << "drawType " << drawType->get_name() << "\n";
+            drawType->write(out);              // strategy writes itself
+        } else {
+            out << "drawType None\n";
+        }
+    }
+
+    bool read_field(const std::string& key, std::istream& iss) override {
+        if (SceneNode::read_field(key, iss)) return true;
+
+        if (key == "mesh") {
+            std::string meshName;
+            iss >> meshName;
+            int idx = find_mesh(meshName);
+            if (idx >= 0) mesh = (GLuint)idx;
+            return true;
+        }
+        if (key == "drawType") {
+            std::string typeName;
+            std::getline(iss, typeName);       // trim
+            set_draw_type(create_draw_type(typeName));  // factory
+            return true;
+        }
+        // let the current DrawType try
+        if (drawType && drawType->read_field(key, iss)) return true;
+        return false;
+    }
+
 
 };
 
-// -------------------------------------------------------
-// DrawType implementations
-// -------------------------------------------------------
+//need mesh node to function
 inline void SolidColorDraw::initialize(MeshNode* meshNode) {
     if (!hasColor) {
         color = {1.0f, 1.0f, 1.0f, 1.0f};

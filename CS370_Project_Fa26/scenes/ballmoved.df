@@ -1,0 +1,91 @@
+DESERTFOX_SCENE 2
+NODE
+name sphere
+position 11.0994 0 0
+rotation 0 0 0
+scale 2 2 2
+enabled 1
+type MeshNode
+mesh sphere
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
+NODE
+name floor
+position 0 -3 0
+rotation 0 0 0
+scale 50 2 50
+enabled 1
+type MeshNode
+mesh cube
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
+NODE
+name wall1
+position 25 3 0
+rotation 0 0 0
+scale 1 10 50
+enabled 1
+type MeshNode
+mesh cube
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
+NODE
+name wall2
+position -25 3 0
+rotation 0 0 0
+scale 1 10 50
+enabled 1
+type MeshNode
+mesh cube
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
+NODE
+name wall3
+position 0 3 25
+rotation 0 0 0
+scale 50 10 1
+enabled 1
+type MeshNode
+mesh cube
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
+NODE
+name wall3
+position 0 3 -25
+rotation 0 0 0
+scale 50 10 1
+enabled 1
+type MeshNode
+mesh cube
+drawType Material
+ambient 0.5 0.5 0.5 1
+diffuse 0.5 0.5 0.5 1
+specular 0.5 0.5 0.5 1
+shininess 25
+children 0
+END
