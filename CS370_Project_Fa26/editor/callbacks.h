@@ -1,4 +1,4 @@
-#include "kitUI/hud.h"
+#include "../kitUI/hud.h"
 
 extern SceneObject* selectedObject;
 extern void create_outline_fbo(int width, int height);

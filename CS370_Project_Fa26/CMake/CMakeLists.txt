@@ -77,7 +77,7 @@ link_directories(${CMAKE_SOURCE_DIR}/common)
 # Source Files
 #-------------------------------------------------------------
 set(SOURCE_FILES
-        ${PROJECT_NAME}.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../${PROJECT_NAME}.cpp
 )
 
 set(COMMON_FILES
@@ -86,23 +86,23 @@ set(COMMON_FILES
         ${CMAKE_SOURCE_DIR}/common/textureutils.cpp
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
-        hitdetection.h
-        ui.h
-        kitUI/widgets.h
-        kitUI/hud.h
-        kitUI/widget.h
-        kitUI/text.h
-        kitUI/panel.h
-        kitUI/button.h
-        kitUI/textfield.h
-        kitUI/label.h
-        kitUI/section.h
-        kitUI/dropdown.h
-        kitUI/scrollpanel.h
-        kitUI/filebrowser.h
-        kitUI/canvas.h
-        scene.h
-        scenenode.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../hitdetection.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ui.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widgets.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/hud.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widget.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/text.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/panel.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/button.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/textfield.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/label.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/section.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/dropdown.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/scrollpanel.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/filebrowser.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/canvas.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scenenode.h
 )
 
 #-------------------------------------------------------------

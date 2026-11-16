@@ -1,4 +1,4 @@
-#include "kitUI/hud.h"
+#include "../kitUI/hud.h"
 
 // selected object (exists in DesertFox.cpp)
 extern SceneObject* selectedObject;

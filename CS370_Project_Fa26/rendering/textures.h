@@ -1,7 +1,7 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <string>
 #include <filesystem>
-#include "../common/stb_truetype.h"
+#include "../../common/stb_truetype.h"
 
 //Files
 const char * fontFile = "../fonts/Roboto-Regular.ttf";

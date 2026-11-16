@@ -1,7 +1,7 @@
 #ifndef SHADERS_H
 #define SHADERS_H
 
-#include "../common/shaderutils.h"
+#include "../../common/shaderutils.h"
 
 // Shader variables
 // Color shader program references
