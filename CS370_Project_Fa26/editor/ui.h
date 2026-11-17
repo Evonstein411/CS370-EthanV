@@ -551,10 +551,24 @@ void update_from_fields() {
     }
 }
 
+void highlight_scene_graph_selection() {
+    if (!sceneGraphPanel) return;
+    SceneNode* sel = sceneManager.get_selected();
+    const string selName = sel ? sel->name : "";
+
+    for (auto& cell : sceneGraphPanel->cells) {
+        if (auto* btn = dynamic_cast<Button*>(cell.widget)) {
+            bool isSel = !selName.empty() && btn->label == selName;
+            btn->color = isSel ? HUD_ACCENT : HUD_BUTTON;
+            btn->highlightedColor = isSel ? HUD_ACCENT : HUD_HIGHLIGHTED;
+        }
+    }
+}
+
 void select_object(SceneNode* node) {
     sceneManager.set_selected(node);
     update_fields();
-    rebuild_scene_graph();
+    highlight_scene_graph_selection();
 }
 
 void delete_selected_object() {
@@ -570,7 +584,6 @@ void delete_selected_object() {
 
 void rebuild_scene_graph() {
     if (!sceneGraphPanel) return;
-
     // --- delete old buttons ---
     for (auto& cell : sceneGraphPanel->cells) {
         if (cell.widget) {
@@ -587,11 +600,11 @@ void rebuild_scene_graph() {
     int row = 0;
     scene->for_each([&](SceneNode* n) {
         if (!n) return;
-        Button* b = new Button(0, 0, 240.0f, 36.0f,
-            [n]() { select_object(n); },
-            n->name);
-        if (n == sceneManager.get_selected())
-            b->color = HUD_ACCENT;
+        Button* b = new Button(0, 0, 240.0f, 36.0f, nullptr, n->name);
+        b->on_press = [n]() {
+            select_object(n);
+        };
+
         sceneGraphPanel->add(b, 0, row++);
     });
 }
@@ -629,6 +642,8 @@ void add_vec4_fields(Panel* panel, int row,
 
 //-----------------------------------Button Functions--------------------------------------
 
+
+
 void toggle_lights() {
     lightOn[WhitePointLight] = !lightOn[WhitePointLight];
 }
@@ -647,6 +662,7 @@ void add_object() {
     string name = "object" + std::to_string(scene->roots.size() + 1);
     MeshNode* node = new MeshNode(name);          // empty mesh
     scene->add_root(node);
+    rebuild_scene_graph();
     select_object(node);
 }
 

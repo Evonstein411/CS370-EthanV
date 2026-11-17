@@ -137,6 +137,7 @@ struct MeshNode : SceneNode {
 
 //drawType functions that need mesh node to function
 inline void SolidColorDraw::initialize(MeshNode* meshNode) {
+    if (!meshNode || meshNode->mesh == (GLuint)-1) return;
     if (!hasColor) {
         color = {1.0f, 1.0f, 1.0f, 1.0f};
         hasColor = true;

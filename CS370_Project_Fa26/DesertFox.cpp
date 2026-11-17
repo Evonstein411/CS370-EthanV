@@ -197,7 +197,7 @@ void init_scene() {
     scene->add_root(MeshNode::create_material("wall3", cubeID,
     {0,3,25}, {50,10,1}, {0,0,0}, baseMaterial));
 
-    scene->add_root(MeshNode::create_material("wall3", cubeID,
+    scene->add_root(MeshNode::create_material("wall4", cubeID,
     {0,3,-25}, {50,10,1}, {0,0,0}, baseMaterial));
 
 }
