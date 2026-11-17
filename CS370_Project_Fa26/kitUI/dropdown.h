@@ -1,6 +1,8 @@
 #ifndef CS370_FA26_DROPDOWN_H
 #define CS370_FA26_DROPDOWN_H
 
+#include <utility>
+
 #include "widget.h"
 
 
@@ -23,17 +25,17 @@ struct Dropdown : Widget {
 
     //int index base
     Dropdown(float x, float y, float w, float h,
-                 const string& label,
+                 string  label,
                  const vector<string>& options,
                  int* selected)
-            : Widget(x, y, w, h), label(label), options(options), selected(selected)
+            : Widget(x, y, w, h), label(std::move(label)), options(options), selected(selected)
     {
         resize();
     }
 
     //for passing in enums directly
     template<typename E>
-    Dropdown(float x, float y, float w, float h,
+    Dropdown(const float x, const float y, const float w, const float h,
              const string& label,
              const vector<string>& options,
              E& selectedEnum)
@@ -42,11 +44,11 @@ struct Dropdown : Widget {
         resize();
     }
 
-    ~Dropdown() {
+    ~Dropdown() override {
         delete popup;
     }
 
-    void set_enabled(bool on) {
+    void set_enabled(const bool on) {
         enabled = on;
         if (!enabled)
             close_popup();
@@ -57,7 +59,7 @@ struct Dropdown : Widget {
         //guard if no popup
         if (popup) {
             // delete the old option buttons
-            for (auto& cell : popup->cells) {
+            for (const auto& cell : popup->cells) {
                 if (cell.widget) {
                     popup->remove_child(cell.widget);
                     delete cell.widget;
@@ -80,8 +82,8 @@ struct Dropdown : Widget {
         float boxW = maxOpt + HUD_PAD_X * 2.0f + 24.0f;   // 24 = ^ / v
         if (boxW < 100.0f) boxW = 100.0f;
 
-        for (int i = 0; i < (int)options.size(); ++i) {
-            Button* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
+        for (int i = 0; i < static_cast<int>(options.size()); ++i) {
+            auto* b = new Button(0.0f, 0.0f, 1.0f, 1.0f,
                 [this, i]() {
                     if (selected) *selected = i;
                     close_popup();
@@ -95,7 +97,7 @@ struct Dropdown : Widget {
     }
 
 
-    bool contains(float mx, float my) const {
+    bool contains(const float mx, const float my) const {
         if (hit(mx, my)) return true;                       // header
         if (popup && !popup->hidden && popup->hit(mx, my))  // popup panel
             return true;
@@ -117,19 +119,19 @@ struct Dropdown : Widget {
     }
 
     string currentText() const {
-        if (!selected || *selected < 0 || *selected >= (int)options.size())
+        if (!selected || *selected < 0 || *selected >= static_cast<int>(options.size()))
             return "(none)";
         return options[*selected];
     }
 
     void draw_self() override {
-        modelMatrix = translate(x, (float)hh - h - y, 0.0f) * scale(w, h, 1.0f);
+        modelMatrix = translate(x, static_cast<float>(hh) - h - y, 0.0f) * scale(w, h, 1.0f);
         draw_solid_hud_quad(color);
         draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
 
         float boxX = x + labelW;
         float boxW = w - labelW - HUD_PAD_X;
-        modelMatrix = translate(boxX, (float)hh - (h - 8.0f) - (y + 4.0f), 0.0f)
+        modelMatrix = translate(boxX, static_cast<float>(hh) - (h - 8.0f) - (y + 4.0f), 0.0f)
                      * scale(boxW, h - 8.0f, 1.0f);
         draw_solid_hud_quad(enabled ? selectedColor: disabledColor);
         draw_string(currentText(), boxX + 6.0f, y + 6.0f, textSize, enabled ? ALT_TEXT_COLOR: DISABLED_TEXT_COLOR);

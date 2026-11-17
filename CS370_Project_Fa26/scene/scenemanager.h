@@ -12,14 +12,14 @@ struct SceneManager {
     Scene* active = nullptr;
 
     ~SceneManager() {
-        for (Scene* s : scenes)
+        for (const Scene* s : scenes)
             delete s;
         scenes.clear();
         active = nullptr;
     }
 
     Scene* create_scene(const string& name = "Untitled") {
-        Scene* scene = new Scene();
+        auto* scene = new Scene();
         scene->name = name;
         scenes.push_back(scene);
         if (!active)
@@ -35,9 +35,9 @@ struct SceneManager {
         active = scene;
     }
 
-    void close_scene(Scene* scene) {
+    void close_scene(const Scene* scene) {
         if (!scene) return;
-        auto it = std::find(scenes.begin(), scenes.end(), scene);
+        const auto it = std::find(scenes.begin(), scenes.end(), scene);
         if (it == scenes.end()) return;
 
         scenes.erase(it);
@@ -54,12 +54,12 @@ struct SceneManager {
         return active ? active->selected : nullptr;
     }
 
-    void set_selected(SceneNode* node) {
+    void set_selected(SceneNode* node) const {
         if (active)
             active->selected = node;
     }
 
-    void clear_active() {
+    void clear_active() const {
         if (active)
             active->clear();
     }

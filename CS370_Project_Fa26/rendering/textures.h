@@ -1,37 +1,34 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-
-
-#define STB_TRUETYPE_IMPLEMENTATION
 #include <string>
 #include <filesystem>
 #include "../../common/stb_truetype.h"
 #include "../common/textureutils.h"
 
 //Files
-const char * fontFile = "../assets/fonts/Roboto-Regular.ttf";
+inline auto * fontFile = "../assets/fonts/Roboto-Regular.ttf";
 namespace fs = std::filesystem;
 // Textures
 enum Textures {Blank};
 
-vector<string> textureNames;
-vector<GLuint> TextureIDs;
-GLuint fontTextureID = 0;
+inline vector<string> textureNames;
+inline vector<GLuint> TextureIDs;
+inline GLuint fontTextureID = 0;
 
-stbtt_bakedchar glyphs[96];
+inline stbtt_bakedchar glyphs[96];
 
 //function forward decs
 void build_font();
 void build_textures();
 void scan_textures(const std::string& folder = "../assets/textures");
 
-int add_texture_file(const string& path) {
+inline int add_texture_file(const string& path) {
     if (path.empty() || !fs::exists(path))
         return -1;
 
-    fs::path src(path);
-    fs::path destDir = "../assets/textures";
+    const fs::path src(path);
+    const fs::path destDir = "../assets/textures";
     if (!fs::exists(destDir))
         fs::create_directories(destDir);
 
@@ -60,15 +57,15 @@ int add_texture_file(const string& path) {
 
     textureNames.push_back(dest.stem().string());
     TextureIDs.push_back(id);
-    return (int)TextureIDs.size() - 1;
+    return static_cast<int>(TextureIDs.size()) - 1;
 }
 
-void scan_textures(const std::string& folder) {
+inline void scan_textures(const std::string& folder) {
     textureNames.clear();
     TextureIDs.clear();
 
     // Blank always at index 0
-    textureNames.push_back("blank");
+    textureNames.emplace_back("blank");
     GLuint blankID;
     glGenTextures(1, &blankID);
     load_texture("../assets/textures/blank.png", blankID, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT, GL_REPEAT, true, false);
@@ -84,7 +81,7 @@ void scan_textures(const std::string& folder) {
             continue;
         }
 
-        fs::path p = entry.path();
+        const fs::path& p = entry.path();
         std::string ext = p.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
@@ -111,7 +108,7 @@ void scan_textures(const std::string& folder) {
 
 
 
-void build_textures( ) {
+inline void build_textures( ) {
 
     glActiveTexture(GL_TEXTURE0);
     scan_textures();
@@ -122,18 +119,18 @@ void build_textures( ) {
 
 }
 
-void build_font() {
+inline void build_font() {
     FILE* f = fopen(fontFile, "rb");
     if (!f) { fprintf(stderr, "ERROR: font file missing\n"); return; }
     fseek(f, 0, SEEK_END);
-    long size = ftell(f);
+    const long size = ftell(f);
     rewind(f);
-    unsigned char* ttf = new unsigned char[size];
+    auto* ttf = new unsigned char[size];
     fread(ttf, 1, size, f);
     fclose(f);
 
-    const int W = 512, H = 512;
-    unsigned char* pixels = new unsigned char[W * H];
+    constexpr int W = 512, H = 512;
+    auto* pixels = new unsigned char[W * H];
     memset(pixels, 0, W * H);
     stbtt_BakeFontBitmap(ttf, 0, 32.0f, pixels, W, H, 32, 96, glyphs);
 

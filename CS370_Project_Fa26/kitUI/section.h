@@ -1,6 +1,8 @@
 #ifndef CS370_FA26_SECTION_H
 #define CS370_FA26_SECTION_H
 
+#include <utility>
+
 #include "widget.h"
 
 
@@ -12,35 +14,35 @@ struct Section : Widget {
     vec4 color = HUD_SECTION;
     vec4 highlightedColor = HUD_HIGHLIGHTED;
 
-    Section(float x, float y, const string& label)
-        : Widget(x, y, 0, 0), label(label) {
+    Section(const float x, const float y, string  label)
+        : Widget(x, y, 0, 0), label(std::move(label)) {
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
         content = new Panel(x, y);
         content->set_hidden(collapsed);
         add_child(content);
     }
 
-    ~Section() {
+    ~Section() override {
         delete content;
     }
 
-    bool hit(float mx, float my) const override {
+    bool hit(const float mx, const float my) const override {
         if (hidden || is_effectively_hidden()) return false;
         // only the header bar is interactive
-        float bottom = (float)hh - headerH - y;
+        const float bottom = static_cast<float>(hh) - headerH - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + headerH;
     }
 
-    void add(Widget* w) {
+    void add(Widget* w) const {
         content->add(w, 0, 0);
     }
 
     void layout() {
-        float assignedW = stretched ? w : 0.0f;
+        const float assignedW = stretched ? w : 0.0f;
         stretched = false;
         headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
 
-        float labelW = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
+        const float labelW = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
 
         if (collapsed || content->cells.empty()) {
             prefW = std::max(labelW, 48.0f);
@@ -64,12 +66,12 @@ struct Section : Widget {
         layout();
 
         // header bar
-        mat4 transMatrix = translate(x, (float)hh - headerH - y, 0.0f);
-        mat4 scaleMatrix   = scale(w, headerH, 1.0f);
+        const mat4 transMatrix = translate(x, static_cast<float>(hh) - headerH - y, 0.0f);
+        const mat4 scaleMatrix   = scale(w, headerH, 1.0f);
         modelMatrix = transMatrix * scaleMatrix;
         draw_solid_hud_quad(hovered ? highlightedColor : color);
 
-        string arrow = collapsed ? ">" : "v";
+        const string arrow = collapsed ? ">" : "v";
         draw_string(arrow, x + HUD_PAD_X, y + HUD_PAD_Y, HUD_FONT);
         draw_string(label, x + HUD_PAD_X + 20.0f, y + HUD_PAD_Y, HUD_FONT);
 

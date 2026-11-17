@@ -8,6 +8,7 @@
 #include "widget.h"
 #include <functional>
 #include <string>
+#include <utility>
 
 struct Button;
 
@@ -20,20 +21,20 @@ struct Button : Widget {
     vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     //constructor (no label specified)
-    Button(float x, float y, float w, float h, std::function<void()> on_press, const string& label = "" )
-    :Widget(x, y, w, h), on_press(on_press), label(label) {
+    Button(const float x, const float y, const float w, const float h, const std::function<void()> &on_press, string  label = "" )
+    :Widget(x, y, w, h), label(std::move(label)), on_press(on_press) {
         fit();
         if (prefW <= 0.0f) prefW = w;   // explicit size, no label
         if (prefH <= 0.0f) prefH = h;
     }
 
-    void set_label(string newLabel) {
+    void set_label(const string &newLabel) {
         label = newLabel;
         fit();
     }
 
     void fit() {
-        if (label != "") {
+        if (!label.empty()) {
             w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
             if (w < 48.0f) w = 48.0f;
             h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
@@ -43,12 +44,12 @@ struct Button : Widget {
     }
 
     void draw_self() override {
-        modelMatrix = mat4().identity();
-        mat4 scaleMatrix, transMatrix = mat4().identity();
+        modelMatrix = mat4::identity();
+        mat4 transMatrix = mat4::identity();
 
 
-        scaleMatrix = scale(w, h, 1.0f);
-        transMatrix = translate(x, (float)hh - h - y, 0.0f);//move to top left for more intuitive positioning increase in y goes down
+        const mat4 scaleMatrix = scale(w, h, 1.0f);
+        transMatrix = translate(x, static_cast<float>(hh) - h - y, 0.0f);//move to top left for more intuitive positioning increase in y goes down
         modelMatrix = transMatrix * scaleMatrix;
         draw_solid_hud_quad(hovered ? highlightedColor: color);
 

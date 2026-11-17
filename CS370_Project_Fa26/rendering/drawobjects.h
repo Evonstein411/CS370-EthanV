@@ -5,11 +5,11 @@
 #include "materials.h"
 
 
-GLuint dynamicHUDColorBuffer = 0;
-GLuint highlightColorBuffer = 0;
+inline GLuint dynamicHUDColorBuffer = 0;
+inline GLuint highlightColorBuffer = 0;
 
 
-void draw_color_object(GLuint obj, GLuint color) {
+inline void draw_color_object(const GLuint obj, const GLuint color) {
     // Select shader program
     glUseProgram(colorProgram);
 
@@ -27,19 +27,19 @@ void draw_color_object(GLuint obj, GLuint color) {
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVPos);
 
     // Bind color buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ColorBuffers[color]);
-    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVCol);
 
     // Draw geometry
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
-void draw_mat_object(GLuint obj, GLuint material){
+inline void draw_mat_object(const GLuint obj, const GLuint material){
     // Select shader program
     glUseProgram(lightingProgram);
 
@@ -75,19 +75,19 @@ void draw_mat_object(GLuint obj, GLuint material){
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(lightingVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(lightingVPos);
 
     // Bind normal object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][NormBuffer]);
-    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(lightingVNorm, normCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(lightingVNorm);
 
     // Draw object
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
-void draw_gizmo_arrow(const vec4& color) {
+inline void draw_gizmo_arrow(const vec4& color) {
     if (gizmoArrowVAO == 0) return;
 
     // Re-use your existing highlightColorBuffer or make a tiny dedicated one
@@ -106,19 +106,18 @@ void draw_gizmo_arrow(const vec4& color) {
     glBindVertexArray(gizmoArrowVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
-    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, gizmoColorBuffer);
-    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVCol);
 
     glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
 }
 
 
-
-void draw_tex_object(GLuint obj, GLuint textureID){
+inline void draw_tex_object(const GLuint obj, const GLuint textureID){
     // Select shader program
     glUseProgram(textureProgram);
 
@@ -131,7 +130,6 @@ void draw_tex_object(GLuint obj, GLuint textureID){
     // Pass model matrix to shader
     glUniformMatrix4fv(textureModelMatLoc, 1, GL_FALSE, modelMatrix);
 
-    // TODO: Bind texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -140,12 +138,12 @@ void draw_tex_object(GLuint obj, GLuint textureID){
 
     // Bind position object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][PosBuffer]);
-    glVertexAttribPointer(textureVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(textureVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(textureVPos);
 
     // Bind texture object buffer and set attributes
     glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[obj][TexBuffer]);
-    glVertexAttribPointer(textureVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(textureVTex, texCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(textureVTex);
 
     // Draw object
@@ -155,7 +153,7 @@ void draw_tex_object(GLuint obj, GLuint textureID){
 
 
 //UI related draw functions should at some point be migrated to kitUI
-void draw_solid_hud_quad(vec4 color) {
+inline void draw_solid_hud_quad(const vec4 &color) {
     //setup dynamic buffer
     if (dynamicHUDColorBuffer == 0){
         glGenBuffers(1, &dynamicHUDColorBuffer);
@@ -177,18 +175,18 @@ void draw_solid_hud_quad(vec4 color) {
 
     glBindVertexArray(HUD_VAOs[HUDQuad]);
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][PosBuffer]);
-    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
-    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(colorVCol);
 
     glDrawArrays(GL_TRIANGLES, 0, HUD_numVertices[HUDQuad]);
 }
 
 
-void draw_text_quad() {
+inline void draw_text_quad() {
     glUseProgram(hudProgram);
 
     glUniformMatrix4fv(hudProjMatLoc, 1, GL_FALSE, projMatrix);
@@ -201,16 +199,15 @@ void draw_text_quad() {
     glBindVertexArray(HUD_VAOs[HUDTextQuad]);
 
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
-    glVertexAttribPointer(hudVPos, posCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(hudVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(hudVPos);
 
     glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
-    glVertexAttribPointer(hudVTex, texCoords, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(hudVTex, texCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(hudVTex);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-
 
 
 #endif // DRAW_OBJECTS_H

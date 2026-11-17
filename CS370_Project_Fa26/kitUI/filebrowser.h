@@ -17,7 +17,7 @@ struct FileBrowser : Widget {
     }
 
     // Helper (can be private or just a method)
-    string get_default_path() {
+    string get_default_path() const {
         if (startLocation == StartLocation::CWD) {
             return fs::current_path().string();
         }
@@ -74,7 +74,7 @@ struct FileBrowser : Widget {
         currentPath = home ? home : fs::current_path().string();
     }
 
-    ~FileBrowser() {
+    ~FileBrowser() override {
         // Panel destructor unparents; we explicitly delete what we own
         if (content) {
             // Delete entry buttons first (same pattern as Dropdown::setOptions)
@@ -96,7 +96,7 @@ struct FileBrowser : Widget {
         update_filter_label();
     }
 
-    void update_filter_label() {
+    void update_filter_label() const {
         if (!filterLabel) return;
         if (allowedExtensions.empty()) {
             filterLabel->set_text("(any)");
@@ -104,7 +104,7 @@ struct FileBrowser : Widget {
         }
         string s;
         for (size_t i = 0; i < allowedExtensions.size(); i++) {
-            if (i) s += " ";
+            if (i) s += ' ';
             s += allowedExtensions[i];
         }
         filterLabel->set_text(s);
@@ -139,9 +139,9 @@ struct FileBrowser : Widget {
         content->y = y;
     }
 
-    void clear_list() {
+    void clear_list() const {
         if (!listPanel) return;
-        for (auto& cell : listPanel->cells) {
+        for (const auto& cell : listPanel->cells) {
             if (cell.widget) {
                 destroy_widget(cell.widget);
             }
@@ -170,10 +170,9 @@ struct FileBrowser : Widget {
         int row = 0;
 
         // ".." entry
-        Button* up = new Button(0, 0, 280, 32,
+        auto* up = new Button(0, 0, 280, 32,
             [this]() {
-                fs::path p(currentPath);
-                if (p.has_parent_path()) {
+                if (fs::path p(currentPath); p.has_parent_path()) {
                     currentPath = p.parent_path().string();
                     refresh();
                 }
@@ -190,14 +189,14 @@ struct FileBrowser : Widget {
                 string full = entry.path().string();
 
                 if (entry.is_directory()) {
-                    Button* b = new Button(0, 0, 280, 32,
+                    auto* b = new Button(0, 0, 280, 32,
                         [this, full]() {
                             currentPath = full;
                             refresh();
                         }, name + "/");
                     listPanel->add(b, 0, row++);
                 } else if (passes_filter(entry.path())) {
-                    Button* b = new Button(0, 0, 280, 32,
+                    auto* b = new Button(0, 0, 280, 32,
                         [this, full]() {
                             selectedPath = full;
                             selectedLabel->set_text(fs::path(full).filename().string());

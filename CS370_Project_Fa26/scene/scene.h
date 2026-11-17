@@ -19,7 +19,7 @@ struct Scene {
 
     ~Scene() { clear(); }
 
-    void draw() {
+    void draw() const {
         for_each([](SceneNode* n) {
             if (n->enabled)
                 n->draw();
@@ -41,7 +41,7 @@ struct Scene {
         selected = nullptr;
 
         // now safe to delete
-        for (SceneNode* n : all)
+        for (const SceneNode* n : all)
             delete n;
     }
 
@@ -50,10 +50,9 @@ struct Scene {
         roots.push_back(node);
     }
 
-    void remove_root(SceneNode* node) {
+    void remove_root(const SceneNode* node) {
         if (!node) return;
-        auto it = std::find(roots.begin(), roots.end(), node);
-        if (it != roots.end()) {
+        if (auto it = std::find(roots.begin(), roots.end(), node); it != roots.end()) {
             roots.erase(it);
             if (selected == node) selected = nullptr;
             delete node;
@@ -66,13 +65,13 @@ struct Scene {
     }
 
     bool save(const string& filename = "") {
-        string path = filename.empty() ? filePath : filename;
+        const string path = filename.empty() ? filePath : filename;
         if (path.empty()) {
             fprintf(stderr, "Scene::save — no path\n");
             return false;
         }
 
-        fs::path scenesDir = "../assets/scenes";
+        const fs::path scenesDir = "../assets/scenes";
         if (!fs::exists(scenesDir))
             fs::create_directories(scenesDir);
 
@@ -107,9 +106,9 @@ struct Scene {
         string line;
         if (!getline(in, line)) return false;   // skip header
 
-        auto trim = [](string s) {
-            size_t a = s.find_first_not_of(" \t\r\n");
-            size_t b = s.find_last_not_of(" \t\r\n");
+        auto trim = [](const string& s) {
+            const size_t a = s.find_first_not_of(" \t\r\n");
+            const size_t b = s.find_last_not_of(" \t\r\n");
             if (a == string::npos) return string{};
             return s.substr(a, b - a + 1);
         };
@@ -137,7 +136,7 @@ private:
             walk(child, fn);
     }
 
-    void write_node(ostream& out, SceneNode* node) {
+    static void write_node(ostream& out, const SceneNode* node) {
         if (!node) return;
         out << "NODE\n";
         node->write(out);                          // virtual
@@ -147,15 +146,15 @@ private:
         out << "END\n";
     }
 
-    SceneNode* read_node(istream& in) {
+    static SceneNode* read_node(istream& in) {
         string line;
         string typeName = "MeshNode";
         vector<pair<string, string>> fields;
         int childCount = 0;
 
         auto trim = [](string s) {
-            size_t a = s.find_first_not_of(" \t\r\n");
-            size_t b = s.find_last_not_of(" \t\r\n");
+            const size_t a = s.find_first_not_of(" \t\r\n");
+            const size_t b = s.find_last_not_of(" \t\r\n");
             if (a == string::npos) return string{};
             return s.substr(a, b - a + 1);
         };
@@ -190,11 +189,11 @@ private:
         }
 
         // feed fields — MeshNode::read_field must be null-safe
-        for (auto& f : fields) {
-            istringstream iss(f.second);
+        for (auto&[fst, snd] : fields) {
+            istringstream iss(snd);
             string dummy;
             iss >> dummy;
-            node->read_field(f.first, iss);
+            node->read_field(fst, iss);
         }
         node->on_loaded();
 

@@ -2,28 +2,29 @@
 #define MATERIALS_H
 
 enum MaterialNames {BRASS, BASE, FLOOR, NUMMATERIALS};
-GLuint MaterialBuffers[NumMaterialBuffers];
-vector<MaterialProperties> materials;
-vector<MaterialProperties> dynamicMaterials;
 
-float ambientR = 0.33f;
-float ambientG = 0.22f;
-float ambientB = 0.03f;
-float ambientA = 1.0f;
+inline GLuint MaterialBuffers[NumMaterialBuffers];
+inline vector<MaterialProperties> materials;
+inline vector<MaterialProperties> dynamicMaterials;
 
-float diffuseR = 0.78f;
-float diffuseG = 0.57f;
-float diffuseB = 0.11f;
-float diffuseA = 1.0f;
+inline float ambientR = 0.33f;
+inline float ambientG = 0.22f;
+inline float ambientB = 0.03f;
+inline float ambientA = 1.0f;
 
-float specularR = 0.99f;
-float specularG = 0.91f;
-float specularB = 0.81f;
-float specularA = 1.0f;
+inline float diffuseR = 0.78f;
+inline float diffuseG = 0.57f;
+inline float diffuseB = 0.11f;
+inline float diffuseA = 1.0f;
 
-float shininess = 27.8f;
+inline float specularR = 0.99f;
+inline float specularG = 0.91f;
+inline float specularB = 0.81f;
+inline float specularA = 1.0f;
 
-MaterialProperties baseMaterial = {
+inline float shininess = 27.8f;
+
+inline MaterialProperties baseMaterial = {
 	vec4(0.5f, 0.5f, 0.5f, 1.0f), //ambient
 	vec4(0.5f, 0.5f, 0.5f, 1.0f), //diffuse
 	vec4(0.5f, 0.5f, 0.5f, 1.0f), //specular
@@ -31,7 +32,7 @@ MaterialProperties baseMaterial = {
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
-MaterialProperties floorMat = {
+inline MaterialProperties floorMat = {
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //ambient
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //diffuse
 	vec4(0.33f, 0.33f, 0.33f, 1.0f), //specular
@@ -40,7 +41,7 @@ MaterialProperties floorMat = {
 };
 
 // Create brass material
-MaterialProperties brass = {
+inline MaterialProperties brass = {
 	vec4(0.33f, 0.22f, 0.03f, 1.0f), //ambient
 	vec4(0.78f, 0.57f, 0.11f, 1.0f), //diffuse
 	vec4(0.99f, 0.91f, 0.81f, 1.0f), //specular
@@ -48,7 +49,7 @@ MaterialProperties brass = {
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
-void build_materials() {
+inline void build_materials() {
     // Allocate Materials vector
     materials.resize(NUMMATERIALS);
     // Add materials to Materials vector
@@ -62,7 +63,7 @@ void build_materials() {
     glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
 }
 
-void build_dynamic_materials() {
+inline void build_dynamic_materials() {
 	vector<MaterialProperties> all = materials;
 	all.insert(all.end(), dynamicMaterials.begin(), dynamicMaterials.end());
 

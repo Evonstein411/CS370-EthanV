@@ -5,12 +5,13 @@
 #include "../common/lighting.h"
 
 enum LightNames {WhitePointLight, FillLight, NumLights};
-GLuint LightBuffers[NumLightBuffers];
-vector<LightProperties> lights;
-GLint lightOn[NumLights] = {0, 0};
+
+inline GLuint LightBuffers[NumLightBuffers];
+inline vector<LightProperties> lights;
+inline GLint lightOn[NumLights] = {0, 0};
 
 // White point light
-LightProperties whitePointLight = {
+inline LightProperties whitePointLight = {
 		POINT, //type
 		{0.0f, 0.0f, 0.0f}, //pad
 		vec4(0.0f, 0.0f, 0.0f, 1.0f), //ambient
@@ -24,7 +25,7 @@ LightProperties whitePointLight = {
 };
 
 // White directional light
-LightProperties fillLight = {
+inline LightProperties fillLight = {
 	DIRECTIONAL,
 	{0.0f, 0.0f, 0.0f},
 	vec4(0.15f, 0.15f, 0.15f, 1.0f),   // ambient, so it never goes fully black
@@ -38,7 +39,7 @@ LightProperties fillLight = {
 };
 
 
-void build_lights( ) {
+inline void build_lights( ) {
 	// Allocate Lights vector
 	lights.resize(NumLights);
 	// Add lights to Lights vector

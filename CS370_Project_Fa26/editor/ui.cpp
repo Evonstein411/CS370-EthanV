@@ -574,9 +574,8 @@ void rebuild_scene_graph() {
     if (!sceneGraphPanel) return;
     // --- delete old buttons ---
     for (auto& cell : sceneGraphPanel->cells) {
-        if (cell.widget) {
-            delete cell.widget;          // ~Widget removes itself from parent + global list
-        }
+        delete cell.widget;          // ~Widget removes itself from parent + global list
+
     }
     sceneGraphPanel->cells.clear();
     sceneGraphPanel->children.clear();   // just in case

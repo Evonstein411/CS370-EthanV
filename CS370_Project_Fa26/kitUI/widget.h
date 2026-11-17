@@ -1,10 +1,8 @@
 #ifndef CS370_FA26_WIDGET_H
 #define CS370_FA26_WIDGET_H
 
-#include "../common/GLFWutils.h"
 #include <vector>
 #include <algorithm>
-#include <string>
 #include <functional>
 #include "../common/vmath.h"
 #include "../globals.h"
@@ -20,23 +18,23 @@ inline int eventDepth = 0;
 //HUD globals
 
 //colors
-const vmath::vec4 HUD_PANEL = vmath::vec4(0.28f, 0.22f, 0.16f, 0.92f);  // dark sand / panel bg
-const vmath::vec4 HUD_FIELD = vmath::vec4(0.38f, 0.30f, 0.22f, 0.95f);  // text fields, dropdowns
-const vmath::vec4 HUD_CANVAS = vmath::vec4(0.22f, 0.17f, 0.12f, 0.95f);  // top bar, slightly darker
-const vmath::vec4 HUD_BUTTON = vmath::vec4(0.55f, 0.38f, 0.22f, 0.95f);  // terracotta buttons
-const vmath::vec4 HUD_DROPFIELD = vmath::vec4(0.45f, 0.34f, 0.22f, 0.95f);  // dropdown label + closed box
-const vmath::vec4 HUD_SECTION = vmath::vec4(0.36f, 0.27f, 0.18f, 0.95f);  // section bar (normal)
-const vmath::vec4 HUD_LABEL = vmath::vec4(0.50f, 0.34f, 0.20f, 0.95f);  // section bar (normal)
-const vmath::vec4 HUD_ACCENT      = vmath::vec4(0.85f, 0.55f, 0.25f, 1.00f);  // selected, focus ring
-const vmath::vec4 HUD_HIGHLIGHTED = vmath::vec4(0.75f, 0.55f, 0.30f, 0.95f);  // hover / active
-const vmath::vec4 HUD_DISABLED    = vmath::vec4(0.22f, 0.20f, 0.18f, 0.65f);  // muted
-const vmath::vec4 ALT_TEXT_COLOR = vmath::vec4(0.78f, 0.66f, 0.54f, 1.00f);
-const vmath::vec4 DISABLED_TEXT_COLOR = vmath::vec4(0.24, 0.22f, 0.20f, 1.0f);
-const vmath::vec4 TEXT_COLOR = vmath::vec4(0.95f, 0.90f, 0.82f, 1.00f);
+const auto HUD_PANEL = vmath::vec4(0.28f, 0.22f, 0.16f, 0.92f);  // dark sand / panel bg
+const auto HUD_FIELD = vmath::vec4(0.38f, 0.30f, 0.22f, 0.95f);  // text fields, dropdowns
+const auto HUD_CANVAS = vmath::vec4(0.22f, 0.17f, 0.12f, 0.95f);  // top bar, slightly darker
+const auto HUD_BUTTON = vmath::vec4(0.55f, 0.38f, 0.22f, 0.95f);  // terracotta buttons
+const auto HUD_DROPFIELD = vmath::vec4(0.45f, 0.34f, 0.22f, 0.95f);  // dropdown label + closed box
+const auto HUD_SECTION = vmath::vec4(0.36f, 0.27f, 0.18f, 0.95f);  // section bar (normal)
+const auto HUD_LABEL = vmath::vec4(0.50f, 0.34f, 0.20f, 0.95f);  // section bar (normal)
+const auto HUD_ACCENT      = vmath::vec4(0.85f, 0.55f, 0.25f, 1.00f);  // selected, focus ring
+const auto HUD_HIGHLIGHTED = vmath::vec4(0.75f, 0.55f, 0.30f, 0.95f);  // hover / active
+const auto HUD_DISABLED    = vmath::vec4(0.22f, 0.20f, 0.18f, 0.65f);  // muted
+const auto ALT_TEXT_COLOR = vmath::vec4(0.78f, 0.66f, 0.54f, 1.00f);
+const auto DISABLED_TEXT_COLOR = vmath::vec4(0.24, 0.22f, 0.20f, 1.0f);
+const auto TEXT_COLOR = vmath::vec4(0.95f, 0.90f, 0.82f, 1.00f);
 
-const float HUD_FONT = 32.0f;
-const float HUD_PAD_X = 8.0f;
-const float HUD_PAD_Y = 8.0f;
+constexpr float HUD_FONT = 32.0f;
+constexpr float HUD_PAD_X = 8.0f;
+constexpr float HUD_PAD_Y = 8.0f;
 
 
 enum class Alignment {START, CENTER, END, STRETCH};
@@ -58,14 +56,13 @@ struct Widget {
     std::vector<Widget*> children; //list of all current children
     Widget* parent = nullptr; //pointer to parent if have one
 
-    Widget(float x, float y, float w, float h)
+    Widget(const float x, const float y, const float w, const float h)
         : x(x), y(y), w(w), h(h) {
         widgets.push_back(this);
     }
 
     virtual ~Widget() {
-        auto it = std::find(widgets.begin(), widgets.end(), this);
-        if (it != widgets.end())
+        if (const auto it = std::find(widgets.begin(), widgets.end(), this); it != widgets.end())
             widgets.erase(it);
 
         if (parent) parent->remove_child(this); //if im a child remove myself from parent
@@ -81,9 +78,9 @@ struct Widget {
     virtual void on_click(float mx, float my) {}
     virtual void on_hover(float mx, float my){}
 
-    virtual bool hit(float mx, float my) const {
+    virtual bool hit(const float mx, const float my) const {
         if (hidden || is_effectively_hidden()) return false;
-        float bottom = (float)hh - h - y;
+        const float bottom = static_cast<float>(hh) - h - y;
         return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
     }
 
@@ -128,7 +125,7 @@ struct Widget {
 
 
     //parent child relations
-    Widget* get_parent() {
+    Widget* get_parent() const {
         return parent;
     }
 
@@ -146,7 +143,7 @@ struct Widget {
 
     void remove_child(Widget* child) {
         if(!child) return; //do nothing if child doesn't exist
-        auto searched_child = std::find(children.begin(), children.end(), child);
+        const auto searched_child = std::find(children.begin(), children.end(), child);
         if (searched_child == children.end()) return; //failed to find child do nothing
         children.erase(searched_child); //found child remove from children list
         if (child->get_parent() == this) { //remove self from parent of prior child
@@ -176,7 +173,7 @@ struct Widget {
         priority = newPriority;
     }
 
-    bool is_hidden() {
+    bool is_hidden() const {
         return hidden;
     }
 
@@ -195,7 +192,7 @@ struct Widget {
         hidden = false;
     }
 
-    void set_hidden(bool new_hidden) {
+    void set_hidden(const bool new_hidden) {
         hidden = new_hidden;
     }
 
@@ -218,7 +215,7 @@ inline void flush_destroyed() {
     if (trash.empty()) return;
     vector<Widget*> batch;
     batch.swap(trash);
-    for (Widget* w : batch)
+    for (const Widget* w : batch)
         delete w;                      // destructor already unregisters from widgets
 }
 

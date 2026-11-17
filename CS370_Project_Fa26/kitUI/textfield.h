@@ -1,6 +1,8 @@
 #ifndef CS370_FA26_TEXTFIELD_H
 #define CS370_FA26_TEXTFIELD_H
 
+#include <utility>
+
 #include "widget.h"
 
 //base for text field needed for callback logic
@@ -12,7 +14,7 @@ struct TextFieldBase : Widget {
     TextFieldBase(float x, float y, float w, float h)
         : Widget(x, y, w, h) {}
 
-    void set_editable(bool status) { editable = status; }
+    virtual void set_editable(const bool status) { editable = status; }
 
     void on_click(float mx, float my) override {
         if (editable) focused = true;
@@ -33,19 +35,20 @@ template<typename T> struct TextField : TextFieldBase {
     string text;
     int maxLen;
     float textSize = HUD_FONT;
-    float labelW;
+    float labelW{};
     bool isNum = false;
     T* value = nullptr;// pointer to the actual value
 
     //constructor
-    TextField(float x, float y, float w, float h, const string& label, int maxLen = 16, bool isNum = false, T* value = nullptr)
-        :TextFieldBase(x, y, w, h), label(label), maxLen(maxLen), isNum(isNum), value(value) {
+    TextField(const float x, const float y, const float w, const float h, string label,
+        const int maxLen = 16, const bool isNum = false, T* value = nullptr)
+        :TextFieldBase(x, y, w, h), label(std::move(label)), maxLen(maxLen), isNum(isNum), value(value) {
         resize();
     }
 
     void commit() override;
 
-    void set_editable(bool status) {
+    void set_editable(const bool status) override {
         editable = status;
     }
 
@@ -54,7 +57,7 @@ template<typename T> struct TextField : TextFieldBase {
         return text;
     }
 
-    bool valid_number(const string& s) const {
+    static bool valid_number(const string& s) {
         if (s.empty()) return true;
         size_t i = 0;
         if (s[0] == '-') {
@@ -81,8 +84,7 @@ template<typename T> struct TextField : TextFieldBase {
         if (labelW < 36.0f) labelW = 36.0f;
 
         float inner = text_width(text, textSize) + 12.0f;
-        float minInner = text_width(" ", textSize) + 12.0f;
-        if (inner < minInner) inner = minInner;
+        if (const float minInner = text_width(" ", textSize) + 12.0f; inner < minInner) inner = minInner;
         w = labelW + inner + HUD_PAD_X;
         h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
     }
@@ -99,40 +101,40 @@ template<typename T> struct TextField : TextFieldBase {
     }
 
     void draw_self() override {
-        modelMatrix = mat4().identity();
-        mat4 scaleMatrix, transMatrix = mat4().identity();
-        transMatrix = translate(x, (float)hh - h - y, 0.0f);
-        scaleMatrix = scale(w, h, 1.0f);
+        modelMatrix = mat4::identity();
+        mat4 transMatrix = mat4::identity();
+        transMatrix = translate(x, static_cast<float>(hh) - h - y, 0.0f);
+        mat4 scaleMatrix = scale(w, h, 1.0f);
         modelMatrix =  transMatrix * scaleMatrix;
         draw_solid_hud_quad(color);
         draw_string(label, x + 8.0f, y + 8.0f, 32);
 
-        float boxX = x + labelW;
-        float boxY = y + 6.0f;
+        const float boxX = x + labelW;
+        const float boxY = y + 6.0f;
         float boxH = h - 12.0f;
         float boxW = w - labelW - HUD_PAD_X;
         if (boxW < HUD_PAD_X) boxW = HUD_PAD_X;
         if (boxH < HUD_PAD_Y) boxH = HUD_PAD_Y;
 
-        transMatrix = translate(boxX, (float)hh - boxH - boxY, 0.0f);
+        transMatrix = translate(boxX, static_cast<float>(hh) - boxH - boxY, 0.0f);
         scaleMatrix = scale(boxW, boxH, 1.0f);
         modelMatrix =  transMatrix * scaleMatrix;
         draw_solid_hud_quad(editable ? fieldColor : disabledColor);
         draw_string(text, boxX + 6.0f, boxY + 2.0f , textSize, editable? textColor: DISABLED_TEXT_COLOR);
 
         if (focused){
-            float textW = text_width(text, textSize);
-            float caretX = x + labelW + 4.0f + textW + 1.0f;
-            float caretY = boxY + 10.0f;          // same top as the text
+            const float textW = text_width(text, textSize);
+            const float caretX = x + labelW + 4.0f + textW + 1.0f;
+            const float caretY = boxY + 10.0f;          // same top as the text
             draw_caret(caretX, caretY);
         }
     }
 
-    void on_char(unsigned int charCode) override {
+    void on_char(const unsigned int charCode) override {
         if (!editable || !focused) return;
-        if ((int)text.size() >= maxLen) return; //do nothing if size is at max len
+        if (static_cast<int>(text.size()) >= maxLen) return; //do nothing if size is at max len
         if (charCode < 32 || charCode > 126) return; //prevent invalid characters
-        char c = (char)charCode;
+        const char c = static_cast<char>(charCode);
 
         if (isNum) {
             string next = text;
@@ -143,7 +145,7 @@ template<typename T> struct TextField : TextFieldBase {
         resize();
     }
 
-    void on_key(int key, int action) override {
+    void on_key(const int key, const int action) override {
         if (!focused || !editable) return;
         if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
         if (key == GLFW_KEY_BACKSPACE && !text.empty()) {
@@ -153,16 +155,16 @@ template<typename T> struct TextField : TextFieldBase {
 
     }
 
-    void draw_caret(float caretX, float caretY) {
+    void draw_caret(const float caretX, const float caretY) const {
         // 1 second full cycle → 0.5s on, 0.5s off
-        if (fmod((float)glfwGetTime(), 1.0f) > 0.5f)
+        if (fmod(static_cast<float>(glfwGetTime()), 1.0f) > 0.5f)
             return;
 
-        float cw = 2.0f;
-        float ch = textSize - 8.0f;
+        constexpr float cw = 2.0f;
+        const float ch = textSize - 8.0f;
 
-        mat4 transMatrix = translate(caretX, (float)hh - ch - caretY, 0.0f);
-        mat4 scaleMatrix = scale(cw, ch, 1.0f);
+        const mat4 transMatrix = translate(caretX, static_cast<float>(hh) - ch - caretY, 0.0f);
+        const mat4 scaleMatrix = scale(cw, ch, 1.0f);
         modelMatrix = transMatrix * scaleMatrix;
         draw_solid_hud_quad(textColor);
     }
@@ -176,7 +178,7 @@ template<>
 inline void TextField<float>::commit() {
     if (!value) return;
     char* end = nullptr;
-    float n = strtof(text.c_str(), &end);
+    const float n = strtof(text.c_str(), &end);
     if (end != text.c_str())
         *value = n;
 }
@@ -185,9 +187,9 @@ template<>
 inline void TextField<int>::commit() {
     if (!value) return;
     char* end = nullptr;
-    long n = strtol(text.c_str(), &end, 10);
+    const long n = strtol(text.c_str(), &end, 10);
     if (end != text.c_str())
-        *value = (int)n;
+        *value = static_cast<int>(n);
 }
 
 template<>

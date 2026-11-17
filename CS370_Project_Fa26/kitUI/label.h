@@ -2,6 +2,8 @@
 #ifndef CS370_FA26_LABEL_H
 #define CS370_FA26_LABEL_H
 
+#include <utility>
+
 #include "widget.h"
 
 
@@ -11,12 +13,12 @@ struct Label : Widget {
     float textSize = HUD_FONT;
     vec4 color = HUD_LABEL;
 
-    Label(float x, float y, float w, float h, const string& label)
-    : Widget(x, y, w, h), label(label) {
+    Label(const float x, const float y, const float w, const float h, string  label)
+    : Widget(x, y, w, h), label(std::move(label)) {
         fit();
     }
 
-    void set_text(string n_text) {
+    void set_text(const string &n_text) {
         label = n_text;
         fit();
     }
@@ -29,11 +31,11 @@ struct Label : Widget {
     }
 
     void draw_self() override {
-        modelMatrix = mat4().identity();
-        mat4 scale_matrix, trans_matrix = mat4().identity();
+        modelMatrix = mat4::identity();
+        mat4 trans_matrix = mat4::identity();
 
-        scale_matrix = scale(w, h, 1.0f);
-        trans_matrix = translate(x, (float)hh - h - y, 0.0f);
+        const mat4 scale_matrix = scale(w, h, 1.0f);
+        trans_matrix = translate(x, static_cast<float>(hh) - h - y, 0.0f);
         modelMatrix = trans_matrix * scale_matrix;
         draw_solid_hud_quad(color);
 

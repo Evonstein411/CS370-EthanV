@@ -11,60 +11,61 @@ enum LightBuffer_IDs {LightBuffer, NumLightBuffers};
 enum MaterialBuffer_IDs {MaterialBuffer, NumMaterialBuffers};
 
 // Number of component coordinates
-GLint posCoords = 4;
-GLint normCoords = 3;
-GLint texCoords = 2;
-GLint colCoords = 4;
+inline GLint posCoords = 4;
+inline GLint normCoords = 3;
+inline GLint texCoords = 2;
+inline GLint colCoords = 4;
 
 // Global state
-mat4 projMatrix;
-mat4 cameraMatrix;
-mat4 normalMatrix;
-mat4 modelMatrix;
+inline mat4 projMatrix;
+inline mat4 cameraMatrix;
+inline mat4 normalMatrix;
+inline mat4 modelMatrix;
 
 // Initial Camera
 enum CameraMode {ORTHO, PERSPECTIVE};
-CameraMode cameraMode = ORTHO;
+
+inline CameraMode cameraMode = ORTHO;
 
 //Global camera state
-vec3 eye = {3.0f, 3.0f, 3.0f};
-vec3 center = {0.0f, 0.0f, 0.0f};
-vec3 up = {0.0f, 1.0f, 0.0f};
-GLfloat azimuth = 320.0f;
-GLfloat elevation = 60.0f;
-GLfloat radius = 17.5f;
-GLfloat del = 2.0f;
-GLfloat daz = 2.0f;
-GLfloat dr = 0.1f;
-GLfloat minRadius = 0.5f;
+inline vec3 eye = {3.0f, 3.0f, 3.0f};
+inline vec3 center = {0.0f, 0.0f, 0.0f};
+inline vec3 up = {0.0f, 1.0f, 0.0f};
+inline GLfloat azimuth = 320.0f;
+inline GLfloat elevation = 60.0f;
+inline GLfloat radius = 17.5f;
+inline GLfloat del = 2.0f;
+inline GLfloat daz = 2.0f;
+inline GLfloat dr = 0.1f;
+inline GLfloat minRadius = 0.5f;
 
 //Ortho camera
-vec3 orthoEye = {3.0f, 3.0f, 3.0f};
-vec3 orthoCenter = {0.0f, 0.0f, 0.0f};
-GLfloat orthoAzimuth = 320.0f;
-GLfloat orthoElevation = 60.0f;
-GLfloat orthoRadius = 17.5f;
+inline vec3 orthoEye = {3.0f, 3.0f, 3.0f};
+inline vec3 orthoCenter = {0.0f, 0.0f, 0.0f};
+inline GLfloat orthoAzimuth = 320.0f;
+inline GLfloat orthoElevation = 60.0f;
+inline GLfloat orthoRadius = 17.5f;
 
 //Perspective (first person) camera
-vec3 fpsEye = {0.0f, 2.0f, 10.0f};
-GLfloat fpsAzimuth = 0.0f;
-GLfloat fpsElevation = 0.0f;
-GLfloat fpsStep = 0.25f;
-GLfloat fpsTurn = 2.0f;
+inline vec3 fpsEye = {0.0f, 2.0f, 10.0f};
+inline GLfloat fpsAzimuth = 0.0f;
+inline GLfloat fpsElevation = 0.0f;
+inline GLfloat fpsStep = 0.25f;
+inline GLfloat fpsTurn = 2.0f;
 
 // Global object variables
-GLfloat sphereAngle = 0.0;
-GLdouble elTime = 0.0;
-GLdouble rpm = 10.0;
-vec3 axis = {0.0f, 1.0f, 0.0f};
-GLboolean animate = true;
-GLboolean dirty = false;
+inline GLfloat sphereAngle = 0.0;
+inline GLdouble elTime = 0.0;
+inline GLdouble rpm = 10.0;
+inline vec3 axis = {0.0f, 1.0f, 0.0f};
+inline GLboolean animate = true;
+inline GLboolean dirty = false;
 
-vec4 backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
+inline vec4 backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
 
 // Global screen dimensions
-GLint ww = 1640;
-GLint hh = 960;
+inline GLint ww = 1640;
+inline GLint hh = 960;
 
 #endif //GLOBALS_H
 

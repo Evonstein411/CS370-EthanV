@@ -124,7 +124,7 @@ set(COMMON_FILES
         ../scene/scenemanager.h
         ../scene/nodes.h
         ../scene/drawtype.h
-        ../editor/ui.cpp
+
 )
 
 #-------------------------------------------------------------

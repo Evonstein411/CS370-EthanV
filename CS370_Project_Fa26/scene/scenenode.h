@@ -28,11 +28,11 @@ struct SceneNode {
     }
 
     mat4 get_local_matrix() const {
-        mat4 T  = translate(position);
-        mat4 Rx = vmath::rotate(rotation[0], vec3(1.0f, 0.0f, 0.0f));
-        mat4 Ry = vmath::rotate(rotation[1], vec3(0.0f, 1.0f, 0.0f));
-        mat4 Rz = vmath::rotate(rotation[2], vec3(0.0f, 0.0f, 1.0f));
-        mat4 S  = vmath::scale(scale);
+        const mat4 T  = translate(position);
+        const mat4 Rx = vmath::rotate(rotation[0], vec3(1.0f, 0.0f, 0.0f));
+        const mat4 Ry = vmath::rotate(rotation[1], vec3(0.0f, 1.0f, 0.0f));
+        const mat4 Rz = vmath::rotate(rotation[2], vec3(0.0f, 0.0f, 1.0f));
+        const mat4 S  = vmath::scale(scale);
         return T * Rx * Ry * Rz * S;
     }
 
@@ -48,7 +48,7 @@ struct SceneNode {
         if (!child || child == this) return;
 
         // already our child?
-        for (SceneNode* c : children) {
+        for (const SceneNode* c : children) {
             if (c == child) return;
         }
 
@@ -88,8 +88,8 @@ struct SceneNode {
     virtual bool read_field(const std::string& key, std::istream& iss) {
         if (key == "name") {
             std::getline(iss, name);
-            size_t a = name.find_first_not_of(" \t\r\n");
-            size_t b = name.find_last_not_of(" \t\r\n");
+            const size_t a = name.find_first_not_of(" \t\r\n");
+            const size_t b = name.find_last_not_of(" \t\r\n");
             if (a == std::string::npos) name.clear();
             else name = name.substr(a, b - a + 1);
             return true;
@@ -97,7 +97,7 @@ struct SceneNode {
         if (key == "position") { iss >> position[0] >> position[1] >> position[2]; return true; }
         if (key == "rotation") { iss >> rotation[0] >> rotation[1] >> rotation[2]; return true; }
         if (key == "scale")    { iss >> scale[0] >> scale[1] >> scale[2]; return true; }
-        if (key == "enabled")  { int e; iss >> e; enabled = (e != 0); return true; }
+        if (key == "enabled")  { int e; iss >> e; enabled = e != 0; return true; }
         return false;   // unknown key
     }
 

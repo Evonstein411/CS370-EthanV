@@ -9,60 +9,61 @@
 
 namespace fs = std::filesystem;
 // Model vertex arrays and buffer objects
-vector<string> meshNames;
-vector<GLuint> VAOs;
-vector<array<GLuint, NumObjBuffers>> ObjBuffers;
-vector<GLint> numVertices;
+inline vector<string> meshNames;
+inline vector<GLuint> VAOs;
+inline vector<array<GLuint, NumObjBuffers>> ObjBuffers;
+inline vector<GLint> numVertices;
 
 //Mask
 // Dedicated NDC full-screen quad for post-process passes (outline, etc.)
-GLuint fullscreenVAO = 0;
-GLuint fullscreenPosBuffer = 0;
-GLuint fullscreenTexBuffer = 0;
-GLint  fullscreenNumVertices = 6;
+inline GLuint fullscreenVAO = 0;
+inline GLuint fullscreenPosBuffer = 0;
+inline GLuint fullscreenTexBuffer = 0;
+inline GLint  fullscreenNumVertices = 6;
 
 //Gizmo
-GLuint gizmoArrowVAO = 0;
-GLuint gizmoArrowPosBuffer = 0;
-GLuint gizmoArrowNormBuffer = 0;
-GLint  gizmoArrowNumVerts = 0;
+inline GLuint gizmoArrowVAO = 0;
+inline GLuint gizmoArrowPosBuffer = 0;
+inline GLuint gizmoArrowNormBuffer = 0;
+inline GLint  gizmoArrowNumVerts = 0;
 
 //HUD should be migrated at some point to kitUI
 enum HUD_IDs { HUDQuad = 0, HUDTextQuad, NumHUD };
-GLuint HUD_VAOs[NumHUD];
-GLuint HUD_ObjBuffers[NumHUD][NumObjBuffers];
-GLint HUD_numVertices[NumHUD];
+
+inline GLuint HUD_VAOs[NumHUD];
+inline GLuint HUD_ObjBuffers[NumHUD][NumObjBuffers];
+inline GLint HUD_numVertices[NumHUD];
 
 // Color buffers
-vector<GLuint> ColorBuffers;
+inline vector<GLuint> ColorBuffers;
 
-float colorR = 0.0f;
-float colorG = 0.0f;
-float colorB = 0.0f;
-float colorA = 0.0f;
+inline float colorR = 0.0f;
+inline float colorG = 0.0f;
+inline float colorB = 0.0f;
+inline float colorA = 0.0f;
 
 
 // Model files
-const char * cubeFile = "../../common/models/unitcube.obj";
-const char * sphereFile = "../../common/models/sphere.obj";
+inline auto cubeFile = "../../common/models/unitcube.obj";
+inline auto sphereFile = "../../common/models/sphere.obj";
 
 
 
 int load_model(const char* filename, const string& displayName);
 void load_gizmo_arrow();
-void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer);
-void build_hud_quad(GLuint hudObj);
+void build_solid_color_buffer(GLuint numVertices, const vec4& color, GLuint buffer);
+void build_hud_quad(GLuint obj);
 void scan_models(const string& folder = "../assets/models");
 int add_model_file(const string& path);
 void build_fullscreen_quad();
 
-int find_mesh(const string& name) {
-    for (int i = 0; i < (int)meshNames.size(); ++i)
+inline int find_mesh(const string& name) {
+    for (int i = 0; i < static_cast<int>(meshNames.size()); ++i)
         if (meshNames[i] == name) return i;
     return -1;
 }
 
-void build_geometry() {
+inline void build_geometry() {
     // HUD quads (unchanged logic, just using the HUD_* arrays)
     glGenVertexArrays(NumHUD, HUD_VAOs);
     build_hud_quad(HUDQuad);
@@ -74,7 +75,7 @@ void build_geometry() {
 }
 
 
-void scan_models(const string& folder) {
+inline void scan_models(const string& folder) {
     meshNames.clear();
     VAOs.clear();
     ObjBuffers.clear();
@@ -85,7 +86,7 @@ void scan_models(const string& folder) {
 
     for (const auto& entry : fs::directory_iterator(folder)) {
         if (!entry.is_regular_file()) continue;
-        fs::path p = entry.path();
+        const fs::path& p = entry.path();
         string ext = p.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
         if (ext != ".obj") continue;
@@ -94,11 +95,11 @@ void scan_models(const string& folder) {
     }
 }
 
-int add_model_file(const string& path) {
+inline int add_model_file(const string& path) {
     if (path.empty() || !fs::exists(path)) return -1;
 
-    fs::path src(path);
-    fs::path destDir = "../assets/models";
+    const fs::path src(path);
+    const fs::path destDir = "../assets/models";
     if (!fs::exists(destDir))
         fs::create_directories(destDir);
 
@@ -121,7 +122,7 @@ int add_model_file(const string& path) {
 }
 
 
-int load_model(const char * filename, const string& displayName) {
+inline int load_model(const char * filename, const string& displayName) {
     vector<vec4> vertices;
     vector<vec2> uvCoords;
     vector<vec3> normals;
@@ -153,17 +154,18 @@ int load_model(const char * filename, const string& displayName) {
 
     VAOs.push_back(vao);
     ObjBuffers.push_back(bufs);
-    numVertices.push_back((GLint)vertices.size());
+    numVertices.push_back(static_cast<GLint>(vertices.size()));
     meshNames.push_back(displayName);
 
-    return (int)meshNames.size() - 1;   // index of the new mesh
+    return static_cast<int>(meshNames.size()) - 1;   // index of the new mesh
 
 
 }
 
-void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer) {
+inline void build_solid_color_buffer(GLuint numVertices, const vec4& color, const GLuint buffer) {
     // Create object colors
     vector<vec4> obj_colors;
+    obj_colors.reserve(numVertices);
     for (int i = 0; i < numVertices; i++) {
         obj_colors.push_back(color);
     }
@@ -173,11 +175,8 @@ void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*colCoords*numVertices, obj_colors.data(), GL_STATIC_DRAW);
 }
 
-void build_hud_quad(GLuint obj) {
-    vector<vec2> vertices;
-    vector<ivec3> indices;
-
-    vertices = {
+inline void build_hud_quad(const GLuint obj) {
+    vector<vec2> vertices = {
         {0, 0}, //0
         {1, 0}, //1
         {1, 1}, //2
@@ -185,34 +184,34 @@ void build_hud_quad(GLuint obj) {
 
     };
 
-    indices = {
+    vector<ivec3> indices = {
         {0, 1, 2},
         {0, 2, 3}
 
     };
 
 
-    int numFaces = indices.size();
+    const int numFaces = indices.size();
     HUD_numVertices[obj] = numFaces * 3;
 
     vector<vec4> obj_vertices;
     for (int i = 0; i < numFaces; i++) {
         for (int j = 0; j < 3; j++) {
-            obj_vertices.push_back(vec4(vertices[indices[i][j]][0],
+            obj_vertices.emplace_back(vertices[indices[i][j]][0],
             vertices[indices[i][j]][1],
             0.0f,
-            1.0f));
+            1.0f);
         }
     }
 
     //uvs for texture
     vector<vec2> uvs;
-    uvs.push_back(vec2(0.0f, 0.0f));
-    uvs.push_back(vec2(1.0f, 0.0f));
-    uvs.push_back(vec2(1.0f, 1.0f));
-    uvs.push_back(vec2(0.0f, 0.0f));
-    uvs.push_back(vec2(1.0f, 1.0f));
-    uvs.push_back(vec2(0.0f, 1.0f));
+    uvs.emplace_back(0.0f, 0.0f);
+    uvs.emplace_back(1.0f, 0.0f);
+    uvs.emplace_back(1.0f, 1.0f);
+    uvs.emplace_back(0.0f, 0.0f);
+    uvs.emplace_back(1.0f, 1.0f);
+    uvs.emplace_back(0.0f, 1.0f);
 
 
     glGenBuffers(NumObjBuffers, HUD_ObjBuffers[obj]);
@@ -233,10 +232,10 @@ void build_hud_quad(GLuint obj) {
 }
 
 
-void build_fullscreen_quad() {
+inline void build_fullscreen_quad() {
     // NDC positions (x, y, z, w) + UVs
     // Two triangles covering the entire clip space
-    vector<vec4> positions = {
+    const vector<vec4> positions = {
         vec4(-1.0f, -1.0f, 0.0f, 1.0f),
         vec4( 1.0f, -1.0f, 0.0f, 1.0f),
         vec4( 1.0f,  1.0f, 0.0f, 1.0f),
@@ -246,7 +245,7 @@ void build_fullscreen_quad() {
         vec4(-1.0f,  1.0f, 0.0f, 1.0f)
     };
 
-    vector<vec2> uvs = {
+    const vector<vec2> uvs = {
         vec2(0.0f, 0.0f),
         vec2(1.0f, 0.0f),
         vec2(1.0f, 1.0f),
@@ -271,7 +270,7 @@ void build_fullscreen_quad() {
     glBindVertexArray(0);
 }
 
-void load_gizmo_arrow() {
+inline void load_gizmo_arrow() {
     vector<vec4> vertices;
     vector<vec2> uvs;
     vector<vec3> normals;
@@ -281,7 +280,7 @@ void load_gizmo_arrow() {
         return;
     }
 
-    gizmoArrowNumVerts = (GLint)vertices.size();
+    gizmoArrowNumVerts = static_cast<GLint>(vertices.size());
 
     glGenVertexArrays(1, &gizmoArrowVAO);
     glBindVertexArray(gizmoArrowVAO);

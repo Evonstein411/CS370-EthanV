@@ -11,24 +11,22 @@ Widget* find_topmost(Widget* w, float mx, float my);
 Widget* find_topmost_widget(float mx, float my);
 
 
-Widget* captured = nullptr;
+inline Widget* captured = nullptr;
 
 
-
-bool hud_char(unsigned int codepoint) {
+inline bool hud_char(const unsigned int codepoint) {
     EventScope scope;
-    for (size_t i = 0; i < widgets.size(); i++) widgets[i]->on_char(codepoint);
+    for (auto & widget : widgets) widget->on_char(codepoint);
     return true;
 }
 
 
-bool hud_key(int key, int action) {
+inline bool hud_key(const int key, const int action) {
     EventScope scope;
     bool typing = false;
     //if a field is focused we are typing
-    for (size_t i = 0; i < widgets.size(); i++) {
-        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
-        if (field && field->focused) typing = true;
+    for (const auto & widget : widgets) {
+        if (const auto* field = dynamic_cast<TextFieldBase*>(widget); field && field->focused) typing = true;
     }
 
     //not typing
@@ -37,8 +35,8 @@ bool hud_key(int key, int action) {
 
     //commit and unfocus if enter or escape pressed after typing
     if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
-        for (size_t i = 0; i < widgets.size(); i++) {
-            TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
+        for (const auto & widget : widgets) {
+            auto* field = dynamic_cast<TextFieldBase*>(widget);
             if (field && field->focused) field->commit();
             if (field) field->focused = false;
         }
@@ -46,18 +44,18 @@ bool hud_key(int key, int action) {
     }
 
     //call on keys
-    for (size_t i = 0; i < widgets.size(); i++)
-        widgets[i]->on_key(key, action);
+    for (const auto & widget : widgets)
+        widget->on_key(key, action);
     return true;
 
 }
 
-bool hud_cursor(float mx, float my) {
+inline bool hud_cursor(const float mx, const float my) {
     EventScope scope;
-    Widget* top = find_topmost_widget(mx, my);
+    const Widget* top = find_topmost_widget(mx, my);
 
     for (Widget* w : widgets) {
-        w->hovered = (w == top);
+        w->hovered = w == top;
         if (w->hovered)
             w->on_hover(mx, my);
     }
@@ -69,7 +67,7 @@ bool hud_cursor(float mx, float my) {
 }
 
 
-bool hud_mouse_button(float mx, float my, int button, int action) {
+inline bool hud_mouse_button(const float mx, const float my, const int button, const int action) {
     EventScope scope;
     //not left click
     if (button != GLFW_MOUSE_BUTTON_LEFT)
@@ -90,18 +88,17 @@ bool hud_mouse_button(float mx, float my, int button, int action) {
     Widget* top = find_topmost_widget(mx, my);
 
     // Focus: only the field that *is* the topmost hit gets focus
-    for (size_t i = 0; i < widgets.size(); i++) {
-        TextFieldBase* field = dynamic_cast<TextFieldBase*>(widgets[i]);
+    for (const auto & widget : widgets) {
+        auto* field = dynamic_cast<TextFieldBase*>(widget);
         if (!field) continue;
         if (field->focused && field != top)
             field->commit();
-        field->focused = (field->editable && field == top);
+        field->focused = field->editable && field == top;
     }
 
     //close dropdowns
-    for (size_t i = 0; i < widgets.size(); i++) {
-        Dropdown* dd = dynamic_cast<Dropdown*>(widgets[i]);
-        if (dd && dd->open && !dd->contains(mx, my))
+    for (const auto & widget : widgets) {
+        if (auto* dd = dynamic_cast<Dropdown*>(widget); dd && dd->open && !dd->contains(mx, my))
             dd->close_popup();
     }
 
@@ -116,20 +113,20 @@ bool hud_mouse_button(float mx, float my, int button, int action) {
 }
 
 
-void draw_widgets() {
+inline void draw_widgets() {
     //don't need to check depth for ui
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     //NOTE: IF YOU WANT TRANSPARENCY OF HUD ELEMENTS MAKE SURE ALPHA BLENDING IS ON
 
     //switch to pixel based ortho camera, store camera data pre hud draw
-    mat4 sceneProjMatrix = projMatrix;
-    mat4 sceneCameraMatrix = cameraMatrix;
-    projMatrix = ortho(0.0f, (float)ww, 0.0f, (float)hh, -1.0f, 1.0f);
-    cameraMatrix  = mat4().identity();
+    const mat4 sceneProjMatrix = projMatrix;
+    const mat4 sceneCameraMatrix = cameraMatrix;
+    projMatrix = ortho(0.0f, static_cast<float>(ww), 0.0f, static_cast<float>(hh), -1.0f, 1.0f);
+    cameraMatrix  = mat4::identity();
 
     //model matrices
-    modelMatrix = mat4().identity();
+    modelMatrix = mat4::identity();
 
     //list of parents
     vector<Widget*> topLevel;
@@ -139,7 +136,7 @@ void draw_widgets() {
 
     //sort by priority
     std::stable_sort(topLevel.begin(), topLevel.end(),
-        [](Widget* a, Widget* b) { return a->priority < b->priority; });
+        [](const Widget* a, const Widget* b) { return a->priority < b->priority; });
 
     for (Widget* w : topLevel)
         w->draw();
@@ -155,14 +152,14 @@ void draw_widgets() {
 
 
 //helper function for finding topmost widget for hit testing
-Widget* find_topmost(Widget* w, float mx, float my) {
+inline Widget* find_topmost(Widget* w, const float mx, const float my) {
     if (!w || w->hidden || w->is_effectively_hidden())
         return nullptr;
 
     // Children: higher priority first, then reverse creation order
     vector<Widget*> kids = w->children;
     std::stable_sort(kids.begin(), kids.end(),
-        [](Widget* a, Widget* b) { return a->priority > b->priority; });
+        [](const Widget* a, const Widget* b) { return a->priority > b->priority; });
 
     for (Widget* c : kids) {
         if (Widget* hit = find_topmost(c, mx, my))
@@ -174,7 +171,7 @@ Widget* find_topmost(Widget* w, float mx, float my) {
     return nullptr;
 }
 
-Widget* find_topmost_widget(float mx, float my) {
+inline Widget* find_topmost_widget(const float mx, const float my) {
     vector<Widget*> topLevel;
     for (Widget* w : widgets)
         if (!w->is_child())
@@ -182,7 +179,7 @@ Widget* find_topmost_widget(float mx, float my) {
 
     // Higher priority first
     std::stable_sort(topLevel.begin(), topLevel.end(),
-        [](Widget* a, Widget* b) { return a->priority > b->priority; });
+        [](const Widget* a, const Widget* b) { return a->priority > b->priority; });
 
     for (Widget* w : topLevel) {
         if (Widget* hit = find_topmost(w, mx, my))

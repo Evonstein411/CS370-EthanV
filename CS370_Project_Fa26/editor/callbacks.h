@@ -1,22 +1,26 @@
+#ifndef CALLBACKS_H
+#define CALLBACKS_H
+
+#include "hitdetection.h"
 #include "../kitUI/hud.h"
 
 extern void create_outline_fbo(int width, int height);
 
-vec3 dragStartPos;
-vec2 dragStartMouse;
-bool rightMouseDown = false;
-double lastMouseX = 0.0;
-double lastMouseY = 0.0;
-const float mouseLookSensitivity = 0.2f;
+inline vec3 dragStartPos;
+inline vec2 dragStartMouse;
+inline bool rightMouseDown = false;
+inline double lastMouseX = 0.0;
+inline double lastMouseY = 0.0;
+constexpr float mouseLookSensitivity = 0.2f;
 
 //functions
-void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my);
+void cursor_to_framebuffer(GLFWwindow* window, double xPos, double yPos, float& mx, float& my);
 void handle_key_ortho(int key, int action);
 void handle_key_perspective(int key, int action);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
 //keyboard callback
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+inline void key_callback(GLFWwindow *window, const int key, int scancode, const int action, int mods) {
 
     if(hud_key(key, action)) {
         return;
@@ -44,12 +48,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 //mouse callback
-void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
+inline void mouse_callback(GLFWwindow *window, const int button, const int action, int mods) {
     //update mouse position
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
+    double xPos, yPos;
+    glfwGetCursorPos(window, &xPos, &yPos);
     float mx, my;
-    cursor_to_framebuffer(window, xpos, ypos, mx, my);
+    cursor_to_framebuffer(window, xPos, yPos, mx, my);
 
     if (hud_mouse_button(mx, my, button, action))
         return;   // UI ate it
@@ -66,10 +70,9 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         SceneNode* clicked = pick_scene_object(mx, my);
         int raw = get_raw_index();   // or rawIndex if it’s global
-        SceneNode* selected = sceneManager.get_selected();
 
-        if ((raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selected) {
-            activeGizmo = (GizmoAxis)raw;
+        if (const SceneNode* selected = sceneManager.get_selected(); (raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selected) {
+            activeGizmo = static_cast<GizmoAxis>(raw);
             dragStartPos = selected->position;
             dragStartMouse = vec2(mx, my);
             return;
@@ -88,22 +91,21 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
 }
 
 
-void char_callback(GLFWwindow*, unsigned int codepoint) {
+inline void char_callback(GLFWwindow*, const unsigned int codepoint) {
     hud_char(codepoint);
 }
 
 //mouse move callback
-void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
+inline void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     float mx, my;
     cursor_to_framebuffer(window, xpos, ypos, mx, my);
     hud_cursor(mx, my);
 
     if (rightMouseDown) {
-        double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        float dx = (float)(xpos - lastMouseX);
-        float dy = (float)(ypos - lastMouseY);
+        const auto dx = static_cast<float>(xpos - lastMouseX);
+        const auto dy = static_cast<float>(ypos - lastMouseY);
         lastMouseX = xpos;
         lastMouseY = ypos;
 
@@ -118,9 +120,9 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
             if (elevation < 1.0f)   elevation = 1.0f;
 
             // recompute eye from spherical coords (same as handle_key_ortho)
-            float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
-            float y = radius * cos(deg2rad(elevation));
-            float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
+            const float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
+            const float y = radius * cos(deg2rad(elevation));
+            const float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
             eye = vec3(x, y, z);
         } else {
             fpsAzimuth   += dx * mouseLookSensitivity;
@@ -143,9 +145,9 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
         return;
     }
 
-    vec2 delta = vec2(mx, my) - dragStartMouse;
+    const vec2 delta = vec2(mx, my) - dragStartMouse;
 
-    vec3 axis(0.0f);
+    auto axis = vec3(0.0f, 0.0f, 0.0);
     if (activeGizmo == GIZMO_X) axis = vec3(1, 0, 0);
     else if (activeGizmo == GIZMO_Y) axis = vec3(0, 1, 0);
     else if (activeGizmo == GIZMO_Z) axis = vec3(0, 0, 1);
@@ -162,29 +164,29 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     screenDir = screenDir * (1.0f / len);
 
     // distance-based sensitivity so it feels the same in both modes
-    float dist = length(eye - selected->position);
-    float sensitivity = 0.0015f * dist;
+    const float dist = length(eye - selected->position);
+    const float sensitivity = 0.0015f * dist;
 
-    float amount = dot(delta, screenDir) * sensitivity;
+    const float amount = dot(delta, screenDir) * sensitivity;
 
     selected->position = dragStartPos + axis * amount;
     update_fields();
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+inline void scroll_callback(GLFWwindow* window, const double xOffset, const double yOffset) {
     if (cameraMode != ORTHO) return;
 
-    // yoffset > 0 means scroll up (zoom in), < 0 means scroll down (zoom out)
-    float zoom = (float)yoffset * dr * 4.0f;   // scale factor, tune as needed
+    // yOffset > 0 means scroll up (zoom in), < 0 means scroll down (zoom out)
+    const float zoom = static_cast<float>(yOffset) * dr * 4.0f;   // scale factor, tune as needed
 
     radius -= zoom;
     if (radius < minRadius)
         radius = minRadius;
 
     // recompute eye from spherical coords (same as handle_key_ortho)
-    float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
-    float y = radius * cos(deg2rad(elevation));
-    float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
+    const float x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
+    const float y = radius * cos(deg2rad(elevation));
+    const float z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
     eye = vec3(x, y, z);
 }
 
@@ -195,7 +197,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 //----------------------------------------------------------------------------------------------
 
 //update on window resize
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+inline void framebuffer_size_callback(GLFWwindow *window, const int width, const int height) {
     glViewport(0, 0, width, height);
     ww = width;
     hh = height;
@@ -203,21 +205,21 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 //ensure cursor matching size of window and proper scaling
-void cursor_to_framebuffer(GLFWwindow* window, double xpos, double ypos, float& mx, float& my) {
+inline void cursor_to_framebuffer(GLFWwindow* window, const double xPos, const double yPos, float& mx, float& my) {
     int win_w, win_h;
     glfwGetWindowSize(window, &win_w, &win_h);
     if (win_w <= 0 || win_h <= 0) {
-        mx = (float)xpos;
-        my = (float)hh - (float)ypos;
+        mx = static_cast<float>(xPos);
+        my = static_cast<float>(hh) - static_cast<float>(yPos);
         return;
     }
-    float xscale = (float)ww / (float)win_w;
-    float yscale = (float)hh / (float)win_h;
-    mx = (float)xpos * xscale;
-    my = (float)hh - (float)ypos * yscale;
+    const float xscale = static_cast<float>(ww) / static_cast<float>(win_w);
+    const float yscale = static_cast<float>(hh) / static_cast<float>(win_h);
+    mx = static_cast<float>(xPos) * xscale;
+    my = static_cast<float>(hh) - static_cast<float>(yPos) * yscale;
 }
 
-void handle_key_ortho(int key, int action) {
+inline void handle_key_ortho(const int key, int action) {
     // A/D Adjust azimuth
     if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) {
         azimuth += daz;
@@ -264,14 +266,13 @@ void handle_key_ortho(int key, int action) {
         }
     }
 
-    GLfloat x, y, z;
-    x = (GLfloat)(radius*sin(deg2rad(azimuth))*sin(deg2rad(elevation)));
-    y = (GLfloat)(radius*cos(deg2rad(elevation)));
-    z = (GLfloat)(radius*cos(deg2rad(azimuth))*sin(deg2rad(elevation)));
+    const GLfloat x = radius * sin(deg2rad(azimuth)) * sin(deg2rad(elevation));
+    const GLfloat y = radius * cos(deg2rad(elevation));
+    const GLfloat z = radius * cos(deg2rad(azimuth)) * sin(deg2rad(elevation));
     eye = vec3(x,y,z);
 }
 
-void handle_key_perspective(int key, int action) {
+inline void handle_key_perspective(const int key, int action) {
     // Arrow keys – look only
     if (key == GLFW_KEY_LEFT) {
         fpsAzimuth -= fpsTurn;
@@ -295,14 +296,14 @@ void handle_key_perspective(int key, int action) {
     key == GLFW_KEY_A || key == GLFW_KEY_D||
     key == GLFW_KEY_SPACE || key == GLFW_KEY_LEFT_CONTROL) {
 
-        float yaw   = deg2rad(fpsAzimuth);
-        float pitch = deg2rad(fpsElevation);
-        vec3 forward = normalize(vec3(
+        const float yaw   = deg2rad(fpsAzimuth);
+        const float pitch = deg2rad(fpsElevation);
+        const vec3 forward = normalize(vec3(
             cos(yaw) * cos(pitch),
             sin(pitch),
             sin(yaw) * cos(pitch)
         ));
-        vec3 right = normalize(cross(forward, up));
+        const vec3 right = normalize(cross(forward, up));
 
         if (key == GLFW_KEY_W) eye += forward * fpsStep;
         if (key == GLFW_KEY_S) eye -= forward * fpsStep;
@@ -312,3 +313,6 @@ void handle_key_perspective(int key, int action) {
         if (key == GLFW_KEY_LEFT_CONTROL)   eye[1] -= fpsStep;
         }
 }
+
+
+#endif //CALLBACKS_H
