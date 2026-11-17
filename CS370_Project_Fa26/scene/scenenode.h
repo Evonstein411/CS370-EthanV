@@ -73,6 +73,8 @@ struct SceneNode {
         }
     }
 
+
+
     virtual void write(std::ostream& out) const {
         out << "name " << name << "\n";
         out << "position " << position[0] << " " << position[1] << " " << position[2] << "\n";
@@ -84,7 +86,14 @@ struct SceneNode {
 
     // called for every key/value while loading
     virtual bool read_field(const std::string& key, std::istream& iss) {
-        if (key == "name") { std::getline(iss, name); /* trim */ return true; }
+        if (key == "name") {
+            std::getline(iss, name);
+            size_t a = name.find_first_not_of(" \t\r\n");
+            size_t b = name.find_last_not_of(" \t\r\n");
+            if (a == std::string::npos) name.clear();
+            else name = name.substr(a, b - a + 1);
+            return true;
+        }
         if (key == "position") { iss >> position[0] >> position[1] >> position[2]; return true; }
         if (key == "rotation") { iss >> rotation[0] >> rotation[1] >> rotation[2]; return true; }
         if (key == "scale")    { iss >> scale[0] >> scale[1] >> scale[2]; return true; }
@@ -94,7 +103,7 @@ struct SceneNode {
 
     virtual const char* get_type_name() const { return "SceneNode"; }
 
-
+    virtual void on_loaded() {}
     virtual void draw() = 0;
     virtual void on_select() {}
     virtual void update(float dt) {}

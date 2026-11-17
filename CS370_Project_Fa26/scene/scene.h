@@ -129,98 +129,96 @@ struct Scene {
 
     SceneNode* find_by_name(const string& name) const;
 
-    private:
-        static void walk(SceneNode* node, const std::function<void(SceneNode*)>& fn) {
-            if (!node) return;
-            fn(node);
-            for (SceneNode* child : node->children)
-                walk(child, fn);
+private:
+    static void walk(SceneNode* node, const std::function<void(SceneNode*)>& fn) {
+        if (!node) return;
+        fn(node);
+        for (SceneNode* child : node->children)
+            walk(child, fn);
+    }
+
+    void write_node(ostream& out, SceneNode* node) {
+        if (!node) return;
+        out << "NODE\n";
+        node->write(out);                          // virtual
+        out << "children " << node->children.size() << "\n";
+        for (SceneNode* c : node->children)
+            write_node(out, c);
+        out << "END\n";
+    }
+
+    SceneNode* read_node(istream& in) {
+        string line;
+        string typeName = "MeshNode";
+        vector<pair<string, string>> fields;
+        int childCount = 0;
+
+        auto trim = [](string s) {
+            size_t a = s.find_first_not_of(" \t\r\n");
+            size_t b = s.find_last_not_of(" \t\r\n");
+            if (a == string::npos) return string{};
+            return s.substr(a, b - a + 1);
+        };
+
+        while (getline(in, line)) {
+            line = trim(line);
+            if (line.empty()) continue;
+            if (line == "END") break;
+
+            istringstream iss(line);
+            string key;
+            iss >> key;
+
+            if (key == "type") {
+                getline(iss, typeName);
+                typeName = trim(typeName);
+            }
+            else if (key == "children") {
+                iss >> childCount;
+
+                break;
+            }
+            else if (key != "NODE") {
+                fields.emplace_back(key, line);
+            }
         }
 
-        void write_node(ostream& out, SceneNode* node) {
-            if (!node) return;
-            out << "NODE\n";
-            node->write(out);                          // virtual
-            out << "children " << node->children.size() << "\n";
-            for (SceneNode* c : node->children)
-                write_node(out, c);
-            out << "END\n";
+        SceneNode* node = create_node(typeName);
+        if (!node) {
+            fprintf(stderr, "Unknown node type '%s'\n", typeName.c_str());
+            return nullptr;
         }
 
-        SceneNode* read_node(istream& in) {
-            string line;
-            string typeName = "MeshNode";
-            vector<pair<string, string>> fields;       // store raw lines until we know the type
-            int childCount = 0;
-            bool sawChildren = false;
+        // feed fields — MeshNode::read_field must be null-safe
+        for (auto& f : fields) {
+            istringstream iss(f.second);
+            string dummy;
+            iss >> dummy;
+            node->read_field(f.first, iss);
+        }
+        node->on_loaded();
 
-            auto trim = [](string s) {
-                size_t a = s.find_first_not_of(" \t\r\n");
-                size_t b = s.find_last_not_of(" \t\r\n");
-                if (a == string::npos) return string{};
-                return s.substr(a, b - a + 1);
-            };
-
-            // first pass: collect fields until children/END
-            while (getline(in, line)) {
-                line = trim(line);
-                if (line.empty()) continue;
-                if (line == "END") break;
-                if (line == "NODE") continue;
-
-                istringstream iss(line);
-                string key;
-                iss >> key;
-
-                if (key == "type") {
-                    getline(iss, typeName);
-                    typeName = trim(typeName);
-                }
-                else if (key == "children") {
-                    iss >> childCount;
-                    sawChildren = true;
+        // children
+        for (int i = 0; i < childCount; ++i) {
+            string childLine;
+            while (getline(in, childLine)) {
+                childLine = trim(childLine);
+                if (childLine == "NODE") {
+                    if (SceneNode* child = read_node(in))
+                        node->add_child(child);
                     break;
                 }
-                else {
-                    fields.emplace_back(key, line);
-                }
+                if (childLine == "END") break;
             }
-
-            // create the right node
-            SceneNode* node = create_node(typeName);
-            if (!node) node = new MeshNode("node");
-
-            // feed every field to the node
-            for (auto& [key, raw] : fields) {
-                istringstream iss(raw);
-                string dummy;
-                iss >> dummy;                  // skip key
-                node->read_field(key, iss);    // virtual
-            }
-
-            // read children
-            if (sawChildren) {
-                for (int i = 0; i < childCount; ++i) {
-                    string childLine;
-                    while (getline(in, childLine)) {
-                        childLine = trim(childLine);
-                        if (childLine == "NODE") {
-                            if (SceneNode* child = read_node(in))
-                                node->add_child(child);
-                            break;
-                        }
-                    }
-                }
-                // consume the END that follows the children
-                while (getline(in, line)) {
-                    if (trim(line) == "END") break;
-                }
-            }
-
-            return node;
         }
 
+        // consume the closing END (for childCount == 0 this eats the END right after "children 0")
+        while (getline(in, line)) {
+            if (trim(line) == "END") break;
+        }
 
+        return node;
+    }
 };
 
 

@@ -570,12 +570,23 @@ void delete_selected_object() {
 
 void rebuild_scene_graph() {
     if (!sceneGraphPanel) return;
-    // clear old buttons...
+
+    // --- delete old buttons ---
+    for (auto& cell : sceneGraphPanel->cells) {
+        if (cell.widget) {
+            delete cell.widget;          // ~Widget removes itself from parent + global list
+        }
+    }
+    sceneGraphPanel->cells.clear();
+    sceneGraphPanel->children.clear();   // just in case
+
+    // --- rebuild from current scene ---
     Scene* scene = sceneManager.get_active();
     if (!scene) return;
 
     int row = 0;
     scene->for_each([&](SceneNode* n) {
+        if (!n) return;
         Button* b = new Button(0, 0, 240.0f, 36.0f,
             [n]() { select_object(n); },
             n->name);

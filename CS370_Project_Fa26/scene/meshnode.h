@@ -110,8 +110,16 @@ struct MeshNode : SceneNode {
         }
         if (key == "drawType") {
             std::string typeName;
-            std::getline(iss, typeName);       // trim
-            set_draw_type(create_draw_type(typeName));  // factory
+            std::getline(iss, typeName);
+            size_t a = typeName.find_first_not_of(" \t\r\n");
+            size_t b = typeName.find_last_not_of(" \t\r\n");
+            if (a != std::string::npos)
+                typeName = typeName.substr(a, b - a + 1);
+            else
+                typeName.clear();
+
+            delete drawType;
+            drawType = create_draw_type(typeName);   // do NOT call initialize yet
             return true;
         }
         // let the current DrawType try
@@ -119,10 +127,15 @@ struct MeshNode : SceneNode {
         return false;
     }
 
+    void on_loaded() override {
+        if (drawType)
+            drawType->initialize(this);
+    }
 
-};
 
-//need mesh node to function
+};//end MeshNode
+
+//drawType functions that need mesh node to function
 inline void SolidColorDraw::initialize(MeshNode* meshNode) {
     if (!hasColor) {
         color = {1.0f, 1.0f, 1.0f, 1.0f};

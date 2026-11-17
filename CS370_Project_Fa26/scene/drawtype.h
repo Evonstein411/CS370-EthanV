@@ -70,20 +70,24 @@ struct MaterialDraw : DrawType {
         if (key == "ambient") {
             iss >> materialProperties.ambient[0] >> materialProperties.ambient[1]
                 >> materialProperties.ambient[2] >> materialProperties.ambient[3];
+            hasMaterial = true;
             return true;
         }
         if (key == "diffuse") {
             iss >> materialProperties.diffuse[0] >> materialProperties.diffuse[1]
                 >> materialProperties.diffuse[2] >> materialProperties.diffuse[3];
+            hasMaterial = true;
             return true;
         }
         if (key == "specular") {
             iss >> materialProperties.specular[0] >> materialProperties.specular[1]
                 >> materialProperties.specular[2] >> materialProperties.specular[3];
+            hasMaterial = true;
             return true;
         }
         if (key == "shininess") {
             iss >> materialProperties.shininess;
+            hasMaterial = true;
             return true;
         }
         return false;
