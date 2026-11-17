@@ -1,9 +1,8 @@
-//
-// Created by ethan on 11/2/2026.
-//
-
 #ifndef CS370_FA26_CANVAS_H
 #define CS370_FA26_CANVAS_H
+
+#include "widget.h"
+
 
 struct Canvas : Widget {
     bool drawBackground = true;

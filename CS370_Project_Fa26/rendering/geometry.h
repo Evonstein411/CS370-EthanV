@@ -1,7 +1,11 @@
+#ifndef GEOMETRY_H
+#define GEOMETRY_H
+
 #include <string>
 #include <filesystem>
 #include <array>
 #include <cstdio>
+#include "../common/objloader.h"
 
 namespace fs = std::filesystem;
 // Model vertex arrays and buffer objects
@@ -48,7 +52,7 @@ int load_model(const char* filename, const string& displayName);
 void load_gizmo_arrow();
 void build_solid_color_buffer(GLuint numVertices, vec4 color, GLuint buffer);
 void build_hud_quad(GLuint hudObj);
-void scan_models(const string& folder = "../models");
+void scan_models(const string& folder = "../assets/models");
 int add_model_file(const string& path);
 void build_fullscreen_quad();
 
@@ -94,7 +98,7 @@ int add_model_file(const string& path) {
     if (path.empty() || !fs::exists(path)) return -1;
 
     fs::path src(path);
-    fs::path destDir = "../models";
+    fs::path destDir = "../assets/models";
     if (!fs::exists(destDir))
         fs::create_directories(destDir);
 
@@ -272,7 +276,7 @@ void load_gizmo_arrow() {
     vector<vec2> uvs;
     vector<vec3> normals;
 
-    if (!loadOBJ("../models/arrow.obj", vertices, uvs, normals) || vertices.empty()) {
+    if (!loadOBJ("../assets/models/arrow.obj", vertices, uvs, normals) || vertices.empty()) {
         fprintf(stderr, "Failed to load gizmo arrow.obj\n");
         return;
     }
@@ -292,3 +296,5 @@ void load_gizmo_arrow() {
 
     glBindVertexArray(0);
 }
+
+#endif //GEOMETRY_H

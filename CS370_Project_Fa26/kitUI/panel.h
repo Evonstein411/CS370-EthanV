@@ -2,7 +2,8 @@
 #ifndef CS370_FA26_PANEL_H
 #define CS370_FA26_PANEL_H
 
-struct Panel;
+#include "widget.h"
+
 //Panel widget for widget organization
 struct Panel : Widget {
     //cell holds widget and information on placement in panel

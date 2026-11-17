@@ -1,10 +1,16 @@
+#ifndef TEXTURE_H
+#define TEXTURE_H
+
+
+
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <string>
 #include <filesystem>
 #include "../../common/stb_truetype.h"
+#include "../common/textureutils.h"
 
 //Files
-const char * fontFile = "../fonts/Roboto-Regular.ttf";
+const char * fontFile = "../assets/fonts/Roboto-Regular.ttf";
 namespace fs = std::filesystem;
 // Textures
 enum Textures {Blank};
@@ -18,14 +24,14 @@ stbtt_bakedchar glyphs[96];
 //function forward decs
 void build_font();
 void build_textures();
-void scan_textures(const std::string& folder = "../textures");
+void scan_textures(const std::string& folder = "../assets/textures");
 
 int add_texture_file(const string& path) {
     if (path.empty() || !fs::exists(path))
         return -1;
 
     fs::path src(path);
-    fs::path destDir = "../textures";
+    fs::path destDir = "../assets/textures";
     if (!fs::exists(destDir))
         fs::create_directories(destDir);
 
@@ -65,7 +71,7 @@ void scan_textures(const std::string& folder) {
     textureNames.push_back("blank");
     GLuint blankID;
     glGenTextures(1, &blankID);
-    load_texture("../textures/blank.png", blankID, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT, GL_REPEAT, true, false);
+    load_texture("../assets/textures/blank.png", blankID, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT, GL_REPEAT, true, false);
     TextureIDs.push_back(blankID);
 
     //return if not a folder/does not exist
@@ -142,3 +148,4 @@ void build_font() {
     delete[] pixels;
 }
 
+#endif //TEXTURE_H

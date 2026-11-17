@@ -1,6 +1,9 @@
 #ifndef CS370_FA26_SECTION_H
 #define CS370_FA26_SECTION_H
 
+#include "widget.h"
+
+
 struct Section : Widget {
     string label;
     bool collapsed = true;

@@ -2,7 +2,9 @@
 #ifndef CS370_FA26_LABEL_H
 #define CS370_FA26_LABEL_H
 
-struct Label;
+#include "widget.h"
+
+
 //Label for labeling UI sections
 struct Label : Widget {
     string label;

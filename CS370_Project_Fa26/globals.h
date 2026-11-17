@@ -1,3 +1,7 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
+
 using namespace vmath;
 using namespace std;
 
@@ -62,4 +66,5 @@ vec4 backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
 GLint ww = 1640;
 GLint hh = 960;
 
+#endif //GLOBALS_H
 

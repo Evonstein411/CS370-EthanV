@@ -178,7 +178,7 @@ void init_scene() {
     int cubeID = find_mesh("cube");
     int sphereID = find_mesh("sphere");
     if (cubeID < 0 || sphereID < 0) {
-        fprintf(stderr, "Required models missing from ../models\n");
+        fprintf(stderr, "Required models missing from ../assets/models\n");
         return;
     }
 

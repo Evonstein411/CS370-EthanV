@@ -1,3 +1,6 @@
+#ifndef MATERIALS_H
+#define MATERIALS_H
+
 enum MaterialNames {BRASS, BASE, FLOOR, NUMMATERIALS};
 GLuint MaterialBuffers[NumMaterialBuffers];
 vector<MaterialProperties> materials;
@@ -69,3 +72,5 @@ void build_dynamic_materials() {
 				 all.data(),
 				 GL_DYNAMIC_DRAW);
 }
+
+#endif //MATERIALS_H

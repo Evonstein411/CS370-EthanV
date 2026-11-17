@@ -5,6 +5,9 @@
 #ifndef CS370_FA26_BUTTON_H
 #define CS370_FA26_BUTTON_H
 
+#include "widget.h"
+#include <functional>
+#include <string>
 
 struct Button;
 

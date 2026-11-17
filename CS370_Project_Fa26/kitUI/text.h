@@ -1,6 +1,15 @@
 #ifndef CS370_FA26_TEXT_H
 #define CS370_FA26_TEXT_H
 
+#include "widget.h"
+#include "rendering/shaders.h"
+#include "rendering/textures.h"
+#include "rendering/geometry.h"
+#include "rendering/drawobjects.h"
+#include <string>
+#include "../globals.h"
+
+
 void draw_string(const string& text, float x, float y, float size,
                  vec4 color = TEXT_COLOR);
 float text_width(const string& text, float size);

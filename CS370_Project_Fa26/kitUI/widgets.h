@@ -1,7 +1,6 @@
 #ifndef KITUI_WIDGETS_H
 #define KITUI_WIDGETS_H
 
-
 #include "widget.h"       // base + globals
 #include "text.h"
 #include "canvas.h"

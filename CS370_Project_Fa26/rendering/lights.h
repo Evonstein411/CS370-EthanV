@@ -1,3 +1,9 @@
+#ifndef LIGHTS_H
+#define LIGHTS_H
+
+
+#include "../common/lighting.h"
+
 enum LightNames {WhitePointLight, FillLight, NumLights};
 GLuint LightBuffers[NumLightBuffers];
 vector<LightProperties> lights;
@@ -32,9 +38,6 @@ LightProperties fillLight = {
 };
 
 
-
-
-
 void build_lights( ) {
 	// Allocate Lights vector
 	lights.resize(NumLights);
@@ -50,3 +53,5 @@ void build_lights( ) {
 	glBindBuffer(GL_UNIFORM_BUFFER, LightBuffers[LightBuffer]);
 	glBufferData(GL_UNIFORM_BUFFER, lights.size()*sizeof(LightProperties), lights.data(), GL_STATIC_DRAW);
 }
+
+#endif //LIGHTS_H

@@ -1,6 +1,9 @@
 #ifndef CS370_FA26_FILEBROWSER_H
 #define CS370_FA26_FILEBROWSER_H
 
+#include "widget.h"
+
+
 struct FileBrowser : Widget {
     enum class StartLocation {
         HOME,

@@ -1,6 +1,8 @@
 #ifndef CS370_FA26_SCROLLPANEL_H
 #define CS370_FA26_SCROLLPANEL_H
 
+#include "widget.h"
+
 struct ScrollPanel : Panel {
     float viewportHeight = 200.0f;   // visible height
     float scrollOffset = 0.0f;

@@ -10,7 +10,7 @@
 #include "meshnode.h"
 
 
-extern struct MeshNode;   // full definition comes from meshnode.h
+struct MeshNode;   // full definition comes from meshnode.h
 
 struct DrawType {
     virtual ~DrawType() = default;

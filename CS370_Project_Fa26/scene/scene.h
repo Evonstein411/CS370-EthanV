@@ -72,7 +72,7 @@ struct Scene {
             return false;
         }
 
-        fs::path scenesDir = "../scenes";
+        fs::path scenesDir = "../assets/scenes";
         if (!fs::exists(scenesDir))
             fs::create_directories(scenesDir);
 

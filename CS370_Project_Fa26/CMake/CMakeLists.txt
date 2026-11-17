@@ -77,7 +77,8 @@ link_directories(${CMAKE_SOURCE_DIR}/common)
 # Source Files
 #-------------------------------------------------------------
 set(SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../${PROJECT_NAME}.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../DesertFox.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.cpp
 )
 
 set(COMMON_FILES
@@ -123,6 +124,7 @@ set(COMMON_FILES
         ../scene/scenemanager.h
         ../scene/nodes.h
         ../scene/drawtype.h
+        ../editor/ui.cpp
 )
 
 #-------------------------------------------------------------

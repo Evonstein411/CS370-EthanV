@@ -1,8 +1,7 @@
 #ifndef CS370_FA26_TEXTFIELD_H
 #define CS370_FA26_TEXTFIELD_H
 
-struct TextFieldBase;
-template<typename T> struct TextField;
+#include "widget.h"
 
 //base for text field needed for callback logic
 struct TextFieldBase : Widget {
@@ -25,8 +24,7 @@ struct TextFieldBase : Widget {
 };
 
 //Text field for user input
-template<typename T>
-struct TextField : TextFieldBase {
+template<typename T> struct TextField : TextFieldBase {
     vec4 color = HUD_DROPFIELD;
     vec4 fieldColor = HUD_FIELD;
     vec4 textColor = ALT_TEXT_COLOR;

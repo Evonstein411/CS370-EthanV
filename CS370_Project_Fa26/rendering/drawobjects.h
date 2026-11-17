@@ -1,6 +1,9 @@
 #ifndef DRAW_OBJECTS_H
 #define DRAW_OBJECTS_H
 #include "shaders.h"
+#include "lights.h"
+#include "materials.h"
+
 
 GLuint dynamicHUDColorBuffer = 0;
 GLuint highlightColorBuffer = 0;
