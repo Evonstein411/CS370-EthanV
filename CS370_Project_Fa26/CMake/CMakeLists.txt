@@ -77,9 +77,16 @@ link_directories(${CMAKE_SOURCE_DIR}/common)
 # Source Files
 #-------------------------------------------------------------
 set(SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../DesertFox.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../app/desertfox.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/editorcontroller.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/callbacks.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/renderer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/camera.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/stbimpl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scenemodel.cpp
+
 )
 
 set(COMMON_FILES
@@ -125,6 +132,16 @@ set(COMMON_FILES
         ../scene/scenemanager.h
         ../scene/nodes.h
         ../scene/drawtype.h
+        ../app/desertfox.h
+        ../scene/scenemodel.h
+        ../scene/scenemodel.cpp
+        ../rendering/renderer.h
+        ../rendering/renderer.cpp
+        ../rendering/camera.cpp
+        ../rendering/camera.h
+        ../editor/editorcontroller.cpp
+        ../editor/editorcontroller.h
+        ../editor/callbacks.cpp
 
 )
 

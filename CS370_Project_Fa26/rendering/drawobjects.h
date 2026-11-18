@@ -87,21 +87,23 @@ inline void draw_mat_object(const GLuint obj, const GLuint material){
     glDrawArrays(GL_TRIANGLES, 0, numVertices[obj]);
 }
 
-inline void draw_gizmo_arrow(const vec4& color) {
+inline void draw_gizmo_arrow(const vmath::vec4& color,
+                             const vmath::mat4& proj,
+                             const vmath::mat4& view,
+                             const vmath::mat4& model) {
     if (gizmoArrowVAO == 0) return;
 
-    // Re-use your existing highlightColorBuffer or make a tiny dedicated one
     static GLuint gizmoColorBuffer = 0;
     if (gizmoColorBuffer == 0) glGenBuffers(1, &gizmoColorBuffer);
 
-    vector<vec4> cols(gizmoArrowNumVerts, color);
+    std::vector<vmath::vec4> cols(gizmoArrowNumVerts, color);
     glBindBuffer(GL_ARRAY_BUFFER, gizmoColorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, cols.size() * sizeof(vec4), cols.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, cols.size() * sizeof(vmath::vec4), cols.data(), GL_DYNAMIC_DRAW);
 
     glUseProgram(colorProgram);
-    glUniformMatrix4fv(colorProjMatLoc,  1, GL_FALSE, projMatrix);
-    glUniformMatrix4fv(colorCamMatLoc,   1, GL_FALSE, cameraMatrix);
-    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(colorProjMatLoc,  1, GL_FALSE, proj);
+    glUniformMatrix4fv(colorCamMatLoc,   1, GL_FALSE, view);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, model);
 
     glBindVertexArray(gizmoArrowVAO);
 
