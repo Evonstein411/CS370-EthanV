@@ -79,6 +79,7 @@ link_directories(${CMAKE_SOURCE_DIR}/common)
 set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../DesertFox.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/stbimpl.cpp
 )
 
 set(COMMON_FILES

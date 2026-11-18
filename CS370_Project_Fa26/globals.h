@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include "../common/vmath.h"
+#include "../common/GLFWutils.h"
 
 using namespace vmath;
 using namespace std;

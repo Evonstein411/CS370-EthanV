@@ -3,8 +3,9 @@
 
 #include <string>
 #include <filesystem>
-#include "../../common/stb_truetype.h"
 #include "../common/textureutils.h"
+
+#include "../../common/stb_truetype.h"
 
 //Files
 inline auto * fontFile = "../assets/fonts/Roboto-Regular.ttf";
