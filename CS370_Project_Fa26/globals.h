@@ -7,16 +7,7 @@
 using namespace vmath;
 using namespace std;
 
-// Buffer enums
-enum ObjBuffer_IDs {PosBuffer, NormBuffer, TexBuffer, TangBuffer, BiTangBuffer, NumObjBuffers};
-enum LightBuffer_IDs {LightBuffer, NumLightBuffers};
-enum MaterialBuffer_IDs {MaterialBuffer, NumMaterialBuffers};
 
-// Number of component coordinates
-inline GLint posCoords = 4;
-inline GLint normCoords = 3;
-inline GLint texCoords = 2;
-inline GLint colCoords = 4;
 
 
 

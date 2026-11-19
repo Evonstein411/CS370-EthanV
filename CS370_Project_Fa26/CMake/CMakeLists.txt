@@ -86,22 +86,27 @@ set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/camera.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/stbimpl.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scenemodel.cpp
-
+        ../scene/scene.cpp
+        ../scene/scenemanager.cpp
 )
 
 set(COMMON_FILES
+        #commons
         ${CMAKE_SOURCE_DIR}/common/GLFWutils.cpp
         ${CMAKE_SOURCE_DIR}/common/shaderutils.cpp
         ${CMAKE_SOURCE_DIR}/common/textureutils.cpp
         ${CMAKE_SOURCE_DIR}/common/objloader.cpp
         ${CMAKE_SOURCE_DIR}/common/tangentspace.cpp
 
+
         # editor
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/hitdetection.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/callbacks.h
+        ../editor/editorcontroller.h
 
-        # kitUI (still at project root)
+
+        # kitUI
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widgets.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/hud.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widget.h
@@ -119,26 +124,28 @@ set(COMMON_FILES
         # scene
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scene.h
         ../nodes/scenenode.h
-        ../nodes/meshnode.h
-        ../nodes/lightnode.h
+        ../nodes/meshcomponent.h
+        ../nodes/lightcomponent.h
+        ../scene/scenemanager.h
+        ../scene/scenemodel.h
 
         # rendering
+        ../rendering/renderer.h
+        ../rendering/camera.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/geometry.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/lights.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/materials.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/textures.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/drawobjects.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/shaders.h
-        ../scene/scenemanager.h
-        ../nodes/nodes.h
-        ../nodes/drawtype.h
+
+        #app
         ../app/desertfox.h
-        ../scene/scenemodel.h
-        ../rendering/renderer.h
-        ../rendering/camera.h
-        ../editor/editorcontroller.h
-        ../scene/scene.cpp
-        ../scene/scenemanager.cpp
+        ../nodes/scenenode.cpp
+        ../nodes/component.h
+        ../nodes/appearance.h
+        ../nodes/meshcomponent.cpp
+
 
 )
 

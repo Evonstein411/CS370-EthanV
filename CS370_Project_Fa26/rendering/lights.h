@@ -3,22 +3,24 @@
 
 
 #include "../common/lighting.h"
+#include <vector>
 
+enum LightBuffer_IDs {LightBuffer, NumLightBuffers};
 enum LightNames {WhitePointLight, FillLight, NumLights};
 
 inline GLuint LightBuffers[NumLightBuffers];
-inline vector<LightProperties> lights;
+inline std::vector<LightProperties> lights;
 inline GLint lightOn[NumLights] = {0, 0};
 
 // White point light
 inline LightProperties whitePointLight = {
 		POINT, //type
 		{0.0f, 0.0f, 0.0f}, //pad
-		vec4(0.0f, 0.0f, 0.0f, 1.0f), //ambient
-		vec4(1.0f, 1.0f, 1.0f, 1.0f), //diffuse
-		vec4(1.0f, 1.0f, 1.0f, 1.0f), //specular
-		vec4(3.0f, 1.0f, 3.0f, 1.0f),  //position
-		vec4(0.0f, 0.0f, 0.0f, 0.0f), //direction
+		vmath::vec4(0.0f, 0.0f, 0.0f, 1.0f), //ambient
+		vmath::vec4(1.0f, 1.0f, 1.0f, 1.0f), //diffuse
+		vmath::vec4(1.0f, 1.0f, 1.0f, 1.0f), //specular
+		vmath::vec4(3.0f, 1.0f, 3.0f, 1.0f),  //position
+		vmath::vec4(0.0f, 0.0f, 0.0f, 0.0f), //direction
 		0.0f,   //cutoff
 		0.0f,  //exponent
 		{0.0f, 0.0f}  //pad2
@@ -28,11 +30,11 @@ inline LightProperties whitePointLight = {
 inline LightProperties fillLight = {
 	DIRECTIONAL,
 	{0.0f, 0.0f, 0.0f},
-	vec4(0.15f, 0.15f, 0.15f, 1.0f),   // ambient, so it never goes fully black
-	vec4(0.25f, 0.25f, 0.28f, 1.0f),   // diffuse, weaker than the point light
-	vec4(0.10f, 0.10f, 0.10f, 1.0f),   // specular
-	vec4(0.0f, 0.0f, 0.0f, 0.0f),      // position unused
-	vec4(-0.3f, -1.0f, -0.4f, 0.0f),   // rays travel down and toward -z
+	vmath::vec4(0.15f, 0.15f, 0.15f, 1.0f),   // ambient, so it never goes fully black
+	vmath::vec4(0.25f, 0.25f, 0.28f, 1.0f),   // diffuse, weaker than the point light
+	vmath::vec4(0.10f, 0.10f, 0.10f, 1.0f),   // specular
+	vmath::vec4(0.0f, 0.0f, 0.0f, 0.0f),      // position unused
+	vmath::vec4(-0.3f, -1.0f, -0.4f, 0.0f),   // rays travel down and toward -z
 	0.0f,
 	0.0f,
 	{0.0f, 0.0f}

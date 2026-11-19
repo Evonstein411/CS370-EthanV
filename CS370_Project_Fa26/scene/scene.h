@@ -16,7 +16,6 @@ struct Scene {
     Scene() = default;
     ~Scene();
 
-    void draw() const;
     void clear();
 
     void add_root(SceneNode* node);

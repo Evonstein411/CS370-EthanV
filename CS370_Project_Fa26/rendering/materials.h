@@ -1,11 +1,24 @@
 #ifndef MATERIALS_H
 #define MATERIALS_H
 
+#include <vector>
+
+//copy of materialProperties from lighting.h change later for more functionality
+struct Material {
+	vmath::vec4 ambient;
+	vmath::vec4 diffuse;
+	vmath::vec4 specular;
+	GLfloat shininess;
+	GLfloat pad[3];
+};
+
+
+enum MaterialBuffer_IDs {MaterialBuffer, NumMaterialBuffers};
 enum MaterialNames {BRASS, BASE, FLOOR, NUMMATERIALS};
 
 inline GLuint MaterialBuffers[NumMaterialBuffers];
-inline vector<MaterialProperties> materials;
-inline vector<MaterialProperties> dynamicMaterials;
+inline std::vector<Material> materials;
+inline std::vector<Material> dynamicMaterials;
 
 inline float ambientR = 0.33f;
 inline float ambientG = 0.22f;
@@ -24,27 +37,27 @@ inline float specularA = 1.0f;
 
 inline float shininess = 27.8f;
 
-inline MaterialProperties baseMaterial = {
-	vec4(0.5f, 0.5f, 0.5f, 1.0f), //ambient
-	vec4(0.5f, 0.5f, 0.5f, 1.0f), //diffuse
-	vec4(0.5f, 0.5f, 0.5f, 1.0f), //specular
+inline Material baseMaterial = {
+	vmath::vec4(0.5f, 0.5f, 0.5f, 1.0f), //ambient
+	vmath::vec4(0.5f, 0.5f, 0.5f, 1.0f), //diffuse
+	vmath::vec4(0.5f, 0.5f, 0.5f, 1.0f), //specular
 	25.0f, //shininess
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
-inline MaterialProperties floorMat = {
-	vec4(0.33f, 0.33f, 0.33f, 1.0f), //ambient
-	vec4(0.33f, 0.33f, 0.33f, 1.0f), //diffuse
-	vec4(0.33f, 0.33f, 0.33f, 1.0f), //specular
+inline Material floorMat = {
+	vmath::vec4(0.33f, 0.33f, 0.33f, 1.0f), //ambient
+	vmath::vec4(0.33f, 0.33f, 0.33f, 1.0f), //diffuse
+	vmath::vec4(0.33f, 0.33f, 0.33f, 1.0f), //specular
 	10.0f, //shininess
 	{0.0f, 0.0f, 0.0f}  //pad
 };
 
 // Create brass material
-inline MaterialProperties brass = {
-	vec4(0.33f, 0.22f, 0.03f, 1.0f), //ambient
-	vec4(0.78f, 0.57f, 0.11f, 1.0f), //diffuse
-	vec4(0.99f, 0.91f, 0.81f, 1.0f), //specular
+inline Material brass = {
+	vmath::vec4(0.33f, 0.22f, 0.03f, 1.0f), //ambient
+	vmath::vec4(0.78f, 0.57f, 0.11f, 1.0f), //diffuse
+	vmath::vec4(0.99f, 0.91f, 0.81f, 1.0f), //specular
 	27.0f, //shininess
 	{0.0f, 0.0f, 0.0f}  //pad
 };
@@ -60,11 +73,11 @@ inline void build_materials() {
     // Create uniform buffer for materials
     glGenBuffers(NumMaterialBuffers, MaterialBuffers);
     glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
-    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(MaterialProperties), materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, materials.size()*sizeof(Material), materials.data(), GL_STATIC_DRAW);
 }
 
 inline void build_dynamic_materials() {
-	vector<MaterialProperties> all = materials;
+	std::vector<Material> all = materials;
 	all.insert(all.end(), dynamicMaterials.begin(), dynamicMaterials.end());
 
 	glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);

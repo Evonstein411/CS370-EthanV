@@ -3,12 +3,13 @@
 //
 
 #include "renderer.h"
-#include "../nodes/nodes.h"
+#include "../nodes/scenenode.h"
 #include "shaders.h"
 #include "geometry.h"
 #include "drawobjects.h"
 #include "editor/hitdetection.h"
-
+#include "../nodes/meshcomponent.h"
+#include "../nodes/lightcomponent.h"
 
 void Renderer::initialize(int width, int height) {
     // Create geometry buffers
@@ -57,8 +58,38 @@ void Renderer::render(SceneModel& model, int width, int height) {
 }
 
 void Renderer::draw_scene(const SceneModel& model) {
-    if (const Scene* scene = model.get_active_scene())
-        scene->draw();
+    const Scene* scene = model.get_active_scene();
+    if (!scene) return;
+    const Camera camera = model.get_active_camera();
+
+    scene->for_each([this, camera](SceneNode* node) {
+        if (!node || !node->enabled) return;
+
+        if (auto* mesh = node->get_component<MeshComponent>()) {
+            draw_mesh(mesh, node->get_world_matrix(), camera);
+        }
+        else if (auto* light = node->get_component<LightComponent>()) {
+            // upload light or draw gizmo later
+        }
+    });
+}
+
+void Renderer::draw_mesh(const MeshComponent* mesh, const mat4& modelMatrix, Camera camera) {
+    if (!mesh || mesh->mesh == static_cast<GLuint>(-1)) return;
+
+    switch (mesh->appearance.mode) {
+        case DrawMode::SolidColor:
+            draw_color_object(mesh->mesh, mesh->appearance.color, camera, modelMatrix);
+            break;
+        case DrawMode::Material:
+            draw_mat_object(mesh->mesh, mesh->appearance.material, camera, modelMatrix);
+            break;
+        case DrawMode::Texture:
+            draw_tex_object(mesh->mesh, mesh->appearance.texture, camera, modelMatrix);
+            break;
+        default:
+            break;
+    }
 }
 
 void Renderer::create_outline_fbo(const int width, const int height) {
@@ -84,10 +115,12 @@ void Renderer::create_outline_fbo(const int width, const int height) {
 void Renderer::draw_selection_outline(const SceneModel& model, const Camera& camera, int width, int height) {
     SceneNode* selected = model.get_selected();
     if (!selected) return;
+    if (!selected->get_component<MeshComponent>()) return;   // only outline meshes for now
 
-    const auto* meshNode = dynamic_cast<const MeshNode*>(selected);
-    if (!meshNode || meshNode->mesh == static_cast<GLuint>(-1)) return;
+    const auto* meshComponent = dynamic_cast<const MeshComponent*>(selected);
+    if (!meshComponent || meshComponent->mesh == static_cast<GLuint>(-1)) return;
 
+    GLuint mesh = meshComponent->mesh;
     vmath::mat4 modelMatrix = selected->get_world_matrix();
 
     // Mask pass
@@ -102,11 +135,11 @@ void Renderer::draw_selection_outline(const SceneModel& model, const Camera& cam
     glUniformMatrix4fv(maskCamMatLoc,   1, GL_FALSE, camera.get_view_matrix());
     glUniformMatrix4fv(maskModelMatLoc, 1, GL_FALSE, modelMatrix);
 
-    glBindVertexArray(VAOs[meshNode->mesh]);
-    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[meshNode->mesh][PosBuffer]);
+    glBindVertexArray(VAOs[mesh]);
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[mesh][PosBuffer]);
     glVertexAttribPointer(maskVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(maskVPos);
-    glDrawArrays(GL_TRIANGLES, 0, numVertices[meshNode->mesh]);
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[mesh]);
 
     // Edge pass
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -156,22 +189,21 @@ void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& cam
     vmath::vec4 yColor = (activeGizmo == GIZMO_Y) ? vmath::vec4(0.6f, 1.0f, 0.6f, 1.0f) : vmath::vec4(0.15f, 1.0f, 0.15f, 1.0f);
     vmath::vec4 zColor = (activeGizmo == GIZMO_Z) ? vmath::vec4(0.6f, 0.7f, 1.0f, 1.0f) : vmath::vec4(0.2f, 0.4f, 1.0f, 1.0f);
 
-    const vmath::mat4& proj = camera.get_proj_matrix();
-    const vmath::mat4& view = camera.get_view_matrix();
+
 
     // X
     vmath::mat4 rotate = vmath::rotate(90.0f, vmath::vec3(0, 0, 1));
     vmath::mat4 modelMatrix = trans * rotate * transOffset * scale;
-    draw_gizmo_arrow(xColor, proj, view, modelMatrix);
+    draw_gizmo_arrow(xColor, camera, modelMatrix);
 
     // Y
     modelMatrix = trans * transOffset * scale;
-    draw_gizmo_arrow(yColor, proj, view, modelMatrix);
+    draw_gizmo_arrow(yColor, camera, modelMatrix);
 
     // Z
     rotate = vmath::rotate(-90.0f, vmath::vec3(1, 0, 0));
     modelMatrix = trans * rotate * transOffset * scale;
-    draw_gizmo_arrow(zColor, proj, view, modelMatrix);
+    draw_gizmo_arrow(zColor, camera, modelMatrix);
 
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);

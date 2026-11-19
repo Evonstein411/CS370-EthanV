@@ -2,14 +2,15 @@
 // Created by ethan on 11/19/2026.
 
 #include "scene.h"
+#include "nodes/meshcomponent.h"
+#include "nodes/lightcomponent.h"
 #include "../nodes/scenenode.h"
-#include "../nodes/nodes.h"
-
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
 #include <cstdio>
+
 
 
 namespace fs = std::filesystem;
@@ -25,13 +26,6 @@ namespace {
 
 Scene::~Scene() {
     clear();
-}
-
-void Scene::draw() const {
-    for_each([](SceneNode* n) {
-        if (n && n->enabled)
-            n->draw();
-    });
 }
 
 void Scene::clear() {
@@ -144,7 +138,7 @@ void Scene::walk(SceneNode* node, const std::function<void(SceneNode*)>& fn) {
 void Scene::write_node(std::ostream& out, const SceneNode* node) {
     if (!node) return;
     out << "NODE\n";
-    node->write(out);
+    node->write(out);                       // node + component data
     out << "children " << node->children.size() << "\n";
     for (SceneNode* c : node->children)
         write_node(out, c);
@@ -153,7 +147,7 @@ void Scene::write_node(std::ostream& out, const SceneNode* node) {
 
 SceneNode* Scene::read_node(std::istream& in) {
     std::string line;
-    std::string typeName = "MeshNode";
+    std::string componentType;
     std::vector<std::pair<std::string, std::string>> fields;
     int childCount = 0;
 
@@ -166,9 +160,9 @@ SceneNode* Scene::read_node(std::istream& in) {
         std::string key;
         iss >> key;
 
-        if (key == "type") {
-            std::getline(iss, typeName);
-            typeName = trim(typeName);
+        if (key == "component") {
+            std::getline(iss, componentType);
+            componentType = trim(componentType);
         }
         else if (key == "children") {
             iss >> childCount;
@@ -179,10 +173,17 @@ SceneNode* Scene::read_node(std::istream& in) {
         }
     }
 
-    SceneNode* node = create_node(typeName);
-    if (!node) {
-        fprintf(stderr, "Unknown node type '%s'\n", typeName.c_str());
-        return nullptr;
+    auto* node = new SceneNode();
+
+    // attach component before feeding fields so read_field can forward
+    if (componentType == "Mesh") {
+        node->component = std::make_unique<MeshComponent>();
+    }
+    else if (componentType == "Light") {
+        node->component = std::make_unique<LightComponent>();
+    }
+    else if (!componentType.empty()) {
+        fprintf(stderr, "Unknown component type '%s'\n", componentType.c_str());
     }
 
     for (auto& [key, value] : fields) {
@@ -191,6 +192,7 @@ SceneNode* Scene::read_node(std::istream& in) {
         iss >> dummy;
         node->read_field(key, iss);
     }
+
     node->on_loaded();
 
     for (int i = 0; i < childCount; ++i) {

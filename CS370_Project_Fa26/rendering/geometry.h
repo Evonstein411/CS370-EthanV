@@ -6,13 +6,24 @@
 #include <array>
 #include <cstdio>
 #include "../common/objloader.h"
+#include <vector>
+
+
+// Buffer enums
+enum ObjBuffer_IDs {PosBuffer, NormBuffer, TexBuffer, TangBuffer, BiTangBuffer, NumObjBuffers};
+
+// Number of component coordinates
+inline GLint posCoords = 4;
+inline GLint normCoords = 3;
+inline GLint texCoords = 2;
+inline GLint colCoords = 4;
 
 namespace fs = std::filesystem;
 // Model vertex arrays and buffer objects
-inline vector<string> meshNames;
-inline vector<GLuint> VAOs;
-inline vector<array<GLuint, NumObjBuffers>> ObjBuffers;
-inline vector<GLint> numVertices;
+inline std::vector<std::string> meshNames;
+inline std::vector<GLuint> VAOs;
+inline std::vector<std::array<GLuint, NumObjBuffers>> ObjBuffers;
+inline std::vector<GLint> numVertices;
 
 //Mask
 // Dedicated NDC full-screen quad for post-process passes (outline, etc.)
@@ -35,7 +46,7 @@ inline GLuint HUD_ObjBuffers[NumHUD][NumObjBuffers];
 inline GLint HUD_numVertices[NumHUD];
 
 // Color buffers
-inline vector<GLuint> ColorBuffers;
+inline std::vector<GLuint> ColorBuffers;
 
 inline float colorR = 0.0f;
 inline float colorG = 0.0f;
@@ -49,15 +60,15 @@ inline auto sphereFile = "../../common/models/sphere.obj";
 
 
 
-int load_model(const char* filename, const string& displayName);
+int load_model(const char* filename, const std::string& displayName);
 void load_gizmo_arrow();
-void build_solid_color_buffer(GLuint numVertices, const vec4& color, GLuint buffer);
+void build_solid_color_buffer(GLuint numVertices, const vmath::vec4& color, GLuint buffer);
 void build_hud_quad(GLuint obj);
-void scan_models(const string& folder = "../assets/models");
-int add_model_file(const string& path);
+void scan_models(const std::string& folder = "../assets/models");
+int add_model_file(const std::string& path);
 void build_fullscreen_quad();
 
-inline int find_mesh(const string& name) {
+inline int find_mesh(const std::string& name) {
     for (int i = 0; i < static_cast<int>(meshNames.size()); ++i)
         if (meshNames[i] == name) return i;
     return -1;
@@ -75,7 +86,7 @@ inline void build_geometry() {
 }
 
 
-inline void scan_models(const string& folder) {
+inline void scan_models(const std::string& folder) {
     meshNames.clear();
     VAOs.clear();
     ObjBuffers.clear();
@@ -87,7 +98,7 @@ inline void scan_models(const string& folder) {
     for (const auto& entry : fs::directory_iterator(folder)) {
         if (!entry.is_regular_file()) continue;
         const fs::path& p = entry.path();
-        string ext = p.extension().string();
+        std::string ext = p.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
         if (ext != ".obj") continue;
 
@@ -95,7 +106,7 @@ inline void scan_models(const string& folder) {
     }
 }
 
-inline int add_model_file(const string& path) {
+inline int add_model_file(const std::string& path) {
     if (path.empty() || !fs::exists(path)) return -1;
 
     const fs::path src(path);

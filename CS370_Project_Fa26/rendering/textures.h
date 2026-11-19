@@ -146,4 +146,10 @@ inline void build_font() {
     delete[] pixels;
 }
 
+inline int find_texture(const std::string& name) {
+    for (int i = 0; i < static_cast<int>(textureNames.size()); ++i)
+        if (textureNames[i] == name) return i;
+    return -1;
+}
+
 #endif //TEXTURE_H
