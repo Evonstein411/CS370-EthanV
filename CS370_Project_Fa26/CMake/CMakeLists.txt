@@ -134,14 +134,9 @@ set(COMMON_FILES
         ../scene/drawtype.h
         ../app/desertfox.h
         ../scene/scenemodel.h
-        ../scene/scenemodel.cpp
         ../rendering/renderer.h
-        ../rendering/renderer.cpp
-        ../rendering/camera.cpp
         ../rendering/camera.h
-        ../editor/editorcontroller.cpp
         ../editor/editorcontroller.h
-        ../editor/callbacks.cpp
 
 )
 

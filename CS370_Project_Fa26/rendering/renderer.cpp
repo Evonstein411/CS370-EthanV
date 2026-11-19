@@ -11,7 +11,25 @@
 
 
 void Renderer::initialize(int width, int height) {
+    // Create geometry buffers
+    build_geometry();
+    build_materials();
+    build_lights();
+    build_textures();
+    build_shaders();
     create_outline_fbo(width, height);
+
+    //ui
+    init_hud();
+
+    //open gl state
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+
+
 }
 
 void Renderer::resize(int width, int height) {
@@ -19,12 +37,23 @@ void Renderer::resize(int width, int height) {
 }
 
 void Renderer::render(SceneModel& model, int width, int height) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //get camera setup
     Camera& camera = model.get_active_camera();
     camera.update_matrices(width, height);
 
+    //rebuild materials
+    build_dynamic_materials();
+
+    //objects/scene
     draw_scene(model);
     draw_selection_outline(model, camera, width, height);
     draw_translation_gizmo(model, camera);
+    //ui
+    render_hud();
+
+    glFlush();
 }
 
 void Renderer::draw_scene(const SceneModel& model) {

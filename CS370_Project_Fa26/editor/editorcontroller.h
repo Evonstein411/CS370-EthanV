@@ -16,7 +16,7 @@ public:
     void handle_key(int key, int action, int mods);
     void handle_mouse_button(int button, int action, double x, double y);
     void handle_cursor(double x, double y);
-    void handle_scroll(double xoffset, double yoffset);
+    void handle_scroll(double xOffset, double yOffset);
     void handle_char(unsigned int codepoint);
     void handle_resize(int width, int height);
 
@@ -26,6 +26,7 @@ public:
     void delete_selected();
     void toggle_camera_mode();
     void add_object();
+    void update();
 
 private:
     SceneModel& model;

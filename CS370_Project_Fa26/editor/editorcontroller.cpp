@@ -9,6 +9,10 @@
 
 EditorController::EditorController(SceneModel& model) : model(model) {}
 
+void EditorController::update() {
+    update_from_fields();
+}
+
 void EditorController::handle_key(int key, int action, int mods) {
     if (hud_key(key, action)) return;
 
@@ -116,12 +120,12 @@ void EditorController::handle_cursor(double x, double y) {
     update_fields();
 }
 
-void EditorController::handle_scroll(double xoffset, double yoffset) {
+void EditorController::handle_scroll(double xOffset, double yOffset) {
     Camera& cam = model.get_active_camera();
     if (cam.get_mode() != CameraMode::ORTHO) return;
 
     float r = cam.get_radius();
-    r -= static_cast<float>(yoffset) * 0.4f;   // tune sensitivity
+    r -= static_cast<float>(yOffset) * 0.4f;   // tune sensitivity
     if (r < 0.5f) r = 0.5f;
     cam.set_radius(r);
     update_ortho_eye();

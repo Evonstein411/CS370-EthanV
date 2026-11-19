@@ -31,8 +31,6 @@ private:
     int width = 1640;
     int height = 960;
 
-    void display();
-
 
 };
 
