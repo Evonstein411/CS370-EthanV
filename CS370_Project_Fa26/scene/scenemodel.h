@@ -6,7 +6,7 @@
 #define CS370_FA26_SCENEMODEL_H
 
 #include "scenemanager.h"
-#include "scenenode.h"
+#include "../nodes/scenenode.h"
 #include "../rendering/camera.h"
 
 class SceneModel {

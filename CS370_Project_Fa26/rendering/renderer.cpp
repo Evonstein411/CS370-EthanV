@@ -3,7 +3,7 @@
 //
 
 #include "renderer.h"
-#include "scene/nodes.h"
+#include "../nodes/nodes.h"
 #include "shaders.h"
 #include "geometry.h"
 #include "drawobjects.h"

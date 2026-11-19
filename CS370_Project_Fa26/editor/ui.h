@@ -1,6 +1,6 @@
 #pragma once
 #include "../kitUI/hud.h"
-#include "../scene/nodes.h"
+#include "../nodes/nodes.h"
 #include "../common/vmath.h"          // vec3, vec4
 #include "../common/GLFWutils.h" //gluint
 #include "../common/lighting.h" //material properties

@@ -4,7 +4,7 @@
 #include "scenemodel.h"
 #include "rendering/materials.h"
 #include "rendering/geometry.h"
-#include "nodes.h"
+#include "../nodes/nodes.h"
 
 SceneModel::SceneModel() {
     // optional: set distinct starting positions if you want

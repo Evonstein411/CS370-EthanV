@@ -5,69 +5,27 @@
 #define CS370_FA26_SCENEMANAGER_H
 
 #include "scene.h"
-#include "scenenode.h"
+#include "../nodes/nodes.h"
+#include <vector>
+#include <string>
 
 struct SceneManager {
-    vector<Scene*> scenes;
+    std::vector<Scene*> scenes;
     Scene* active = nullptr;
 
-    ~SceneManager() {
-        for (const Scene* s : scenes)
-            delete s;
-        scenes.clear();
-        active = nullptr;
-    }
+    ~SceneManager();
 
-    Scene* create_scene(const string& name = "Untitled") {
-        auto* scene = new Scene();
-        scene->name = name;
-        scenes.push_back(scene);
-        if (!active)
-            active = scene;
-        return scene;
-    }
+    Scene* create_scene(const std::string& name = "Untitled");
+    void set_active(Scene* scene);
+    void close_scene(const Scene* scene);
 
-    void set_active(Scene* scene) {
-        if (!scene) return;
-        // only allow scenes we own
-        if (std::find(scenes.begin(), scenes.end(), scene) == scenes.end())
-            return;
-        active = scene;
-    }
+    Scene* get_active() const;
 
-    void close_scene(const Scene* scene) {
-        if (!scene) return;
-        const auto it = std::find(scenes.begin(), scenes.end(), scene);
-        if (it == scenes.end()) return;
-
-        scenes.erase(it);
-        if (active == scene) {
-            active = scenes.empty() ? nullptr : scenes.back();
-        }
-        delete scene;
-    }
-
-    Scene* get_active() const { return active; }
-
-    // convenience — forwards to the active scene
-    SceneNode* get_selected() const {
-        return active ? active->selected : nullptr;
-    }
-
-    void set_selected(SceneNode* node) const {
-        if (active)
-            active->selected = node;
-    }
-
-    void clear_active() const {
-        if (active)
-            active->clear();
-    }
-
-
+    SceneNode* get_selected() const;
+    void set_selected(SceneNode* node) const;
+    void clear_active() const;
 };
 
-inline SceneManager sceneManager; //single global sceneManager for now
 
 
 #endif //CS370_FA26_SCENEMANAGER_H

@@ -118,9 +118,9 @@ set(COMMON_FILES
 
         # scene
         ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scene.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/scenenode.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/meshnode.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../scene/lightnode.h
+        ../nodes/scenenode.h
+        ../nodes/meshnode.h
+        ../nodes/lightnode.h
 
         # rendering
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/geometry.h
@@ -130,13 +130,15 @@ set(COMMON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/drawobjects.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/shaders.h
         ../scene/scenemanager.h
-        ../scene/nodes.h
-        ../scene/drawtype.h
+        ../nodes/nodes.h
+        ../nodes/drawtype.h
         ../app/desertfox.h
         ../scene/scenemodel.h
         ../rendering/renderer.h
         ../rendering/camera.h
         ../editor/editorcontroller.h
+        ../scene/scene.cpp
+        ../scene/scenemanager.cpp
 
 )
 
