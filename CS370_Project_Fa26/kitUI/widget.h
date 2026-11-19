@@ -2,232 +2,56 @@
 #define CS370_FA26_WIDGET_H
 
 #include <vector>
-#include <algorithm>
 #include <functional>
-#include "../common/vmath.h"
-#include "../globals.h"
 
 
-struct Widget;
-
-//list of widgets
-inline std::vector<Widget*> widgets;
-inline std::vector<Widget*> trash;
-inline bool handlingEvent = false;
-inline int eventDepth = 0;
-//HUD globals
-
-//colors
-const auto HUD_PANEL = vmath::vec4(0.28f, 0.22f, 0.16f, 0.92f);  // dark sand / panel bg
-const auto HUD_FIELD = vmath::vec4(0.38f, 0.30f, 0.22f, 0.95f);  // text fields, dropdowns
-const auto HUD_CANVAS = vmath::vec4(0.22f, 0.17f, 0.12f, 0.95f);  // top bar, slightly darker
-const auto HUD_BUTTON = vmath::vec4(0.55f, 0.38f, 0.22f, 0.95f);  // terracotta buttons
-const auto HUD_DROPFIELD = vmath::vec4(0.45f, 0.34f, 0.22f, 0.95f);  // dropdown label + closed box
-const auto HUD_SECTION = vmath::vec4(0.36f, 0.27f, 0.18f, 0.95f);  // section bar (normal)
-const auto HUD_LABEL = vmath::vec4(0.50f, 0.34f, 0.20f, 0.95f);  // section bar (normal)
-const auto HUD_ACCENT      = vmath::vec4(0.85f, 0.55f, 0.25f, 1.00f);  // selected, focus ring
-const auto HUD_HIGHLIGHTED = vmath::vec4(0.75f, 0.55f, 0.30f, 0.95f);  // hover / active
-const auto HUD_DISABLED    = vmath::vec4(0.22f, 0.20f, 0.18f, 0.65f);  // muted
-const auto ALT_TEXT_COLOR = vmath::vec4(0.78f, 0.66f, 0.54f, 1.00f);
-const auto DISABLED_TEXT_COLOR = vmath::vec4(0.24, 0.22f, 0.20f, 1.0f);
-const auto TEXT_COLOR = vmath::vec4(0.95f, 0.90f, 0.82f, 1.00f);
-
-constexpr float HUD_FONT = 32.0f;
-constexpr float HUD_PAD_X = 8.0f;
-constexpr float HUD_PAD_Y = 8.0f;
-
-
-enum class Alignment {START, CENTER, END, STRETCH};
-//parent HUD element struct
 struct Widget {
-    float x, y, w, h;
-    float prefW = 0.0f;
-    float prefH = 0.0f;
-    bool hovered = false;
+    float x = 0, y = 0, w = 0, h = 0;
+    float prefW = 0, prefH = 0;
     bool hidden = false;
+    bool hovered = false;
     bool grabbed = false;
-    bool pendingDelete = false;
     bool stretched = false;
-    int priority = 0; //higher priority value drawn first
+    int priority = 0;
 
     std::function<void(float, float)> on_drag_callback;
     std::function<void()> on_release_callback;
 
-    std::vector<Widget*> children; //list of all current children
-    Widget* parent = nullptr; //pointer to parent if have one
+    std::vector<Widget*> children;
+    Widget* parent = nullptr;
 
-    Widget(const float x, const float y, const float w, const float h)
-        : x(x), y(y), w(w), h(h) {
-        widgets.push_back(this);
-    }
+    explicit Widget(float w, float h);
+    virtual ~Widget();
 
-    virtual ~Widget() {
-        if (const auto it = std::find(widgets.begin(), widgets.end(), this); it != widgets.end())
-            widgets.erase(it);
+    virtual void draw_self() = 0;
+    virtual void draw_after() {}
 
-        if (parent) parent->remove_child(this); //if im a child remove myself from parent
-        for (Widget* c : children) c->parent = nullptr; //clear self from parent of all children
-        children.clear(); //clear children list
-
-    }
-
-    virtual void draw_self() = 0; //defined per widget
-    virtual void draw_after(){}
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
     virtual void on_click(float mx, float my) {}
-    virtual void on_hover(float mx, float my){}
+    virtual void on_hover(float mx, float my) {}
 
-    virtual bool hit(const float mx, const float my) const {
-        if (hidden || is_effectively_hidden()) return false;
-        const float bottom = static_cast<float>(hh) - h - y;
-        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + h;
-    }
+    virtual bool hit(float mx, float my) const;
+    virtual void draw_children();
+    void draw();
 
-    //function for drawing children
-    virtual void draw_children() {
-        for (Widget* c : children) {
-            c->draw();
-        }
-    }
+    void mark_for_delete();
+    virtual void on_drag(float mx, float my);
+    virtual void on_release();
+    void grab();
 
-    void mark_for_delete() {
-        if (pendingDelete) return;
-        pendingDelete = true;
-        hidden = true;
-    }
+    Widget* get_parent() const { return parent; }
+    void add_child(Widget* child);
+    void remove_child(Widget* child);
+    void set_parent(Widget* new_parent);
+    bool is_child() const { return parent != nullptr; }
 
-    //if hidden skip else draws self, draws children, and finally draws after for any drawing that needs to be done after children
-    void draw() {
-        if(hidden) {
-            return;
-        }
-        draw_self();
-        draw_children();
-        draw_after();
-
-    }
-
-    //interaction
-
-    virtual void on_drag(float mx, float my) {
-        if (on_drag_callback) {on_drag_callback(mx, my);}
-    }
-
-    virtual void on_release() {
-        grabbed = false;
-        if (on_release_callback) on_release_callback();
-    }
-
-    void grab() {
-        grabbed = true;
-    }
-
-
-    //parent child relations
-    Widget* get_parent() const {
-        return parent;
-    }
-
-    void add_child(Widget* child) {
-        if(child == this) return; //cant child self
-
-        //remove from any prior parent
-        if (child->is_child()) {
-            child->get_parent()->remove_child(child);
-        }
-
-        child->parent = this;
-        children.push_back(child);
-    }
-
-    void remove_child(Widget* child) {
-        if(!child) return; //do nothing if child doesn't exist
-        const auto searched_child = std::find(children.begin(), children.end(), child);
-        if (searched_child == children.end()) return; //failed to find child do nothing
-        children.erase(searched_child); //found child remove from children list
-        if (child->get_parent() == this) { //remove self from parent of prior child
-            child->parent = nullptr;
-        }
-    }
-
-
-    //only remove and add child directly write to parent to prevent desync of child and parent status
-    void set_parent(Widget* new_parent) {
-        if(new_parent == parent) return; //do nothing if already parent
-        if(new_parent) {
-            new_parent->add_child(this);   //add to new parent
-        }
-        else if(parent) {
-            parent->remove_child(this);
-        }
-    }
-
-    bool is_child() const {
-        return parent != nullptr;
-    }
-
-
-    //visibility status
-    void set_priority(int newPriority) {
-        priority = newPriority;
-    }
-
-    bool is_hidden() const {
-        return hidden;
-    }
-
-    bool is_effectively_hidden() const {
-        for (const Widget* p = parent; p != nullptr; p = p->parent) {
-            if (p->hidden) return true;
-        }
-        return false;
-    }
-
-    void hide() {
-        hidden = true;
-    }
-
-    void show() {
-        hidden = false;
-    }
-
-    void set_hidden(const bool new_hidden) {
-        hidden = new_hidden;
-    }
-
-
-}; //end Widget
-
-
-//widget deletion utils
-inline void destroy_widget(Widget* w) {
-    if (!w || w->pendingDelete) return;
-    if (handlingEvent) {
-        w->mark_for_delete();
-        trash.push_back(w);
-    } else {
-        delete w;
-    }
-}
-
-inline void flush_destroyed() {
-    if (trash.empty()) return;
-    vector<Widget*> batch;
-    batch.swap(trash);
-    for (const Widget* w : batch)
-        delete w;                      // destructor already unregisters from widgets
-}
-
-//place this object in any callback/event to cleanly handle deletion
-struct EventScope {
-    EventScope() { eventDepth++; handlingEvent = true; }
-    ~EventScope() {
-        if (--eventDepth == 0) {
-            handlingEvent = false;
-            flush_destroyed();
-        }
-    }
+    void set_priority(int p) { priority = p; }
+    bool is_hidden() const { return hidden; }
+    bool is_effectively_hidden() const;
+    void hide() { hidden = true; }
+    void show() { hidden = false; }
+    void set_hidden(bool h) { hidden = h; }
 };
 
 #endif //CS370_FA26_WIDGET_H

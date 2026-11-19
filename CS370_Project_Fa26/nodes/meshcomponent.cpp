@@ -108,4 +108,5 @@ void MeshComponent::on_loaded() {
 
     const int idx = find_texture(appearance.textureName);
     appearance.texture = (idx >= 0) ? TextureIDs[idx] : TextureIDs[0]; // blank
+    appearance.build(mesh);
 }

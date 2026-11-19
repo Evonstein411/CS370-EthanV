@@ -82,7 +82,7 @@ inline void build_dynamic_materials() {
 
 	glBindBuffer(GL_UNIFORM_BUFFER, MaterialBuffers[MaterialBuffer]);
 	glBufferData(GL_UNIFORM_BUFFER,
-				 all.size() * sizeof(MaterialProperties),
+				 all.size() * sizeof(Material),
 				 all.data(),
 				 GL_DYNAMIC_DRAW);
 }

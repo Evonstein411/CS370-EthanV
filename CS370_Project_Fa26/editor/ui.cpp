@@ -2,12 +2,11 @@
 #include "../kitUI/hud.h"
 #include "../scene/scenemanager.h"
 #include "../scene/scene.h"
-#include "../nodes/nodes.h"
-#include "../nodes/drawtype.h"
+#include "../nodes/scenenode.h"
+#include "../nodes/meshcomponent.h"
 #include "../rendering/textures.h"
 #include "../rendering/geometry.h"
 #include "../rendering/materials.h"
-#include "../globals.h"
 #include <cstring>
 
 using std::string;

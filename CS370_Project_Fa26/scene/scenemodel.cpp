@@ -4,7 +4,8 @@
 #include "scenemodel.h"
 #include "rendering/materials.h"
 #include "rendering/geometry.h"
-#include "../nodes/nodes.h"
+#include "../nodes/scenenode.h"
+#include "nodes/meshcomponent.h"
 
 SceneModel::SceneModel() {
     // optional: set distinct starting positions if you want
@@ -29,23 +30,33 @@ void SceneModel::create_default_scene() {
         return;
     }
 
-    scene->add_root(MeshNode::create_material("sphere", sphereID,
-        {0,0,0}, {2,2,2}, {0,0,0}, baseMaterial));
+    //lambda for building material meshes
+    auto add_material_mesh = [&](const std::string& name, GLuint mesh,
+                                 const vmath::vec3& pos, const vmath::vec3& scale, const vmath::vec3& rot,
+                                 const Material& mat) {
+        auto* node = new SceneNode();
+        node->name = name;
+        node->position = pos;
+        node->scale = scale;
+        node->rotation = rot;
 
-    scene->add_root(MeshNode::create_material("floor", cubeID,
-        {0,-3,0}, {50,2,50}, {0,0,0}, baseMaterial));
+        auto meshComp = std::make_unique<MeshComponent>();
+        meshComp->mesh = mesh;
+        meshComp->appearance.mode = DrawMode::Material;
+        meshComp->appearance.material = mat;
+        meshComp->on_loaded();                 // builds the material index / UBO entry
 
-    scene->add_root(MeshNode::create_material("wall1", cubeID,
-        {25,3,0}, {1,10,50}, {0,0,0}, baseMaterial));
+        node->component = std::move(meshComp);
+        scene->add_root(node);
+    };
 
-    scene->add_root(MeshNode::create_material("wall2", cubeID,
-    {-25,3,0}, {1,10,50}, {0,0,0}, baseMaterial));
+    add_material_mesh("sphere", sphereID, {0,0,0}, {2,2,2}, {0,0,0}, baseMaterial);
+    add_material_mesh("floor",  cubeID,   {0,-3,0}, {50,2,50}, {0,0,0}, baseMaterial);
+    add_material_mesh("wall1",  cubeID,   {25,3,0}, {1,10,50}, {0,0,0}, baseMaterial);
+    add_material_mesh("wall2",  cubeID,   {-25,3,0}, {1,10,50}, {0,0,0}, baseMaterial);
+    add_material_mesh("wall3",  cubeID,   {0,3,25}, {50,10,1}, {0,0,0}, baseMaterial);
+    add_material_mesh("wall4",  cubeID,   {0,3,-25}, {50,10,1}, {0,0,0}, baseMaterial);
 
-    scene->add_root(MeshNode::create_material("wall3", cubeID,
-    {0,3,25}, {50,10,1}, {0,0,0}, baseMaterial));
-
-    scene->add_root(MeshNode::create_material("wall4", cubeID,
-    {0,3,-25}, {50,10,1}, {0,0,0}, baseMaterial));
 }
 
 void SceneModel::clear() {

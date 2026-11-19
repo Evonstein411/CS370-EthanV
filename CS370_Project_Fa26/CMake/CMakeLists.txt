@@ -145,6 +145,9 @@ set(COMMON_FILES
         ../nodes/component.h
         ../nodes/appearance.h
         ../nodes/meshcomponent.cpp
+        ../nodes/appearance.cpp
+        ../kitUI/widget.cpp
+        ../kitUI/hud.cpp
 
 
 )

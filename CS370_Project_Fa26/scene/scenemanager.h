@@ -5,7 +5,7 @@
 #define CS370_FA26_SCENEMANAGER_H
 
 #include "scene.h"
-#include "../nodes/nodes.h"
+#include "../nodes/scenenode.h"
 #include <vector>
 #include <string>
 

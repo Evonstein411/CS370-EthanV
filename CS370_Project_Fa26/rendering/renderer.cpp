@@ -79,10 +79,10 @@ void Renderer::draw_mesh(const MeshComponent* mesh, const mat4& modelMatrix, Cam
 
     switch (mesh->appearance.mode) {
         case DrawMode::SolidColor:
-            draw_color_object(mesh->mesh, mesh->appearance.color, camera, modelMatrix);
+            draw_color_object(mesh->mesh, mesh->appearance.colorBuffer, camera, modelMatrix);
             break;
         case DrawMode::Material:
-            draw_mat_object(mesh->mesh, mesh->appearance.material, camera, modelMatrix);
+            draw_mat_object(mesh->mesh, mesh->appearance.materialIndex, camera, modelMatrix);
             break;
         case DrawMode::Texture:
             draw_tex_object(mesh->mesh, mesh->appearance.texture, camera, modelMatrix);

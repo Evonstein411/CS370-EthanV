@@ -133,10 +133,10 @@ inline int add_model_file(const std::string& path) {
 }
 
 
-inline int load_model(const char * filename, const string& displayName) {
-    vector<vec4> vertices;
-    vector<vec2> uvCoords;
-    vector<vec3> normals;
+inline int load_model(const char * filename, const std::string& displayName) {
+    std::vector<vmath::vec4> vertices;
+    std::vector<vmath::vec2> uvCoords;
+    std::vector<vmath::vec3> normals;
 
     // Load model and set number of vertices
     if (!loadOBJ(filename, vertices, uvCoords, normals) || vertices.empty()) {
@@ -148,7 +148,7 @@ inline int load_model(const char * filename, const string& displayName) {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    array<GLuint, NumObjBuffers> bufs{};
+    std::array<GLuint, NumObjBuffers> bufs{};
     glGenBuffers(NumObjBuffers, bufs.data());
 
     glBindBuffer(GL_ARRAY_BUFFER, bufs[PosBuffer]);
@@ -173,9 +173,9 @@ inline int load_model(const char * filename, const string& displayName) {
 
 }
 
-inline void build_solid_color_buffer(GLuint numVertices, const vec4& color, const GLuint buffer) {
+inline void build_solid_color_buffer(GLuint numVertices, const vmath::vec4& color, const GLuint buffer) {
     // Create object colors
-    vector<vec4> obj_colors;
+    std::vector<vmath::vec4> obj_colors;
     obj_colors.reserve(numVertices);
     for (int i = 0; i < numVertices; i++) {
         obj_colors.push_back(color);
@@ -187,7 +187,7 @@ inline void build_solid_color_buffer(GLuint numVertices, const vec4& color, cons
 }
 
 inline void build_hud_quad(const GLuint obj) {
-    vector<vec2> vertices = {
+    std::vector<vmath::vec2> vertices = {
         {0, 0}, //0
         {1, 0}, //1
         {1, 1}, //2
@@ -195,7 +195,7 @@ inline void build_hud_quad(const GLuint obj) {
 
     };
 
-    vector<ivec3> indices = {
+    std::vector<vmath::ivec3> indices = {
         {0, 1, 2},
         {0, 2, 3}
 
@@ -205,18 +205,16 @@ inline void build_hud_quad(const GLuint obj) {
     const int numFaces = indices.size();
     HUD_numVertices[obj] = numFaces * 3;
 
-    vector<vec4> obj_vertices;
+    std::vector<vmath::vec4> obj_vertices;
     for (int i = 0; i < numFaces; i++) {
         for (int j = 0; j < 3; j++) {
             obj_vertices.emplace_back(vertices[indices[i][j]][0],
-            vertices[indices[i][j]][1],
-            0.0f,
-            1.0f);
+            vertices[indices[i][j]][1],0.0f,1.0f);
         }
     }
 
     //uvs for texture
-    vector<vec2> uvs;
+    std::vector<vmath::vec2> uvs;
     uvs.emplace_back(0.0f, 0.0f);
     uvs.emplace_back(1.0f, 0.0f);
     uvs.emplace_back(1.0f, 1.0f);
@@ -246,24 +244,24 @@ inline void build_hud_quad(const GLuint obj) {
 inline void build_fullscreen_quad() {
     // NDC positions (x, y, z, w) + UVs
     // Two triangles covering the entire clip space
-    const vector<vec4> positions = {
-        vec4(-1.0f, -1.0f, 0.0f, 1.0f),
-        vec4( 1.0f, -1.0f, 0.0f, 1.0f),
-        vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+    const std::vector<vmath::vec4> positions = {
+        vmath::vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+        vmath::vec4( 1.0f, -1.0f, 0.0f, 1.0f),
+        vmath::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
 
-        vec4(-1.0f, -1.0f, 0.0f, 1.0f),
-        vec4( 1.0f,  1.0f, 0.0f, 1.0f),
-        vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+        vmath::vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+        vmath::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+        vmath::vec4(-1.0f,  1.0f, 0.0f, 1.0f)
     };
 
-    const vector<vec2> uvs = {
-        vec2(0.0f, 0.0f),
-        vec2(1.0f, 0.0f),
-        vec2(1.0f, 1.0f),
+    const std::vector<vmath::vec2> uvs = {
+        vmath::vec2(0.0f, 0.0f),
+        vmath::vec2(1.0f, 0.0f),
+        vmath::vec2(1.0f, 1.0f),
 
-        vec2(0.0f, 0.0f),
-        vec2(1.0f, 1.0f),
-        vec2(0.0f, 1.0f)
+        vmath::vec2(0.0f, 0.0f),
+        vmath::vec2(1.0f, 1.0f),
+        vmath::vec2(0.0f, 1.0f)
     };
 
     glGenVertexArrays(1, &fullscreenVAO);
@@ -271,20 +269,20 @@ inline void build_fullscreen_quad() {
 
     glGenBuffers(1, &fullscreenPosBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, fullscreenPosBuffer);
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(vec4), positions.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(vmath::vec4), positions.data(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &fullscreenTexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, fullscreenTexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), uvs.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vmath::vec2), uvs.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
 inline void load_gizmo_arrow() {
-    vector<vec4> vertices;
-    vector<vec2> uvs;
-    vector<vec3> normals;
+    std::vector<vmath::vec4> vertices;
+    std::vector<vmath::vec2> uvs;
+    std::vector<vmath::vec3> normals;
 
     if (!loadOBJ("../assets/models/arrow.obj", vertices, uvs, normals) || vertices.empty()) {
         fprintf(stderr, "Failed to load gizmo arrow.obj\n");
@@ -298,11 +296,11 @@ inline void load_gizmo_arrow() {
 
     glGenBuffers(1, &gizmoArrowPosBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec4), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vmath::vec4), vertices.data(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &gizmoArrowNormBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowNormBuffer);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), normals.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vmath::vec3), normals.data(), GL_STATIC_DRAW);
 
     glBindVertexArray(0);
 }
