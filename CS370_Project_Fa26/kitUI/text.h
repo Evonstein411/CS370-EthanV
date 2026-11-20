@@ -5,14 +5,67 @@
 #include "rendering/shaders.h"
 #include "rendering/textures.h"
 #include "rendering/geometry.h"
-#include "rendering/drawobjects.h"
 #include <string>
+#include "hud.h"
 #include "../globals.h"
+#include "rendering/drawobjects.h"
 
+void draw_solid_quad(const vmath::vec4& color) {
+    //setup dynamic buffer
+    if (dynamicHUDColorBuffer == 0){
+        glGenBuffers(1, &dynamicHUDColorBuffer);
+        // allocate once to the size of the HUD quad
+        std::vector<vmath::vec4> tmp(HUD_numVertices[HUDQuad], color);
+        glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+        glBufferData(GL_ARRAY_BUFFER, tmp.size() * sizeof(vmath::vec4), tmp.data(), GL_DYNAMIC_DRAW);
+    }
+
+    std::vector<vmath::vec4> cols(HUD_numVertices[HUDQuad], color);
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, cols.size() * sizeof(vmath::vec4), cols.data());
+
+    //draw color object
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
+
+    glBindVertexArray(HUD_VAOs[HUDQuad]);
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDQuad][PosBuffer]);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorVPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicHUDColorBuffer);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+}
 
 void draw_string(const string& text, float x, float y, float size,
                  const vec4 &color = TEXT_COLOR);
 float text_width(const string& text, float size);
+
+inline void draw_text_quad() {
+    glUseProgram(hudProgram);
+
+    glUniformMatrix4fv(hudProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(hudCameraMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(hudModelMatLoc, 1, GL_FALSE, modelMatrix);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fontTextureID);
+
+    glBindVertexArray(HUD_VAOs[HUDTextQuad]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
+    glVertexAttribPointer(hudVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(hudVPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
+    glVertexAttribPointer(hudVTex, texCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(hudVTex);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 
 //util function for drawing text
 inline void draw_string(const string& text, const float x, const float y, const float size, const vec4 &color) {

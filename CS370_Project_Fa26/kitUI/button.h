@@ -21,8 +21,8 @@ struct Button : Widget {
     vec4 highlightedColor = HUD_HIGHLIGHTED;
 
     //constructor
-    Button(const float x, const float y, const float w, const float h, string  label = "" )
-    :Widget(x, y, w, h), label(std::move(label)) {
+    Button(const float w, const float h, string  label = "" )
+    :Widget(w, h), label(std::move(label)) {
         fit();
         if (prefW <= 0.0f) prefW = w;   // explicit size, no label
         if (prefH <= 0.0f) prefH = h;

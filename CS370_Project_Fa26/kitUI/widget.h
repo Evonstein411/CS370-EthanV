@@ -12,6 +12,7 @@ struct Widget {
     bool hovered = false;
     bool grabbed = false;
     bool stretched = false;
+    bool pendingDelete = false;
     int priority = 0;
 
     std::function<void(float, float)> on_drag_callback;
@@ -51,7 +52,7 @@ struct Widget {
     bool is_effectively_hidden() const;
     void hide() { hidden = true; }
     void show() { hidden = false; }
-    void set_hidden(bool h) { hidden = h; }
+    void set_hidden(bool newHidden) { hidden = newHidden; }
 };
 
 #endif //CS370_FA26_WIDGET_H

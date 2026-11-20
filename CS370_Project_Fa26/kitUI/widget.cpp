@@ -1,21 +1,15 @@
 #include "widget.h"
-
 #include <algorithm>
 #include <cstdio>
 
+#include "hud.h"
 
-Widget::Widget(float w, float h)
-    : w(w), h(h)
-{
-    widgets.push_back(this);
+
+Widget::Widget(float w, float h): w(w), h(h){
+    HUD::instance().register_widget(this);
 }
 
 Widget::~Widget() {
-    // remove from global list
-    auto it = std::find(widgets.begin(), widgets.end(), this);
-    if (it != widgets.end())
-        widgets.erase(it);
-
     // detach from parent
     if (parent)
         parent->remove_child(this);
@@ -46,7 +40,6 @@ void Widget::draw() {
 void Widget::mark_for_delete() {
     pendingDelete = true;
     hidden = true;
-    trash.push_back(this);
 }
 
 void Widget::on_drag(float mx, float my) {
@@ -95,18 +88,3 @@ bool Widget::is_effectively_hidden() const {
         if (p->hidden) return true;
     return false;
 }
-
-void destroy_widget(Widget* w) {
-    if (!w) return;
-    if (handlingEvent)
-        w->mark_for_delete();
-    else
-        delete w;
-}
-
-void flush_destroyed() {
-    for (Widget* w : trash)
-        delete w;
-    trash.clear();
-}
-
