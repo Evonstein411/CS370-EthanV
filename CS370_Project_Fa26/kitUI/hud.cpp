@@ -9,6 +9,19 @@ HUD& HUD::instance() {
     return hud;
 }
 
+void HUD::set_screen_size(int w, int h) {
+    screenW  = w;
+    screenH = h;
+}
+
+int HUD::get_screen_height() {
+    return screenH;
+}
+
+int HUD::get_screen_width() {
+    return screenW;
+}
+
 void HUD::register_widget(Widget* w) {
     if (w) widgets.push_back(w);
 }
@@ -31,18 +44,45 @@ void HUD::flush_destroyed() {
 }
 
 void HUD::draw() {
+    //build render context for Widgets
+    RenderContext ctx;
+    ctx.screenWidth  = screenW;
+    ctx.screenHeight = screenH;
+    ctx.projMatrix   = make_hud_ortho(screenW, screenH);
+    ctx.cameraMatrix = vmath::mat4::identity();
+
+    //update GL state
+    begin_hud_pass();
+
+    //sort widgets by priority
     std::vector<Widget*> topLevel;
     for (Widget* w : widgets) {
         if (w && !w->parent && !w->is_effectively_hidden())
             topLevel.push_back(w);
     }
+    std::stable_sort(topLevel.begin(), topLevel.end(),
+        [](Widget* a, Widget* b) { return a->priority < b->priority; });
 
-    std::sort(topLevel.begin(), topLevel.end(),
-              [](Widget* a, Widget* b) { return a->priority < b->priority; });
-
+    //draw
     for (Widget* w : topLevel)
-        w->draw();
+        w->draw(ctx);
+
+    //restore GL state
+    end_hud_pass();
 }
+
+
+void HUD::begin_hud_pass() const {
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    // NOTE: IF YOU WANT TRANSPARENCY OF HUD ELEMENTS MAKE SURE ALPHA BLENDING IS ON
+}
+
+void HUD::end_hud_pass() const {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+}
+
 
 Widget* HUD::find_topmost(Widget* w, float mx, float my) {
     if (!w || w->is_effectively_hidden() || !w->hit(mx, my))

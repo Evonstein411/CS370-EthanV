@@ -52,7 +52,7 @@ void Renderer::render(SceneModel& model, int width, int height) {
     draw_selection_outline(model, camera, width, height);
     draw_translation_gizmo(model, camera);
     //ui
-    render_hud();
+    HUD::instance().draw();
 
     glFlush();
 }

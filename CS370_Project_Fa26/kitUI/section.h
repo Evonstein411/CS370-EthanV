@@ -1,94 +1,29 @@
 #ifndef CS370_FA26_SECTION_H
 #define CS370_FA26_SECTION_H
 
-#include <utility>
-
 #include "widget.h"
-
+#include "panel.h"
+#include "rendercontext.h"
+#include <string>
 
 struct Section : Widget {
-    string label;
+    std::string label;
     bool collapsed = true;
-    Panel* content;
+    Panel* content = nullptr;
     float headerH = 0.0f;
-    vec4 color = HUD_SECTION;
-    vec4 highlightedColor = HUD_HIGHLIGHTED;
+    vmath::vec4 color = HUD_SECTION;
+    vmath::vec4 highlightedColor = HUD_HIGHLIGHTED;
 
-    Section(const float x, const float y, string  label)
-        : Widget(x, y, 0, 0), label(std::move(label)) {
-        headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
-        content = new Panel(x, y);
-        content->set_hidden(collapsed);
-        add_child(content);
-    }
+    Section(float w, float h, std::string label);
+    Section(float x, float y, float w, float h, std::string label);
+    ~Section() override;
 
-    ~Section() override {
-        delete content;
-    }
+    bool hit(float mx, float my) const override;
+    void add(Widget* w);
 
-    bool hit(const float mx, const float my) const override {
-        if (hidden || is_effectively_hidden()) return false;
-        // only the header bar is interactive
-        const float bottom = static_cast<float>(hh) - headerH - y;
-        return mx >= x && mx <= x + w && my >= bottom && my <= bottom + headerH;
-    }
+    void layout(const RenderContext& ctx);
+    void draw_self(const RenderContext& ctx) override;
+    void on_click(float mx, float my) override;
+};
 
-    void add(Widget* w) const {
-        content->add(w, 0, 0);
-    }
-
-    void layout() {
-        const float assignedW = stretched ? w : 0.0f;
-        stretched = false;
-        headerH = HUD_FONT + HUD_PAD_Y * 2.0f;
-
-        const float labelW = text_width(label, HUD_FONT) + HUD_PAD_X * 3.0f + 20.0f;
-
-        if (collapsed || content->cells.empty()) {
-            prefW = std::max(labelW, 48.0f);
-            w = std::max(prefW, assignedW);
-            h = headerH;
-            return;
-        }
-
-        content->x = x;
-        content->y = y + headerH;
-        content->layout();
-
-        prefW = std::max(content->w, labelW);
-        w = std::max(prefW, assignedW);
-        h = headerH + content->h;
-        content->w = w;
-        content->stretched = true;   // body layout must not shrink this
-    }
-
-    void draw_self() override {
-        layout();
-
-        // header bar
-        const mat4 transMatrix = translate(x, static_cast<float>(hh) - headerH - y, 0.0f);
-        const mat4 scaleMatrix   = scale(w, headerH, 1.0f);
-        modelMatrix = transMatrix * scaleMatrix;
-        draw_solid_hud_quad(hovered ? highlightedColor : color);
-
-        const string arrow = collapsed ? ">" : "v";
-        draw_string(arrow, x + HUD_PAD_X, y + HUD_PAD_Y, HUD_FONT);
-        draw_string(label, x + HUD_PAD_X + 20.0f, y + HUD_PAD_Y, HUD_FONT);
-
-
-    }
-
-    void on_click(float mx, float my) override {
-        // mouse callback already confirmed we were the top-most hit
-        collapsed = !collapsed;
-        content->set_hidden(collapsed);
-        layout();
-    }
-
-
-};//end Section
-
-
-
-
-#endif //CS370_FA26_SECTION_H
+#endif

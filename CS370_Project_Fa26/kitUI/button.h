@@ -1,65 +1,27 @@
-//
-// Created by ethan on 11/2/2026.
-//
-
 #ifndef CS370_FA26_BUTTON_H
 #define CS370_FA26_BUTTON_H
 
 #include "widget.h"
+#include "hud.h"
 #include <functional>
 #include <string>
-#include <utility>
+#include "../common/vmath.h"
 
-struct Button;
-
-//Button widget for interactivity
 struct Button : Widget {
-    string label;
+    std::string label;
     float textSize = HUD_FONT;
     std::function<void()> on_press;
-    vec4 color = HUD_BUTTON;
-    vec4 highlightedColor = HUD_HIGHLIGHTED;
+    vmath::vec4 color = HUD_BUTTON;
+    vmath::vec4 highlightedColor = HUD_HIGHLIGHTED;
+    bool enabled = true;
 
-    //constructor
-    Button(const float w, const float h, string  label = "" )
-    :Widget(w, h), label(std::move(label)) {
-        fit();
-        if (prefW <= 0.0f) prefW = w;   // explicit size, no label
-        if (prefH <= 0.0f) prefH = h;
-    }
+    Button(float w, float h, std::string label = "");
+    void set_label(const std::string& newLabel);
+    void set_enabled(bool newEnabled);
+    void fit(const RenderContext& ctx);
 
-    void set_label(const string &newLabel) {
-        label = newLabel;
-        fit();
-    }
+    void draw_self(const RenderContext& ctx) override;
+    void on_click(float mx, float my) override;
+};
 
-    void fit() {
-        if (!label.empty()) {
-            w = text_width(label, textSize) + HUD_PAD_X * 2.0f;
-            if (w < 48.0f) w = 48.0f;
-            h = textSize + HUD_PAD_Y * 2.0f + 4.0f;
-            prefW = w;
-            prefH = h;
-        }
-    }
-
-    void draw_self() override {
-        modelMatrix = mat4::identity();
-        mat4 transMatrix = mat4::identity();
-
-
-        const mat4 scaleMatrix = scale(w, h, 1.0f);
-        transMatrix = translate(x, static_cast<float>(hh) - h - y, 0.0f);//move to top left for more intuitive positioning increase in y goes down
-        modelMatrix = transMatrix * scaleMatrix;
-        draw_solid_hud_quad(hovered ? highlightedColor: color);
-
-        draw_string(label, x + HUD_PAD_X, y + HUD_PAD_Y, textSize);
-    }
-
-    void on_click(float mx, float my) override {
-        if (on_press) on_press();
-    }
-
-};//end Button
-
-#endif //CS370_FA26_BUTTON_H
+#endif // CS370_FA26_BUTTON_H

@@ -110,7 +110,6 @@ set(COMMON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widgets.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/hud.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/widget.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/text.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/panel.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/button.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../kitUI/textfield.h
@@ -148,6 +147,20 @@ set(COMMON_FILES
         ../nodes/appearance.cpp
         ../kitUI/widget.cpp
         ../kitUI/hud.cpp
+        ../kitUI/button.cpp
+        ../kitUI/rendercontext.cpp
+        ../kitUI/rendercontext.h
+        ../kitUI/canvas.cpp
+        ../kitUI/dropdown.cpp
+        ../kitUI/filebrowser.cpp
+        ../kitUI/label.cpp
+        ../kitUI/panel.cpp
+        ../kitUI/scrollpanel.cpp
+        ../kitUI/section.cpp
+        ../kitUI/textfield.cpp
+        ../kitUI/layout.h
+        ../kitUI/gridlayout.cpp
+        ../kitUI/gridlayout.h
 
 
 )

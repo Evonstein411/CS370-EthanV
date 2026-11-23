@@ -39,10 +39,17 @@ public:
     bool character(unsigned int codepoint);
     bool key(int key, int action);
 
+    void set_screen_size(int w, int h);
+    int get_screen_width();
+    int get_screen_height();
+
 
 
 private:
     HUD() = default;
+
+    int screenW = 0;
+    int screenH = 0;
 
     std::vector<Widget*> widgets;
     std::vector<Widget*> trash;
@@ -53,8 +60,12 @@ private:
 
     Widget* find_topmost(Widget* w, float mx, float my);
     Widget* find_topmost_widget(float mx, float my);
+
     void begin_event();
     void end_event();
+
+    void begin_hud_pass() const;
+    void end_hud_pass() const;
 
 };
 

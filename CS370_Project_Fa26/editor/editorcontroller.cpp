@@ -137,6 +137,7 @@ void EditorController::handle_char(unsigned int codepoint) {
 
 void EditorController::handle_resize(int width, int height) {
     glViewport(0, 0, width, height);
+    HUD::instance().set_screen_size(width, height);
 }
 
 void EditorController::select_node(SceneNode* node) {

@@ -4,6 +4,15 @@
 #include <vector>
 #include <functional>
 
+#include "rendercontext.h"
+
+enum class Alignment {
+    START,
+    CENTER,
+    END,
+    STRETCH
+};
+
 
 struct Widget {
     float x = 0, y = 0, w = 0, h = 0;
@@ -24,8 +33,11 @@ struct Widget {
     explicit Widget(float w, float h);
     virtual ~Widget();
 
-    virtual void draw_self() = 0;
-    virtual void draw_after() {}
+    void draw(const RenderContext& ctx);
+    virtual void draw_self(const RenderContext& ctx) = 0;
+    virtual void draw_children(const RenderContext& ctx);
+    virtual void draw_after(const RenderContext& ctx) {}
+
 
     virtual void on_char(unsigned int) {}
     virtual void on_key(int key, int action) {}
@@ -33,8 +45,6 @@ struct Widget {
     virtual void on_hover(float mx, float my) {}
 
     virtual bool hit(float mx, float my) const;
-    virtual void draw_children();
-    void draw();
 
     void mark_for_delete();
     virtual void on_drag(float mx, float my);

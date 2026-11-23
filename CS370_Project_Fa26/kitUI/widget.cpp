@@ -25,16 +25,16 @@ bool Widget::hit(float mx, float my) const {
     return mx >= x && mx <= x + w && my >= y && my <= y + h;
 }
 
-void Widget::draw_children() {
+void Widget::draw_children(const RenderContext& ctx) {
     for (Widget* c : children)
-        if (c) c->draw();
+        if (c) c->draw(ctx);
 }
 
-void Widget::draw() {
+void Widget::draw(const RenderContext& ctx) {
     if (hidden || is_effectively_hidden()) return;
-    draw_self();
-    draw_children();
-    draw_after();
+    draw_self(ctx);
+    draw_children(ctx);
+    draw_after(ctx);
 }
 
 void Widget::mark_for_delete() {
