@@ -103,10 +103,9 @@ bool MeshComponent::read_field(const std::string& key, std::istream& iss) {
 }
 
 void MeshComponent::on_loaded() {
-    if (appearance.mode != DrawMode::Texture || appearance.textureName.empty())
-        return;
-
-    const int idx = find_texture(appearance.textureName);
-    appearance.texture = (idx >= 0) ? TextureIDs[idx] : TextureIDs[0]; // blank
+    if (appearance.mode == DrawMode::Texture && !appearance.textureName.empty()) {
+        const int idx = find_texture(appearance.textureName);
+        appearance.texture = (idx >= 0) ? TextureIDs[idx] : TextureIDs[0];
+    }
     appearance.build(mesh);
 }

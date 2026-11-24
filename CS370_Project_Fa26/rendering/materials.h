@@ -2,6 +2,7 @@
 #define MATERIALS_H
 
 #include <vector>
+#include "../common/GLFWutils.h"
 
 //copy of materialProperties from lighting.h change later for more functionality
 struct Material {

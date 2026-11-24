@@ -31,9 +31,9 @@ void EditorController::handle_key(int key, int action, int mods) {
 }
 
 void EditorController::handle_mouse_button(int button, int action, double x, double y) {
-    float mx, my;
-    // you may still want cursor_to_framebuffer here or move it in
-    // for now assuming x/y are already in the space you need, or call the helper
+    float mx = static_cast<float>(x);
+    float my = static_cast<float>(y);
+
 
     if (HUD::instance().mouse_button(mx, my, button, action)) return;
 
@@ -56,8 +56,9 @@ void EditorController::handle_mouse_button(int button, int action, double x, dou
 }
 
 void EditorController::handle_cursor(double x, double y) {
-    float mx, my;
-    // cursor_to_framebuffer(...) if needed
+    float mx = static_cast<float>(x);
+    float my = static_cast<float>(y);
+
     HUD::instance().cursor(mx, my);
 
     if (rightMouseDown) {
@@ -165,7 +166,11 @@ void EditorController::handle_camera_keys(int key, int action) {
 }
 
 void EditorController::handle_selection_click(double x, double y) {
-    HitResult hit = view.pick(model, static_cast<float>(x), static_cast<float>(y));
+    HitResult hit = view.pick(model, static_cast<float>(x), HUD::instance().get_screen_height()-static_cast<float>(y));
+    printf("pick: node=%p  gizmo=%d  name=%s\n",
+           (void*)hit.node,
+           static_cast<int>(hit.gizmo),
+           hit.node ? hit.node->name.c_str() : "(null)");
 
     if (hit.gizmo != GizmoAxis::NONE) {
         model.set_active_gizmo(hit.gizmo);
@@ -189,4 +194,40 @@ void EditorController::update_ortho_eye() {
     float y = r * cos(vmath::deg2rad(el));
     float z = r * cos(vmath::deg2rad(az)) * sin(vmath::deg2rad(el));
     cam.set_eye(vmath::vec3(x, y, z));
+}
+
+void EditorController::handle_ortho_keys(int key, int action) {
+    if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
+    Camera& cam = model.get_active_camera();
+    const float step = 2.0f;
+
+    if (key == GLFW_KEY_W || key == GLFW_KEY_UP)   cam.add_elevation(-step);
+    if (key == GLFW_KEY_S || key == GLFW_KEY_DOWN) cam.add_elevation(step);
+    if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) cam.add_azimuth(-step);
+    if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) cam.add_azimuth(step);
+
+    float el = cam.get_elevation();
+    if (el > 179.0f) cam.set_elevation(179.0f);
+    if (el < 1.0f)   cam.set_elevation(1.0f);
+    update_ortho_eye();
+}
+
+void EditorController::handle_perspective_keys(int key, int action) {
+    if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
+    Camera& cam = model.get_active_camera();
+    const float step = 0.25f;
+    const float turn = 2.0f;
+
+    if (key == GLFW_KEY_LEFT)  cam.add_azimuth(-turn);
+    if (key == GLFW_KEY_RIGHT) cam.add_azimuth(turn);
+    if (key == GLFW_KEY_UP)    cam.add_elevation(turn);
+    if (key == GLFW_KEY_DOWN)  cam.add_elevation(-turn);
+
+    if (key == GLFW_KEY_W) cam.move_forward(step);
+    if (key == GLFW_KEY_S) cam.move_forward(-step);
+    if (key == GLFW_KEY_A) cam.move_right(step);
+    if (key == GLFW_KEY_D) cam.move_right(-step);
+
+    if (key == GLFW_KEY_SPACE)        cam.set_eye(cam.get_eye() + vmath::vec3(0, step, 0));
+    if (key == GLFW_KEY_LEFT_CONTROL) cam.set_eye(cam.get_eye() + vmath::vec3(0, -step, 0));
 }

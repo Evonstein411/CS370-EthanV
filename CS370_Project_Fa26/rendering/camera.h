@@ -40,6 +40,9 @@ public:
     void set_radius(float r);          // mainly used by ortho
     float get_radius() const;
 
+    void move_forward(float distance);
+    void move_right(float distance);
+
     void add_azimuth(float delta);
     void add_elevation(float delta);
 

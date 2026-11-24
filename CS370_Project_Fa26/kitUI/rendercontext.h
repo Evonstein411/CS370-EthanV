@@ -6,8 +6,9 @@
 #define CS370_FA26_RENDERCONTEXT_H
 
 #include "../common/vmath.h"
-#include "hud.h"
 #include <string>
+
+#include "theme.h"
 
 
 struct RenderContext {

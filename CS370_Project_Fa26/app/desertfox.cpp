@@ -5,6 +5,10 @@
 #include "editor/editorui.h"
 #include "editor/callbacks.h"
 
+DesertFox::DesertFox()
+    : renderer(sceneModel)
+    , controller(sceneModel, renderer) {}
+
 
 bool DesertFox::initialize() {
     window = CreateWindow("Desert Fox", width, height);

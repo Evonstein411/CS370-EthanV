@@ -11,6 +11,9 @@
 #include "../nodes/meshcomponent.h"
 #include "../nodes/lightcomponent.h"
 
+Renderer::Renderer(SceneModel& model)
+    : editorUI(model) {}
+
 void Renderer::initialize(int width, int height) {
     // Create geometry buffers
     build_geometry();
@@ -21,6 +24,7 @@ void Renderer::initialize(int width, int height) {
     create_outline_fbo(width, height);
 
     //ui
+    HUD::instance().set_screen_size(width, height);
     editorUI.init();
 
     //open gl state
@@ -39,7 +43,6 @@ void Renderer::resize(int width, int height) {
 
 void Renderer::render(SceneModel& model, int width, int height) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     //get camera setup
     Camera& camera = model.get_active_camera();
     camera.update_matrices(width, height);
@@ -52,7 +55,7 @@ void Renderer::render(SceneModel& model, int width, int height) {
     draw_selection_outline(model, camera, width, height);
     draw_translation_gizmo(model, camera, model.get_active_gizmo());
     //ui
-    editorUI.update();//update fields
+    editorUI.update();// model -> fields
     HUD::instance().draw(); //draw widgets
 
     glFlush();
@@ -63,9 +66,8 @@ void Renderer::draw_scene(const SceneModel& model) {
     if (!scene) return;
     const Camera camera = model.get_active_camera();
 
-    scene->for_each([this, camera](SceneNode* node) {
+    scene->for_each([&](SceneNode* node) {
         if (!node || !node->enabled) return;
-
         if (auto* mesh = node->get_component<MeshComponent>()) {
             draw_mesh(mesh, node->get_world_matrix(), camera);
         }
@@ -73,6 +75,7 @@ void Renderer::draw_scene(const SceneModel& model) {
             // upload light or draw gizmo later
         }
     });
+
 }
 
 void Renderer::draw_mesh(const MeshComponent* mesh, const mat4& modelMatrix, Camera camera) {
@@ -118,7 +121,7 @@ void Renderer::draw_selection_outline(const SceneModel& model, const Camera& cam
     if (!selected) return;
     if (!selected->get_component<MeshComponent>()) return;   // only outline meshes for now
 
-    const auto* meshComponent = dynamic_cast<const MeshComponent*>(selected);
+    const auto* meshComponent = selected->get_component<MeshComponent>();
     if (!meshComponent || meshComponent->mesh == static_cast<GLuint>(-1)) return;
 
     GLuint mesh = meshComponent->mesh;
@@ -208,7 +211,7 @@ void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& cam
     glEnable(GL_DEPTH_TEST);
 }
 
-HitResult Renderer::pick(const SceneModel& model, float mx, float my) {
+HitResult Renderer::pick(SceneModel &model, float mx, float my) {
     HitResult result;
 
     const Camera& cam = model.get_active_camera();
@@ -232,6 +235,7 @@ HitResult Renderer::pick(const SceneModel& model, float mx, float my) {
         });
     }
 
+    printf("colorProgram: %u\n", colorProgram);
     glUseProgram(colorProgram);
     glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, proj);
     glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, view);
@@ -250,22 +254,29 @@ HitResult Renderer::pick(const SceneModel& model, float mx, float my) {
         glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vmath::vec4),
                      colors.data(), GL_DYNAMIC_DRAW);
 
-        // draw the mesh with the pick color (same vertex attrib setup as before)
-        glBindVertexArray(VAOs[meshComp->mesh]);
-        glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[meshComp->mesh][PosBuffer]);
-        glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(colorVPos);
 
-        glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
-        glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(colorVCol);
-
-        glDrawArrays(GL_TRIANGLES, 0, numVertices[meshComp->mesh]);
+        draw_picking_object(meshComp->mesh, pickColorBuf, proj, view, modelMat);
     }
 
     // gizmo pass (same logic as the old hitdetection, using local proj/view)
     if (SceneNode* selected = model.get_selected(); selected && gizmoArrowVAO != 0) {
-        // ... draw the three arrows with GIZMO_X/Y/Z ids ...
+        glDisable(GL_DEPTH_TEST);
+
+        constexpr float size = 0.75f;
+        constexpr float length = 1.0f;
+        constexpr float offset = length * 2.0f;
+
+        // world position of the selected node
+        vec4 col = selected->get_world_matrix()[3];
+        const mat4 trans = translate(vec3(col[0], col[1], col[2]));
+        const mat4 transOffset = translate(0.0f, offset, 0.0f);
+        const mat4 scale = vmath::scale(size, length, size);
+
+        mat4 rotate = vmath::rotate(90.0f, vec3(0,0,1));
+        draw_pick_arrow(pickColorBuf, proj, view, trans * rotate * transOffset * scale, GizmoAxis::X);
+        draw_pick_arrow(pickColorBuf, proj, view, trans * transOffset * scale, GizmoAxis::Y);
+        rotate = vmath::rotate(-90.0f, vec3(1,0,0));
+        draw_pick_arrow(pickColorBuf, proj, view, trans * rotate * transOffset * scale, GizmoAxis::Z);
     }
 
     unsigned char pixel[4];
@@ -284,11 +295,57 @@ HitResult Renderer::pick(const SceneModel& model, float mx, float my) {
         result.node = pickables[index - 1];
     }
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+    render(model, HUD::instance().get_screen_width(), HUD::instance().get_screen_height());
     return result;
 }
 
+void Renderer::draw_picking_object(GLuint mesh, GLuint colorBuffer, mat4 projMatrix, mat4 cameraMatrix, mat4 modelMatrix) {
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
 
-static vmath::vec4 index_to_color(int i) {
+    glBindVertexArray(VAOs[mesh]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[mesh][PosBuffer]);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorVPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorVCol);
+
+    glDrawArrays(GL_TRIANGLES, 0, numVertices[mesh]);
+}
+
+void Renderer::draw_pick_arrow(GLuint pickColorBuf, mat4 projMatrix, mat4 cameraMatrix, mat4 modelMatrix, GizmoAxis id) {
+    vec4 c = index_to_color(static_cast<int>(id));
+
+    vector<vec4> colors(gizmoArrowNumVerts, c);
+    glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec4), colors.data(), GL_DYNAMIC_DRAW);
+
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc,  1, GL_FALSE, projMatrix);
+    glUniformMatrix4fv(colorCamMatLoc,   1, GL_FALSE, cameraMatrix);
+    glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMatrix);
+
+    glBindVertexArray(gizmoArrowVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gizmoArrowPosBuffer);
+    glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorVPos);
+
+    glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+    glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorVCol);
+
+    glDrawArrays(GL_TRIANGLES, 0, gizmoArrowNumVerts);
+};
+
+
+vmath::vec4 Renderer::index_to_color(int i) {
     return {
         ((i & 0xFF)      ) / 255.0f,
         ((i >> 8) & 0xFF ) / 255.0f,
@@ -297,6 +354,6 @@ static vmath::vec4 index_to_color(int i) {
     };
 }
 
-static int color_to_index(unsigned char r, unsigned char g, unsigned char b) {
+int Renderer::color_to_index(unsigned char r, unsigned char g, unsigned char b) {
     return r | (g << 8) | (b << 16);
 }

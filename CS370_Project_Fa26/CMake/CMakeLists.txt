@@ -161,6 +161,9 @@ set(COMMON_FILES
         ../kitUI/gridlayout.cpp
         ../kitUI/gridlayout.h
         ../editor/property.h
+        ../rendering/gizmo.h
+        ../kitUI/theme.h
+        ../nodes/lightcomponent.cpp
 
 
 )

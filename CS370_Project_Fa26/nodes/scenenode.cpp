@@ -3,6 +3,9 @@
 #include <iostream>
 #include <algorithm>
 
+SceneNode::SceneNode(std::string name)
+    : name(std::move(name)) {}
+
 SceneNode::~SceneNode() {
     if (parent)
         parent->remove_child(this);

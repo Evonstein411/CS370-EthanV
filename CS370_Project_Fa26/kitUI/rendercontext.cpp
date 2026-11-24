@@ -96,12 +96,9 @@ void RenderContext::draw_string(const std::string& text,
         penX     = startX + (penX - startX) * scale;
         baseline = startBase;
 
-        const float top = screen_height() - gy0;
-        const float bot = screen_height() - gy1;
-
         const vmath::vec4 pos[6] = {
-            {gx0, top, 0, 1}, {gx1, top, 0, 1}, {gx1, bot, 0, 1},
-            {gx0, top, 0, 1}, {gx1, bot, 0, 1}, {gx0, bot, 0, 1}
+            {gx0, gy0, 0, 1}, {gx1, gy0, 0, 1}, {gx1, gy1, 0, 1},
+            {gx0, gy0, 0, 1}, {gx1, gy1, 0, 1}, {gx0, gy1, 0, 1}
         };
         const vmath::vec2 uv[6] = {
             {q.s0, q.t0}, {q.s1, q.t0}, {q.s1, q.t1},
@@ -114,10 +111,28 @@ void RenderContext::draw_string(const std::string& text,
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uv), uv);
 
         vmath::mat4 model = vmath::mat4::identity();
+
+        glUseProgram(hudProgram);
+
+        glUniformMatrix4fv(hudProjMatLoc, 1, GL_FALSE, projMatrix);
+        glUniformMatrix4fv(hudCameraMatLoc, 1, GL_FALSE, cameraMatrix);
         glUniformMatrix4fv(hudModelMatLoc, 1, GL_FALSE, model);
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, fontTextureID);
+
         glBindVertexArray(HUD_VAOs[HUDTextQuad]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][PosBuffer]);
+        glVertexAttribPointer(hudVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(hudVPos);
+
+        glBindBuffer(GL_ARRAY_BUFFER, HUD_ObjBuffers[HUDTextQuad][TexBuffer]);
+        glVertexAttribPointer(hudVTex, texCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(hudVTex);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
     }
 }
 

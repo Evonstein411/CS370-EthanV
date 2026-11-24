@@ -7,6 +7,8 @@
 #include "geometry.h"
 #include <vector>
 
+#include "camera.h"
+
 
 inline GLuint dynamicHUDColorBuffer = 0;
 inline GLuint highlightColorBuffer = 0;

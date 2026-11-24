@@ -111,3 +111,32 @@ const vmath::mat4& Camera::get_proj_matrix() const {
 const vmath::mat4& Camera::get_view_matrix() const {
     return viewMatrix;
 }
+
+void Camera::move_forward(float distance) {
+    float yaw   = vmath::deg2rad(azimuth);
+    float pitch = vmath::deg2rad(elevation);
+
+    vmath::vec3 forward(
+        cosf(yaw) * cosf(pitch),
+        sinf(pitch),
+        sinf(yaw) * cosf(pitch)
+    );
+    forward = vmath::normalize(forward);
+
+    eye    += forward * distance;
+    center += forward * distance;
+}
+
+void Camera::move_right(float distance) {
+    float yaw = vmath::deg2rad(azimuth);
+
+    vmath::vec3 right(
+        sinf(yaw),
+        0.0f,
+        -cosf(yaw)
+    );
+    right = vmath::normalize(right);
+
+    eye    += right * distance;
+    center += right * distance;
+}

@@ -13,7 +13,7 @@
 
 class DesertFox {
 public:
-    DesertFox() = default;
+    DesertFox();
     ~DesertFox();
 
     bool initialize();
@@ -25,7 +25,7 @@ private:
 
     SceneModel sceneModel;
     Renderer renderer;
-    EditorController controller{sceneModel, renderer};
+    EditorController controller;
     Callbacks callbacks;
 
     int width = 1640;

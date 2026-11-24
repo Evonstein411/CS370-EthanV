@@ -9,8 +9,16 @@
 
 SceneModel::SceneModel() {
     // optional: set distinct starting positions if you want
-    orthoCamera.set_eye({3.0f, 3.0f, 3.0f});
-    orthoCamera.set_radius(17.5f);
+    float az = orthoCamera.get_azimuth();
+    float el = orthoCamera.get_elevation();
+    float r  = orthoCamera.get_radius();
+
+    float x = r * sin(vmath::deg2rad(az)) * sin(vmath::deg2rad(el));
+    float y = r * cos(vmath::deg2rad(el));
+    float z = r * cos(vmath::deg2rad(az)) * sin(vmath::deg2rad(el));
+    orthoCamera.set_eye({x, y, z});
+    orthoCamera.set_center({0, 0, 0});
+
 
     perspectiveCamera.set_eye({0.0f, 2.0f, 10.0f});
     perspectiveCamera.set_azimuth(0.0f);

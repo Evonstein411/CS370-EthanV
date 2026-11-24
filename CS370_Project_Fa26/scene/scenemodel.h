@@ -8,7 +8,7 @@
 #include "scenemanager.h"
 #include "../nodes/scenenode.h"
 #include "../rendering/camera.h"
-#include "../rendering/renderer.h"
+#include "rendering/gizmo.h"
 
 class SceneModel {
 public:

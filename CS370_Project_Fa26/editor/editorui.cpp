@@ -45,12 +45,12 @@ void EditorUI::init() {
     topbar->add(cameraModeButton, 4, 0);
 
     // scene graph
-    sceneGraphSection = new Section(220.0f, 0.0f, "Scene Graph");
+    sceneGraphSection = new Section(HUD::instance().get_screen_width()-220.0f, 75.0f, 220.0f, 0.0f, "Scene Graph");
     sceneGraphPanel = new Panel(200.0f, 0.0f);
     sceneGraphSection->add(sceneGraphPanel);
 
     // properties
-    propertiesPanel = new Panel(320.0f, 0.0f);
+    propertiesPanel = new Panel(0.0f, 75.0f, 320.0f, 0.0f);
 
     auto* objectSection = new Section(300.0f, 0.0f, "Object");
     propertiesPanel->add(objectSection, 0, 0);
