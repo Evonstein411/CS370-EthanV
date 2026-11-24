@@ -2,7 +2,7 @@
 //includes
 #include "desertfox.h"
 #include "scene/scenemodel.h"
-#include "editor/ui.h"
+#include "editor/editorui.h"
 #include "editor/callbacks.h"
 
 

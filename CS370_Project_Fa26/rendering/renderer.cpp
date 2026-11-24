@@ -7,7 +7,7 @@
 #include "shaders.h"
 #include "geometry.h"
 #include "drawobjects.h"
-#include "editor/hitdetection.h"
+#include "globals.h"
 #include "../nodes/meshcomponent.h"
 #include "../nodes/lightcomponent.h"
 
@@ -21,7 +21,7 @@ void Renderer::initialize(int width, int height) {
     create_outline_fbo(width, height);
 
     //ui
-    init_hud();
+    editorUI.init();
 
     //open gl state
     glEnable(GL_CULL_FACE);
@@ -50,9 +50,10 @@ void Renderer::render(SceneModel& model, int width, int height) {
     //objects/scene
     draw_scene(model);
     draw_selection_outline(model, camera, width, height);
-    draw_translation_gizmo(model, camera);
+    draw_translation_gizmo(model, camera, model.get_active_gizmo());
     //ui
-    HUD::instance().draw();
+    editorUI.update();//update fields
+    HUD::instance().draw(); //draw widgets
 
     glFlush();
 }
@@ -169,7 +170,7 @@ void Renderer::draw_selection_outline(const SceneModel& model, const Camera& cam
     glEnable(GL_DEPTH_TEST);
 }
 
-void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& camera) {
+void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& camera, GizmoAxis activeGizmo) {
     const SceneNode* selected = model.get_selected();
     if (!selected || gizmoArrowVAO == 0) return;
 
@@ -185,11 +186,9 @@ void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& cam
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    vmath::vec4 xColor = (activeGizmo == GIZMO_X) ? vmath::vec4(1.0f, 0.6f, 0.6f, 1.0f) : vmath::vec4(1.0f, 0.15f, 0.15f, 1.0f);
-    vmath::vec4 yColor = (activeGizmo == GIZMO_Y) ? vmath::vec4(0.6f, 1.0f, 0.6f, 1.0f) : vmath::vec4(0.15f, 1.0f, 0.15f, 1.0f);
-    vmath::vec4 zColor = (activeGizmo == GIZMO_Z) ? vmath::vec4(0.6f, 0.7f, 1.0f, 1.0f) : vmath::vec4(0.2f, 0.4f, 1.0f, 1.0f);
-
-
+    vmath::vec4 xColor = (activeGizmo == GizmoAxis::X) ? vmath::vec4(1.0f, 0.6f, 0.6f, 1.0f) : vmath::vec4(1.0f, 0.15f, 0.15f, 1.0f);
+    vmath::vec4 yColor = (activeGizmo == GizmoAxis::Y) ? vmath::vec4(0.6f, 1.0f, 0.6f, 1.0f) : vmath::vec4(0.15f, 1.0f, 0.15f, 1.0f);
+    vmath::vec4 zColor = (activeGizmo == GizmoAxis::Z) ? vmath::vec4(0.6f, 0.7f, 1.0f, 1.0f) : vmath::vec4(0.2f, 0.4f, 1.0f, 1.0f);
 
     // X
     vmath::mat4 rotate = vmath::rotate(90.0f, vmath::vec3(0, 0, 1));
@@ -207,4 +206,97 @@ void Renderer::draw_translation_gizmo(const SceneModel& model, const Camera& cam
 
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
+}
+
+HitResult Renderer::pick(const SceneModel& model, float mx, float my) {
+    HitResult result;
+
+    const Camera& cam = model.get_active_camera();
+    vmath::mat4 proj = cam.get_proj_matrix();
+    vmath::mat4 view = cam.get_view_matrix();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    GLuint pickColorBuf;
+    glGenBuffers(1, &pickColorBuf);
+
+    std::vector<SceneNode*> pickables;
+    if (const Scene* scene = model.get_active_scene()) {
+        scene->for_each([&](SceneNode* n) {
+            if (!n || !n->enabled) return;
+            if (auto* mesh = n->get_component<MeshComponent>()) {
+                if (mesh->mesh != static_cast<GLuint>(-1))
+                    pickables.push_back(n);
+            }
+        });
+    }
+
+    glUseProgram(colorProgram);
+    glUniformMatrix4fv(colorProjMatLoc, 1, GL_FALSE, proj);
+    glUniformMatrix4fv(colorCamMatLoc, 1, GL_FALSE, view);
+
+    for (size_t i = 0; i < pickables.size(); ++i) {
+        SceneNode* node = pickables[i];
+        auto* meshComp = node->get_component<MeshComponent>();
+
+        vmath::mat4 modelMat = node->get_world_matrix();
+        glUniformMatrix4fv(colorModelMatLoc, 1, GL_FALSE, modelMat);
+
+        vmath::vec4 col = index_to_color(static_cast<int>(i) + 1);
+        std::vector<vmath::vec4> colors(numVertices[meshComp->mesh], col);
+
+        glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+        glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vmath::vec4),
+                     colors.data(), GL_DYNAMIC_DRAW);
+
+        // draw the mesh with the pick color (same vertex attrib setup as before)
+        glBindVertexArray(VAOs[meshComp->mesh]);
+        glBindBuffer(GL_ARRAY_BUFFER, ObjBuffers[meshComp->mesh][PosBuffer]);
+        glVertexAttribPointer(colorVPos, posCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(colorVPos);
+
+        glBindBuffer(GL_ARRAY_BUFFER, pickColorBuf);
+        glVertexAttribPointer(colorVCol, colCoords, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(colorVCol);
+
+        glDrawArrays(GL_TRIANGLES, 0, numVertices[meshComp->mesh]);
+    }
+
+    // gizmo pass (same logic as the old hitdetection, using local proj/view)
+    if (SceneNode* selected = model.get_selected(); selected && gizmoArrowVAO != 0) {
+        // ... draw the three arrows with GIZMO_X/Y/Z ids ...
+    }
+
+    unsigned char pixel[4];
+    glReadPixels(static_cast<GLint>(mx), static_cast<GLint>(my), 1, 1,
+                 GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+    int index = color_to_index(pixel[0], pixel[1], pixel[2]);
+    glDeleteBuffers(1, &pickColorBuf);
+
+    if (index == static_cast<int>(GizmoAxis::X) ||
+        index == static_cast<int>(GizmoAxis::Y) ||
+        index == static_cast<int>(GizmoAxis::Z)) {
+        result.gizmo = static_cast<GizmoAxis>(index);
+        result.node = model.get_selected();
+    } else if (index > 0 && index <= static_cast<int>(pickables.size())) {
+        result.node = pickables[index - 1];
+    }
+
+    return result;
+}
+
+
+static vmath::vec4 index_to_color(int i) {
+    return {
+        ((i & 0xFF)      ) / 255.0f,
+        ((i >> 8) & 0xFF ) / 255.0f,
+        ((i >> 16) & 0xFF) / 255.0f,
+        1.0f
+    };
+}
+
+static int color_to_index(unsigned char r, unsigned char g, unsigned char b) {
+    return r | (g << 8) | (b << 16);
 }

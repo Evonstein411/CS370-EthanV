@@ -9,6 +9,7 @@
 #include "hud.h"
 #include <string>
 
+
 struct RenderContext {
     int screenWidth  = 0;
     int screenHeight = 0;

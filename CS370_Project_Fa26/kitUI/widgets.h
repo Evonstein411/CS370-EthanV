@@ -2,7 +2,6 @@
 #define KITUI_WIDGETS_H
 
 #include "widget.h"       // base + globals
-#include "text.h"
 #include "canvas.h"
 #include "panel.h"
 #include "button.h"

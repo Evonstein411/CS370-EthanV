@@ -13,6 +13,10 @@ SceneNode::~SceneNode() {
     children.clear();
 }
 
+void SceneNode::set_component(std::unique_ptr<Component> c) {
+    component = std::move(c);
+}
+
 vmath::mat4 SceneNode::get_local_matrix() const {
     const vmath::mat4 T  = translate(position);
     const vmath::mat4 Rx = vmath::rotate(rotation[0], vmath::vec3(1.0f, 0.0f, 0.0f));

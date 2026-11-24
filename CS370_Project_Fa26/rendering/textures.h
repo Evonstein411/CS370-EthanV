@@ -2,6 +2,7 @@
 #define TEXTURE_H
 
 #include <string>
+#include <vector>
 #include <filesystem>
 #include "../common/textureutils.h"
 
@@ -13,8 +14,8 @@ namespace fs = std::filesystem;
 // Textures
 enum Textures {Blank};
 
-inline vector<string> textureNames;
-inline vector<GLuint> TextureIDs;
+inline std::vector<std::string> textureNames;
+inline std::vector<GLuint> TextureIDs;
 inline GLuint fontTextureID = 0;
 
 inline stbtt_bakedchar glyphs[96];
@@ -24,7 +25,7 @@ void build_font();
 void build_textures();
 void scan_textures(const std::string& folder = "../assets/textures");
 
-inline int add_texture_file(const string& path) {
+inline int add_texture_file(const std::string& path) {
     if (path.empty() || !fs::exists(path))
         return -1;
 

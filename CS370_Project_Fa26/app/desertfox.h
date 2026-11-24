@@ -25,7 +25,7 @@ private:
 
     SceneModel sceneModel;
     Renderer renderer;
-    EditorController controller{sceneModel};
+    EditorController controller{sceneModel, renderer};
     Callbacks callbacks;
 
     int width = 1640;

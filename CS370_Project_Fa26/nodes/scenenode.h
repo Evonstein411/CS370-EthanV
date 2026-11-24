@@ -19,6 +19,8 @@ struct SceneNode {
     std::vector<SceneNode*> children;
     std::unique_ptr<Component> component;
 
+    explicit SceneNode(std::string name = "");
+
     virtual ~SceneNode();
 
     vmath::mat4 get_local_matrix() const;
@@ -32,6 +34,8 @@ struct SceneNode {
 
     virtual void on_select() {}
     virtual void update(float dt) {}
+
+    void set_component(std::unique_ptr<Component> c);
 
     template<typename T>
     T* get_component() {

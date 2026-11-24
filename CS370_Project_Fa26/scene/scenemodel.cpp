@@ -83,6 +83,19 @@ void SceneModel::clear_selection() {
     sceneManager.set_selected(nullptr);
 }
 
+void SceneModel::remove_selected() {
+    remove_node(sceneManager.get_selected());
+
+}
+
+void SceneModel::remove_node(SceneNode* node) {
+    if (!node) return;
+    if (Scene* scene = get_active_scene())
+        scene->remove_root(node);
+    if (sceneManager.get_selected() == node)
+        sceneManager.set_selected(nullptr);
+}
+
 SceneManager& SceneModel::get_scene_manager() {
     return sceneManager;
 }

@@ -3,9 +3,11 @@
 
 #include "../scene/scenemodel.h"
 #include "../nodes/meshcomponent.h"
-
 #include <string>
 #include "../kitUI/hud.h"
+#include "../kitUI/widgets.h"
+#include "property.h"
+
 
 class EditorUI {
 public:
@@ -14,7 +16,7 @@ public:
 
     void init();
     void update();      // pull from model → fields
-    void render();
+    void apply();       // fields → model
 
     // commands (called by buttons or EditorController)
     void select_node(SceneNode* node);
@@ -32,8 +34,11 @@ public:
 
 private:
     SceneModel& model;
+    int selectedMesh = -1;
+    int selectedType = -1;
+    int selectedTexture = -1;
+    int selectedDrawMode = 0;
 
-    // top level
     Canvas* root = nullptr;
     Panel* topbar = nullptr;
     Panel* sceneGraphPanel = nullptr;
@@ -47,75 +52,46 @@ private:
     Button* cameraModeButton = nullptr;
     Button* lightButton = nullptr;
 
-    // scene graph
     Section* sceneGraphSection = nullptr;
 
-    // properties – always visible
-    TextField<std::string>* nameField = nullptr;
+    // properties
+    StringProperty* nameProperty = nullptr;
     Dropdown* meshDropdown = nullptr;
-
-    // appearance mode
     Dropdown* drawModeDropdown = nullptr;
 
-    // material section
     Section* materialSection = nullptr;
-    TextField<float>* ambientR = nullptr;
-    TextField<float>* ambientG = nullptr;
-    TextField<float>* ambientB = nullptr;
-    TextField<float>* ambientA = nullptr;
-    TextField<float>* diffuseR = nullptr;
-    TextField<float>* diffuseG = nullptr;
-    TextField<float>* diffuseB = nullptr;
-    TextField<float>* diffuseA = nullptr;
-    TextField<float>* specularR = nullptr;
-    TextField<float>* specularG = nullptr;
-    TextField<float>* specularB = nullptr;
-    TextField<float>* specularA = nullptr;
-    TextField<float>* shininessField = nullptr;
+    Vec4Property* ambientProperty = nullptr;
+    Vec4Property* diffuseProperty = nullptr;
+    Vec4Property* specularProperty = nullptr;
+    FloatProperty* shininessProperty = nullptr;
 
-    // solid color section
     Section* colorSection = nullptr;
-    TextField<float>* colorR = nullptr;
-    TextField<float>* colorG = nullptr;
-    TextField<float>* colorB = nullptr;
-    TextField<float>* colorA = nullptr;
+    Vec4Property* colorProperty = nullptr;
 
-    // texture section
     Section* textureSection = nullptr;
     Dropdown* textureDropdown = nullptr;
     Button* addTextureButton = nullptr;
 
-    // transform section
     Section* transformSection = nullptr;
-    TextField<float>* posX = nullptr;
-    TextField<float>* posY = nullptr;
-    TextField<float>* posZ = nullptr;
-    TextField<float>* rotX = nullptr;
-    TextField<float>* rotY = nullptr;
-    TextField<float>* rotZ = nullptr;
-    TextField<float>* scaleX = nullptr;
-    TextField<float>* scaleY = nullptr;
-    TextField<float>* scaleZ = nullptr;
+    Vec3Property* posProperty = nullptr;
+    Vec3Property* rotProperty = nullptr;
+    Vec3Property* scaleProperty = nullptr;
 
-    // file browsers
     FileBrowser* sceneBrowser = nullptr;
     FileBrowser* meshBrowser = nullptr;
     FileBrowser* textureBrowser = nullptr;
 
-    // save dialog
-    TextField<std::string>* saveNameField = nullptr;
+    StringProperty* saveNameProperty = nullptr;
     Button* confirmSaveButton = nullptr;
     Button* cancelSaveButton = nullptr;
 
-    // internal
     void sync_to_fields(SceneNode* node);
     void sync_from_fields(SceneNode* node);
-
     void show_mesh_properties(const MeshComponent* mesh);
     void hide_mesh_properties();
-
-    void highlight_scene_graph_selection();
     void on_draw_mode_changed(int index);
+
+
 };
 
 #endif // CS370_FA26_EDITORUI_H

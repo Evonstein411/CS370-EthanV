@@ -81,7 +81,7 @@ set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../app/desertfox.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/editorcontroller.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/callbacks.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/editorui.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/renderer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/camera.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../rendering/stbimpl.cpp
@@ -100,8 +100,7 @@ set(COMMON_FILES
 
 
         # editor
-        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/hitdetection.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/ui.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../editor/editorui.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../editor/callbacks.h
         ../editor/editorcontroller.h
 
@@ -161,6 +160,7 @@ set(COMMON_FILES
         ../kitUI/layout.h
         ../kitUI/gridlayout.cpp
         ../kitUI/gridlayout.h
+        ../editor/property.h
 
 
 )

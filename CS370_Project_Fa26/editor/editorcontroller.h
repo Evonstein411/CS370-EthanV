@@ -6,11 +6,11 @@
 #define CS370_FA26_EDITORCONTROLLER_H
 
 #include "../scene/scenemodel.h"
-#include "hitdetection.h"
+#include "rendering/renderer.h"
 
 class EditorController {
 public:
-    explicit EditorController(SceneModel& model);
+    explicit EditorController(SceneModel& model, Renderer& view);
 
     // Called by Callbacks
     void handle_key(int key, int action, int mods);
@@ -30,6 +30,7 @@ public:
 
 private:
     SceneModel& model;
+    Renderer& view;
     // mouse look state
     bool rightMouseDown = false;
     double lastMouseX = 0.0;
@@ -37,7 +38,6 @@ private:
     float mouseLookSensitivity = 0.25f;
 
     // gizmo drag state
-    GizmoAxis activeGizmo = GIZMO_NONE;
     vmath::vec3 dragStartPos;
     vmath::vec2 dragStartMouse;
 

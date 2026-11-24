@@ -3,22 +3,22 @@
 //
 
 #include "editorcontroller.h"
+#include "hud.h"
 #include "../common/GLFWutils.h"
 #include "rendering/camera.h"
 
 
-EditorController::EditorController(SceneModel& model) : model(model) {}
+EditorController::EditorController(SceneModel& model, Renderer& view) : model(model), view(view) {}
 
 void EditorController::update() {
-    update_from_fields();
+    //nothing right now
 }
 
 void EditorController::handle_key(int key, int action, int mods) {
-    if (hud_key(key, action)) return;
+    if (HUD::instance().key(key, action)) return;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         clear_selection();
-        update_fields();
         return;
     }
 
@@ -35,7 +35,7 @@ void EditorController::handle_mouse_button(int button, int action, double x, dou
     // you may still want cursor_to_framebuffer here or move it in
     // for now assuming x/y are already in the space you need, or call the helper
 
-    if (hud_mouse_button(mx, my, button, action)) return;
+    if (HUD::instance().mouse_button(mx, my, button, action)) return;
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
         rightMouseDown = (action == GLFW_PRESS);
@@ -51,14 +51,14 @@ void EditorController::handle_mouse_button(int button, int action, double x, dou
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        activeGizmo = GIZMO_NONE;
+        model.set_active_gizmo(GizmoAxis::NONE);
     }
 }
 
 void EditorController::handle_cursor(double x, double y) {
     float mx, my;
     // cursor_to_framebuffer(...) if needed
-    hud_cursor(mx, my);
+    HUD::instance().cursor(mx, my);
 
     if (rightMouseDown) {
         float dx = static_cast<float>(x - lastMouseX);
@@ -87,14 +87,14 @@ void EditorController::handle_cursor(double x, double y) {
 
     // Gizmo dragging
     SceneNode* selected = model.get_selected();
-    if (activeGizmo == GIZMO_NONE || !selected) return;
+    if (model.get_active_gizmo() == GizmoAxis::NONE || !selected) return;
 
     vmath::vec2 delta = vmath::vec2(mx, my) - dragStartMouse;
 
     vmath::vec3 axis(0.0f);
-    if (activeGizmo == GIZMO_X) axis = vmath::vec3(1, 0, 0);
-    else if (activeGizmo == GIZMO_Y) axis = vmath::vec3(0, 1, 0);
-    else if (activeGizmo == GIZMO_Z) axis = vmath::vec3(0, 0, 1);
+    if (model.get_active_gizmo() == GizmoAxis::X) axis = vmath::vec3(1, 0, 0);
+    else if (model.get_active_gizmo() == GizmoAxis::Y) axis = vmath::vec3(0, 1, 0);
+    else if (model.get_active_gizmo() == GizmoAxis::Z) axis = vmath::vec3(0, 0, 1);
 
     const Camera& cam = model.get_active_camera();
     const vmath::mat4& view = cam.get_view_matrix();
@@ -117,7 +117,6 @@ void EditorController::handle_cursor(double x, double y) {
     const float amount = vmath::dot(delta, screenDir) * sensitivity;
 
     selected->position = dragStartPos + axis * amount;
-    update_fields();
 }
 
 void EditorController::handle_scroll(double xOffset, double yOffset) {
@@ -132,7 +131,7 @@ void EditorController::handle_scroll(double xOffset, double yOffset) {
 }
 
 void EditorController::handle_char(unsigned int codepoint) {
-    hud_char(codepoint);
+    HUD::instance().character(codepoint);
 }
 
 void EditorController::handle_resize(int width, int height) {
@@ -142,16 +141,14 @@ void EditorController::handle_resize(int width, int height) {
 
 void EditorController::select_node(SceneNode* node) {
     model.set_selected(node);
-    update_fields();
 }
 
 void EditorController::clear_selection() {
     model.clear_selection();
-    update_fields();
 }
 
 void EditorController::delete_selected() {
-    delete_selected_object();   // existing UI/scene function for now
+    model.remove_selected();   // existing UI/scene function for now
     model.clear_selection();
 }
 
@@ -168,22 +165,16 @@ void EditorController::handle_camera_keys(int key, int action) {
 }
 
 void EditorController::handle_selection_click(double x, double y) {
-    float mx, my;
-    // cursor_to_framebuffer if needed
+    HitResult hit = view.pick(model, static_cast<float>(x), static_cast<float>(y));
 
-    SceneNode* clicked = pick_scene_object(mx, my);
-    int raw = get_raw_index();
-
-    if (const SceneNode* selected = model.get_selected();
-        (raw == GIZMO_X || raw == GIZMO_Y || raw == GIZMO_Z) && selected) {
-        activeGizmo = static_cast<GizmoAxis>(raw);
-        dragStartPos = selected->position;
-        dragStartMouse = vmath::vec2(mx, my);
+    if (hit.gizmo != GizmoAxis::NONE) {
+        model.set_active_gizmo(hit.gizmo);
+        dragStartPos = model.get_selected()->position;
+        dragStartMouse = vmath::vec2(static_cast<float>(x), static_cast<float>(y));
         return;
-        }
+    }
 
-    select_node(clicked);
-    activeGizmo = GIZMO_NONE;
+    select_node(hit.node);
 }
 
 void EditorController::update_ortho_eye() {
@@ -194,8 +185,8 @@ void EditorController::update_ortho_eye() {
     float el = cam.get_elevation();
     float r  = cam.get_radius();
 
-    float x = r * sin(deg2rad(az)) * sin(deg2rad(el));
-    float y = r * cos(deg2rad(el));
-    float z = r * cos(deg2rad(az)) * sin(deg2rad(el));
+    float x = r * sin(vmath::deg2rad(az)) * sin(vmath::deg2rad(el));
+    float y = r * cos(vmath::deg2rad(el));
+    float z = r * cos(vmath::deg2rad(az)) * sin(vmath::deg2rad(el));
     cam.set_eye(vmath::vec3(x, y, z));
 }

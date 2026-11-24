@@ -5,7 +5,7 @@
 #ifndef CS370_FA26_LAYOUT_H
 #define CS370_FA26_LAYOUT_H
 
-extern struct Panel;
+class Panel;
 
 struct Layout {
     virtual ~Layout() = default;

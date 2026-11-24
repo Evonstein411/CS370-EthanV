@@ -20,22 +20,6 @@ inline GLuint MaterialBuffers[NumMaterialBuffers];
 inline std::vector<Material> materials;
 inline std::vector<Material> dynamicMaterials;
 
-inline float ambientR = 0.33f;
-inline float ambientG = 0.22f;
-inline float ambientB = 0.03f;
-inline float ambientA = 1.0f;
-
-inline float diffuseR = 0.78f;
-inline float diffuseG = 0.57f;
-inline float diffuseB = 0.11f;
-inline float diffuseA = 1.0f;
-
-inline float specularR = 0.99f;
-inline float specularG = 0.91f;
-inline float specularB = 0.81f;
-inline float specularA = 1.0f;
-
-inline float shininess = 27.8f;
 
 inline Material baseMaterial = {
 	vmath::vec4(0.5f, 0.5f, 0.5f, 1.0f), //ambient
